@@ -1,33 +1,32 @@
 {
-  "name": "r6",
-  "private": true,
-  "author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
-  "license": "MIT",
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "check-types": "turbo run check-types",
-    "deps:audit": "syncpack list",
-    "deps:fix": "syncpack fix-mismatches",
-    "deps:format": "syncpack format",
-    "deps:mismatch": "syncpack list-mismatches",
-    "deps:update": "syncpack update --specs=latest,range && syncpack fix-mismatches",
-    "format": "turbo format",
-    "lint": "turbo lint",
-    "preview": "turbo preview"
-  },
-  "devDependencies": {
-    "syncpack": "^14.0.0",
-    "turbo": "^2.8.10",
-    "typescript": "5.9.2"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "npm@11.3.0",
-  "workspaces": [
-    "apis/*",
-    "apps/*",
-    "packages/*"
-  ]
+	"name": "r6",
+	"private": true,
+	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
+	"license": "MIT",
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"check-types": "turbo run check-types",
+		"deps:audit": "syncpack list",
+		"deps:fix": "syncpack fix-mismatches",
+		"deps:format": "syncpack format",
+		"deps:mismatch": "syncpack list-mismatches",
+		"deps:update": "syncpack update --specs=latest,range && syncpack fix-mismatches",
+		"format": "turbo format",
+		"lint": "turbo lint",
+		"preview": "turbo preview"
+	},
+	"devDependencies": {
+		"syncpack": "^14.0.0",
+		"turbo": "^2.8.10",
+		"typescript": "5.9.2"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "npm@11.3.0",
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	]
 }
