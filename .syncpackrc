@@ -1,0 +1,51 @@
+{
+  "$schema": "https://unpkg.com/syncpack@14.0.0/dist/schema.json",
+  "sortFirst": [
+    "name",
+    "version",
+    "private",
+    "type",
+    "scripts",
+    "dependencies",
+    "devDependencies",
+    "peerDependencies",
+    "packageManager",
+    "engines",
+    "workspaces"
+  ],
+  "dependencyTypes": ["dev", "prod", "peer"],
+  "semverGroups": [
+    {
+      "range": "",
+      "dependencies": ["typescript"],
+      "label": "Pin typescript to exact version"
+    }
+  ],
+  "versionGroups": [
+    {
+      "label": "Internal packages",
+      "dependencies": ["@btm/*"],
+      "pinVersion": "*"
+    },
+    {
+      "label": "Pin express to exact version",
+      "dependencies": ["express"],
+      "pinVersion": "5.2.1"
+    },
+    {
+      "label": "Pin zod to exact version",
+      "dependencies": ["zod"],
+      "pinVersion": "4.3.6"
+    },
+    {
+      "label": "Pin prisma to exact version",
+      "dependencies": ["prisma", "@prisma/client"],
+      "pinVersion": "6.19.0"
+    },
+    {
+      "label": "Pin biome to exact version",
+      "dependencies": ["@biomejs/biome"],
+      "pinVersion": "2.4.4"
+    }
+  ]
+}
