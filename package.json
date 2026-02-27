@@ -25,6 +25,7 @@
 	},
 	"packageManager": "npm@11.3.0",
 	"workspaces": [
+		"apis/*",
 		"apps/*",
 		"packages/*"
 	]

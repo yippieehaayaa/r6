@@ -1,16 +1,11 @@
 {
-  "compilerOptions": {
-    "target": "ESNext",
-    "module": "NodeNext",
-    "strict": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
-    "types": [
-      "node"
-    ],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "outDir": "./dist"
-  },
-  "exclude": ["node_modules"]
+	"extends": "@r6/typescript-config/node.json",
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx",
+		"outDir": "./dist"
+	},
+	"exclude": ["node_modules"]
 }
