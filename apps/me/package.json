@@ -15,7 +15,8 @@
 		"test": "vitest run",
 		"format": "biome format --write .",
 		"lint": "biome lint --write .",
-		"check": "biome check --write ."
+		"check": "biome check --write .",
+		"start": "node .output/server/index.mjs"
 	},
 	"dependencies": {
 		"@tailwindcss/vite": "^4.2.1",
@@ -39,6 +40,7 @@
 	"devDependencies": {
 		"@r6/typescript-config": "*",
 		"@biomejs/biome": "2.4.4",
+		"nitro": "npm:nitro-nightly@latest",
 		"@tanstack/devtools-vite": "^0.5.1",
 		"@testing-library/dom": "^10.4.1",
 		"@testing-library/react": "^16.3.2",
