@@ -42,6 +42,11 @@
 			"pinVersion": "1.19.9"
 		},
 		{
+			"label": "Pin hono zod openapi to exact version",
+			"dependencies": ["@hono/zod-openapi"],
+			"pinVersion": "1.2.2"
+		},
+		{
 			"label": "Pin zod to exact version",
 			"dependencies": ["zod"],
 			"pinVersion": "4.3.6"
