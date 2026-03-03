@@ -1,5 +1,5 @@
 {
-	"$schema": "https://unpkg.com/syncpack@14.0.0/dist/schema.json",
+	"$schema": "https://unpkg.com/syncpack@13.0.4/dist/schema.json",
 	"sortFirst": [
 		"name",
 		"version",
@@ -34,12 +34,12 @@
 		{
 			"label": "Pin hono to exact version",
 			"dependencies": ["hono"],
-			"pinVersion": "4.12.3"
+			"pinVersion": "4.12.4"
 		},
 		{
 			"label": "Pin hono node server to exact version",
 			"dependencies": ["@hono/node-server"],
-			"pinVersion": "1.19.9"
+			"pinVersion": "1.19.10"
 		},
 		{
 			"label": "Pin hono zod openapi to exact version",

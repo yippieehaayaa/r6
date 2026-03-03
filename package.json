@@ -1,32 +1,42 @@
 {
 	"name": "r6",
 	"private": true,
-	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
-	"license": "MIT",
+	"overrides": {
+		"prisma": {
+			"hono": "4.12.4",
+			"@hono/node-server": "1.19.10"
+		},
+		"chevrotain": {
+			"lodash": ">=4.17.21"
+		}
+	},
 	"scripts": {
 		"build": "turbo run build",
-		"dev": "turbo run dev",
 		"check-types": "turbo run check-types",
 		"deps:audit": "syncpack lint --dependency-types prod,dev,peer",
 		"deps:fix": "syncpack fix",
 		"deps:format": "syncpack format",
 		"deps:update": "syncpack update",
+		"dev": "turbo run dev",
 		"format": "turbo format",
 		"lint": "turbo lint",
 		"preview": "turbo preview"
 	},
 	"devDependencies": {
 		"syncpack": "^14.0.0",
-		"turbo": "^2.8.11",
+		"turbo": "^2.8.12",
 		"typescript": "5.9.3"
 	},
+	"packageManager": "npm@11.3.0",
 	"engines": {
 		"node": ">=18"
 	},
-	"packageManager": "npm@11.3.0",
 	"workspaces": [
 		"apis/*",
 		"apps/*",
+		"dbs/*",
 		"packages/*"
-	]
+	],
+	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
+	"license": "MIT"
 }

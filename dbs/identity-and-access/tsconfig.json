@@ -1,0 +1,10 @@
+{
+	"extends": "@r6/typescript-config/node.json",
+	"compilerOptions": {
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"outDir": "./dist"
+	},
+	"include": ["src/**/*"],
+	"exclude": ["node_modules", "dist", "prisma"]
+}
