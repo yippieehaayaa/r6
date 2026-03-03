@@ -32,6 +32,16 @@
 			"pinVersion": "5.2.1"
 		},
 		{
+			"label": "Pin hono to exact version",
+			"dependencies": ["hono"],
+			"pinVersion": "4.12.3"
+		},
+		{
+			"label": "Pin hono node server to exact version",
+			"dependencies": ["@hono/node-server"],
+			"pinVersion": "1.19.9"
+		},
+		{
 			"label": "Pin zod to exact version",
 			"dependencies": ["zod"],
 			"pinVersion": "4.3.6"
