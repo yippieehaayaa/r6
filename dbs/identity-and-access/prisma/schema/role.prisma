@@ -1,0 +1,20 @@
+model Role {
+    id          String  @id @default(uuid())
+    name        String  @unique
+    description String?
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Relations (many-to-many)
+    policies       Policy[]
+    identities     Identity[]
+    groups         Group[]
+    serviceClients ServiceClient[]
+
+    // Indexes
+    @@index([deletedAt])
+    @@map("roles")
+}

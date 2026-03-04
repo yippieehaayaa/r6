@@ -57,6 +57,11 @@
 			"pinVersion": "6.19.0"
 		},
 		{
+			"label": "Pin tsup to exact version",
+			"dependencies": ["tsup"],
+			"pinVersion": "8.5.1"
+		},
+		{
 			"label": "Pin biome to exact version",
 			"dependencies": ["@biomejs/biome"],
 			"pinVersion": "2.4.4"

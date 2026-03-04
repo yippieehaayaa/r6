@@ -1,0 +1,51 @@
+// Identity
+
+enum IdentityStatus {
+    ACTIVE
+    INACTIVE
+    SUSPENDED
+    PENDING_VERIFICATION
+}
+
+enum IdentityKind {
+    USER
+    SERVICE
+    ADMIN
+}
+
+// OTP
+
+enum OtpPurpose {
+    REGISTRATION
+    LOGIN
+    PASSWORD_RESET
+    EMAIL_VERIFICATION
+}
+
+enum OtpStatus {
+    PENDING
+    VERIFIED
+    EXPIRED
+}
+
+// Policy
+
+enum PolicyEffect {
+    ALLOW
+    DENY
+}
+
+// Token
+
+enum TokenKind {
+    REFRESH
+    API_KEY
+}
+
+// Audit
+
+enum AuditOutcome {
+    ALLOWED
+    DENIED
+    ERROR
+}

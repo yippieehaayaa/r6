@@ -1,0 +1,26 @@
+model ServiceClient {
+    id           String  @id @default(uuid())
+    name         String  @unique
+    clientId     String  @unique
+    clientSecret String
+    audience     String[]
+    active       Boolean @default(true)
+    description  String?
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Optional link to a SERVICE Identity
+    identityId String?
+    identity   Identity? @relation(fields: [identityId], references: [id])
+
+    // Relations (many-to-many)
+    roles Role[]
+
+    // Indexes
+    @@index([clientId])
+    @@index([deletedAt])
+    @@map("service_clients")
+}

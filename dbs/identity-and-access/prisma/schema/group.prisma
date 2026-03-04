@@ -1,0 +1,18 @@
+model Group {
+    id          String  @id @default(uuid())
+    name        String  @unique
+    description String?
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Relations (many-to-many)
+    identities Identity[]
+    roles      Role[]
+
+    // Indexes
+    @@index([deletedAt])
+    @@map("groups")
+}
