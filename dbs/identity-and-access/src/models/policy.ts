@@ -1,0 +1,193 @@
+import { type PolicyEffect, type Prisma, prisma } from "../client";
+import {
+  IdentityNotFoundError,
+  PolicyNameExistsError,
+  PolicyNotFoundError,
+} from "../errors";
+
+export type CreatePolicyInput = {
+  name: string;
+  description?: string;
+  effect: PolicyEffect;
+  actions: string[];
+  resources: string[];
+  audience: string[];
+  conditions?: Prisma.InputJsonValue;
+};
+
+export type UpdatePolicyInput = {
+  name?: string;
+  description?: string;
+  effect?: PolicyEffect;
+  actions?: string[];
+  resources?: string[];
+  audience?: string[];
+  conditions?: Prisma.InputJsonValue;
+};
+
+export type ListPoliciesInput = {
+  page: number;
+  limit: number;
+  search?: string;
+  effect?: PolicyEffect;
+};
+
+export type EvaluateAccessInput = {
+  identityId: string;
+  action: string;
+  resource: string;
+  audience: string;
+};
+
+const buildPolicyWhere = (
+  input: Pick<ListPoliciesInput, "search" | "effect">,
+): Prisma.PolicyWhereInput => ({
+  deletedAt: null,
+  ...(input.effect && { effect: input.effect }),
+  ...(input.search && {
+    name: { contains: input.search, mode: "insensitive" },
+  }),
+});
+
+const createPolicy = async (input: CreatePolicyInput) => {
+  try {
+    return await prisma.policy.create({
+      data: {
+        name: input.name,
+        description: input.description,
+        effect: input.effect,
+        actions: input.actions,
+        resources: input.resources,
+        audience: input.audience,
+        conditions: input.conditions,
+      },
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code: string }).code === "P2002"
+    ) {
+      throw new PolicyNameExistsError();
+    }
+    throw error;
+  }
+};
+
+const getPolicyById = async (id: string) => {
+  const policy = await prisma.policy.findUnique({
+    where: { id, deletedAt: null },
+  });
+
+  if (!policy) throw new PolicyNotFoundError();
+
+  return policy;
+};
+
+const updatePolicy = async (id: string, input: UpdatePolicyInput) => {
+  const policy = await prisma.policy.findUnique({
+    where: { id, deletedAt: null },
+  });
+
+  if (!policy) throw new PolicyNotFoundError();
+
+  try {
+    return await prisma.policy.update({
+      where: { id },
+      data: input,
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      (error as { code: string }).code === "P2002"
+    ) {
+      throw new PolicyNameExistsError();
+    }
+    throw error;
+  }
+};
+
+const deletePolicy = async (id: string) => {
+  const policy = await prisma.policy.findUnique({
+    where: { id, deletedAt: null },
+  });
+
+  if (!policy) throw new PolicyNotFoundError();
+
+  return await prisma.policy.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
+};
+
+const listPolicies = async (input: ListPoliciesInput) => {
+  const where = buildPolicyWhere(input);
+  const skip = (input.page - 1) * input.limit;
+
+  const [data, total] = await Promise.all([
+    prisma.policy.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.policy.count({ where }),
+  ]);
+
+  return { data, total, page: input.page, limit: input.limit };
+};
+
+const evaluateAccess = async (input: EvaluateAccessInput) => {
+  const identity = await prisma.identity.findUnique({
+    where: { id: input.identityId, deletedAt: null },
+    include: {
+      roles: {
+        where: { deletedAt: null },
+        include: { policies: { where: { deletedAt: null } } },
+      },
+      groups: {
+        where: { deletedAt: null },
+        include: {
+          roles: {
+            where: { deletedAt: null },
+            include: { policies: { where: { deletedAt: null } } },
+          },
+        },
+      },
+    },
+  });
+
+  if (!identity) throw new IdentityNotFoundError();
+
+  const directPolicies = identity.roles.flatMap((r) => r.policies);
+  const groupPolicies = identity.groups.flatMap((g) =>
+    g.roles.flatMap((r) => r.policies),
+  );
+
+  const seen = new Set<string>();
+  const allPolicies = [...directPolicies, ...groupPolicies].filter((p) => {
+    if (seen.has(p.id)) return false;
+    seen.add(p.id);
+    return true;
+  });
+
+  const matching = allPolicies.filter(
+    (p) =>
+      p.actions.includes(input.action) &&
+      p.resources.includes(input.resource) &&
+      p.audience.includes(input.audience),
+  );
+
+  if (matching.some((p) => p.effect === "DENY")) return false;
+  return matching.some((p) => p.effect === "ALLOW");
+};
+
+export default {
+  createPolicy,
+  getPolicyById,
+  updatePolicy,
+  deletePolicy,
+  listPolicies,
+  evaluateAccess,
+} as const;

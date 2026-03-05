@@ -94,6 +94,14 @@ class PolicyNotFoundError extends Error {
   }
 }
 
+class PolicyNameExistsError extends Error {
+  constructor(message = "Policy name already exists") {
+    super(message);
+    this.name = "PolicyNameExistsError";
+    Object.setPrototypeOf(this, PolicyNameExistsError.prototype);
+  }
+}
+
 class SessionNotFoundError extends Error {
   constructor(message = "Session not found") {
     super(message);
@@ -163,6 +171,7 @@ export {
   OtpExpiredError,
   OtpNotFoundError,
   PasswordReuseError,
+  PolicyNameExistsError,
   PolicyNotFoundError,
   RoleNameExistsError,
   RoleNotFoundError,

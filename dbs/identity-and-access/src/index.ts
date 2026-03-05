@@ -5,6 +5,8 @@ export * from "./models/account";
 export { default as account } from "./models/account";
 export * from "./models/group";
 export { default as group } from "./models/group";
+export * from "./models/policy";
+export { default as policy } from "./models/policy";
 export * from "./models/role";
 export { default as role } from "./models/role";
 export * from "./models/session";
