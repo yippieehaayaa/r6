@@ -16,7 +16,7 @@ import {
 } from "../errors";
 
 const FAILED_LOGIN_LIMIT = 5;
-const LOCK_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const LOCK_DURATION_MS = 15 * 60 * 1000;
 
 export type ChangePasswordInput = {
 	id: string;
@@ -61,10 +61,6 @@ export type ListIdentitiesInput = {
 	searchField?: "username" | "email";
 };
 
-// ---------------------------------------------------------------------------
-// Internal helpers
-// ---------------------------------------------------------------------------
-
 const buildIdentityWhere = (
 	input: Pick<
 		ListIdentitiesInput,
@@ -90,10 +86,6 @@ const buildIdentityWhere = (
 		}),
 	}),
 });
-
-// ---------------------------------------------------------------------------
-// Operations
-// ---------------------------------------------------------------------------
 
 const createIdentity = async (input: CreateIdentityInput) => {
 	const { salt, hash } = await encryptPassword(input.password);
@@ -130,12 +122,10 @@ const verifyIdentity = async (input: VerifyIdentityInput) => {
 			where: { username: input.username, deletedAt: null },
 		});
 
-		// Never reveal whether the username exists
 		if (!identity || !identity.active) {
 			throw new InvalidCredentialsError();
 		}
 
-		// Check account lock
 		if (identity.lockedUntil && identity.lockedUntil > new Date()) {
 			throw new AccountLockedError();
 		}
@@ -159,7 +149,6 @@ const verifyIdentity = async (input: VerifyIdentityInput) => {
 			throw new InvalidCredentialsError();
 		}
 
-		// Reset failed attempts and track IP on success
 		const [updated] = await Promise.all([
 			tx.identity.update({
 				where: { id: identity.id },
@@ -205,7 +194,6 @@ const changePassword = async (input: ChangePasswordInput) => {
 			throw new Error("Passwords do not match");
 		}
 
-		// Check for password reuse against all stored history
 		for (const entry of identity.passwordHistories) {
 			const reused = await verifyPassword(input.newPassword, entry.password);
 			if (reused) throw new PasswordReuseError();
