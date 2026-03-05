@@ -2,5 +2,10 @@ export * from "./client";
 export { prisma } from "./client";
 export * from "./errors";
 export * from "./models/account";
-
 export { default as account } from "./models/account";
+export * from "./models/group";
+export { default as group } from "./models/group";
+export * from "./models/role";
+export { default as role } from "./models/role";
+export * from "./models/session";
+export { default as session } from "./models/session";

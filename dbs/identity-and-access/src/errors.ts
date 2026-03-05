@@ -62,11 +62,27 @@ class RoleNotFoundError extends Error {
   }
 }
 
+class RoleNameExistsError extends Error {
+  constructor(message = "Role name already exists") {
+    super(message);
+    this.name = "RoleNameExistsError";
+    Object.setPrototypeOf(this, RoleNameExistsError.prototype);
+  }
+}
+
 class GroupNotFoundError extends Error {
   constructor(message = "Group not found") {
     super(message);
     this.name = "GroupNotFoundError";
     Object.setPrototypeOf(this, GroupNotFoundError.prototype);
+  }
+}
+
+class GroupNameExistsError extends Error {
+  constructor(message = "Group name already exists") {
+    super(message);
+    this.name = "GroupNameExistsError";
+    Object.setPrototypeOf(this, GroupNameExistsError.prototype);
   }
 }
 
@@ -83,6 +99,22 @@ class SessionNotFoundError extends Error {
     super(message);
     this.name = "SessionNotFoundError";
     Object.setPrototypeOf(this, SessionNotFoundError.prototype);
+  }
+}
+
+class SessionExpiredError extends Error {
+  constructor(message = "Session has expired") {
+    super(message);
+    this.name = "SessionExpiredError";
+    Object.setPrototypeOf(this, SessionExpiredError.prototype);
+  }
+}
+
+class SessionRevokedError extends Error {
+  constructor(message = "Session has been revoked") {
+    super(message);
+    this.name = "SessionRevokedError";
+    Object.setPrototypeOf(this, SessionRevokedError.prototype);
   }
 }
 
@@ -121,6 +153,7 @@ class InvalidOtpError extends Error {
 export {
   AccountLockedError,
   EmailExistsError,
+  GroupNameExistsError,
   GroupNotFoundError,
   IdentityNotFoundError,
   InvalidCredentialsError,
@@ -131,7 +164,10 @@ export {
   OtpNotFoundError,
   PasswordReuseError,
   PolicyNotFoundError,
+  RoleNameExistsError,
   RoleNotFoundError,
+  SessionExpiredError,
   SessionNotFoundError,
+  SessionRevokedError,
   UsernameExistsError,
 };
