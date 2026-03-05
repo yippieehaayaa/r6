@@ -1,5 +1,5 @@
+export * from "./client";
 export { prisma } from "./client";
-export * from "./client"; // re-exports all Prisma enums & types
 export * from "./errors";
 export * from "./models/account";
 

@@ -1,53 +1,53 @@
 {
-	"name": "@r6/db-identity-and-access",
-	"version": "0.0.0",
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"build": "prisma generate && tsup src",
-		"check": "biome check --write .",
-		"db:generate": "prisma generate",
-		"db:migrate": "prisma migrate dev",
-		"db:push": "prisma db push",
-		"db:seed": "prisma db seed",
-		"db:studio": "prisma studio",
-		"format": "biome format --write .",
-		"lint": "biome lint --write ."
-	},
-	"dependencies": {
-		"@r6/bcrypt": "0.0.0",
-		"@r6/crypto": "0.0.0",
-		"@prisma/adapter-pg": "^7.4.2",
-		"@prisma/client": "6.19.0",
-		"dotenv": "^17.3.1",
-		"pg": "^8.19.0"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.4.4",
-		"@r6/typescript-config": "0.0.0",
-		"@types/pg": "^8.18.0",
-		"prisma": "6.19.0",
-		"tsup": "8.5.1",
-		"tsx": "^4.21.0",
-		"typescript": "5.9.3"
-	},
-	"exports": {
-		".": {
-			"types": "./src/index.ts",
-			"import": "./build/index.mjs",
-			"require": "./build/index.js",
-			"default": "./build/index.js"
-		},
-		"./models/*": {
-			"types": "./src/models/*.ts",
-			"import": "./build/models/*.mjs",
-			"require": "./build/models/*.js",
-			"default": "./build/models/*.js"
-		}
-	},
-	"license": "MIT",
-	"prisma": {
-		"schema": "prisma/schema",
-		"seed": "npx tsx prisma/seed/index.ts"
-	}
+  "name": "@r6/db-identity-and-access",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "prisma generate && tsup src",
+    "check": "biome check --write .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio",
+    "format": "biome format --write .",
+    "lint": "biome lint --write ."
+  },
+  "dependencies": {
+    "@r6/bcrypt": "0.0.0",
+    "@r6/crypto": "0.0.0",
+    "@prisma/adapter-pg": "^7.4.2",
+    "@prisma/client": "6.19.0",
+    "dotenv": "^17.3.1",
+    "pg": "^8.19.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.4",
+    "@r6/typescript-config": "0.0.0",
+    "@types/pg": "^8.18.0",
+    "prisma": "6.19.0",
+    "tsup": "8.5.1",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./build/index.mjs",
+      "require": "./build/index.js",
+      "default": "./build/index.js"
+    },
+    "./models/*": {
+      "types": "./src/models/*.ts",
+      "import": "./build/models/*.mjs",
+      "require": "./build/models/*.js",
+      "default": "./build/models/*.js"
+    }
+  },
+  "license": "MIT",
+  "prisma": {
+    "schema": "prisma/schema",
+    "seed": "npx tsx prisma/seed/index.ts"
+  }
 }
