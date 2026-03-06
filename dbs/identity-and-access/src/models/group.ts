@@ -1,10 +1,10 @@
-import { type Prisma, prisma } from "../client";
+import { type Prisma, prisma } from "../client.js";
 import {
   GroupNameExistsError,
   GroupNotFoundError,
   IdentityNotFoundError,
   RoleNotFoundError,
-} from "../errors";
+} from "../errors.js";
 
 export type CreateGroupInput = {
   name: string;

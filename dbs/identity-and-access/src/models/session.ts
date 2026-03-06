@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { hmac } from "@r6/crypto";
-import { type Prisma, prisma, type TokenKind } from "../client";
+import { type Prisma, prisma, type TokenKind } from "../client.js";
 import {
   IdentityNotFoundError,
   SessionExpiredError,
   SessionNotFoundError,
   SessionRevokedError,
-} from "../errors";
+} from "../errors.js";
 
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -115,7 +115,11 @@ const rotateSession = async (oldToken: string, input: RotateSessionInput) => {
         select: SESSION_PUBLIC_SELECT,
       }),
       tx.refreshToken.updateMany({
-        where: { family: session.family, revokedAt: null },
+        where: {
+          family: session.family,
+          revokedAt: null,
+          token: { not: toTokenHash(input.token) },
+        },
         data: { revokedAt: new Date() },
       }),
     ]);

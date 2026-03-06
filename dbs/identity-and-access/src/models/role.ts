@@ -1,11 +1,11 @@
-import { type Prisma, prisma } from "../client";
+import { type Prisma, prisma } from "../client.js";
 import {
   GroupNotFoundError,
   IdentityNotFoundError,
   PolicyNotFoundError,
   RoleNameExistsError,
   RoleNotFoundError,
-} from "../errors";
+} from "../errors.js";
 
 export type CreateRoleInput = {
   name: string;

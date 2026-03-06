@@ -1,4 +1,0 @@
-name: url
-variables:
-  - name: iamURL
-    value: http://localhost:3001

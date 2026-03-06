@@ -4,7 +4,7 @@ import {
   type IdentityStatus,
   type Prisma,
   prisma,
-} from "../client";
+} from "../client.js";
 import {
   AccountLockedError,
   EmailExistsError,
@@ -13,7 +13,7 @@ import {
   InvalidCurrentPasswordError,
   PasswordReuseError,
   UsernameExistsError,
-} from "../errors";
+} from "../errors.js";
 
 const FAILED_LOGIN_LIMIT = 5;
 const LOCK_DURATION_MS = 15 * 60 * 1000;

@@ -1,9 +1,9 @@
-import { type PolicyEffect, type Prisma, prisma } from "../client";
+import { type PolicyEffect, type Prisma, prisma } from "../client.js";
 import {
   IdentityNotFoundError,
   PolicyNameExistsError,
   PolicyNotFoundError,
-} from "../errors";
+} from "../errors.js";
 
 export type CreatePolicyInput = {
   name: string;
