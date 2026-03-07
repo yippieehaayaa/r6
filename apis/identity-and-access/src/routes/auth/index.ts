@@ -64,8 +64,6 @@ auth.post("/login", async (c) => {
 
 		const accessToken = await signAccessToken({
 			sub: identity.id,
-			kind: identity.kind,
-			status: identity.status,
 			roles: identity.roles.map((r) => r.name),
 			permissions: identity.permissions,
 		});
@@ -129,8 +127,6 @@ auth.post("/refresh", async (c) => {
 
 		const accessToken = await signAccessToken({
 			sub: identity.id,
-			kind: identity.kind,
-			status: identity.status,
 			roles: identity.roles.map((r) => r.name),
 			permissions: identity.permissions,
 		});
