@@ -22,8 +22,6 @@ const loadKeys = async (): Promise<void> => {
 
 export type AccessTokenPayload = {
 	sub: string;
-	kind: string;
-	status: string;
 	roles: string[];
 	permissions: string[];
 };
@@ -36,8 +34,6 @@ export const signAccessToken = async (
 	const expiresAt = new Date(Date.now() + Number(env.JWT_ACCESS_TTL_MS));
 
 	return new SignJWT({
-		kind: payload.kind,
-		status: payload.status,
 		roles: payload.roles,
 		permissions: payload.permissions,
 	})
@@ -71,12 +67,6 @@ export const getPublicJwk = async () => {
 	return { ...jwk, use: "sig", alg: "RS256", kid };
 };
 
-/**
- * Returns true if any entry in `granted` satisfies `required` using
- * 3-segment wildcard matching: `{service}:{resource}:{action}`.
- *
- * Example: checkPermission("iam:otp:write", ["iam:*:*"]) → true
- */
 export const checkPermission = (
 	required: string,
 	granted: string[],
