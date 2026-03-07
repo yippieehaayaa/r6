@@ -110,27 +110,9 @@ class SessionRevokedError extends Error {
 	}
 }
 
-class GroupNotFoundError extends Error {
-	constructor(message = "Group not found") {
-		super(message);
-		this.name = "GroupNotFoundError";
-		Object.setPrototypeOf(this, GroupNotFoundError.prototype);
-	}
-}
-
-class GroupNameExistsError extends Error {
-	constructor(message = "Group name already exists") {
-		super(message);
-		this.name = "GroupNameExistsError";
-		Object.setPrototypeOf(this, GroupNameExistsError.prototype);
-	}
-}
-
 export {
 	AccountLockedError,
 	EmailExistsError,
-	GroupNameExistsError,
-	GroupNotFoundError,
 	IdentityNotFoundError,
 	InvalidCredentialsError,
 	InvalidCurrentPasswordError,

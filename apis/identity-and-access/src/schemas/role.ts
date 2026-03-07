@@ -11,11 +11,6 @@ export const roleIdentityParamsSchema = z.object({
 	identityId: z.uuid(),
 });
 
-export const roleGroupParamsSchema = z.object({
-	id: z.uuid(),
-	groupId: z.uuid(),
-});
-
 export const rolePolicyParamsSchema = z.object({
 	id: z.uuid(),
 	policyId: z.uuid(),
