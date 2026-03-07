@@ -23,6 +23,8 @@ const loadKeys = async (): Promise<void> => {
 export type AccessTokenPayload = {
 	sub: string;
 	kind: string;
+	status: string;
+	roles: string[];
 };
 
 export const signAccessToken = async (
@@ -32,7 +34,11 @@ export const signAccessToken = async (
 
 	const expiresAt = new Date(Date.now() + Number(env.JWT_ACCESS_TTL_MS));
 
-	return new SignJWT({ kind: payload.kind })
+	return new SignJWT({
+		kind: payload.kind,
+		status: payload.status,
+		roles: payload.roles,
+	})
 		.setProtectedHeader({ alg: "RS256" })
 		.setSubject(payload.sub)
 		.setIssuer(env.JWT_ISSUER)

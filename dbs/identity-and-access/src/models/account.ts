@@ -120,6 +120,9 @@ const verifyIdentity = async (input: VerifyIdentityInput) => {
   return await prisma.$transaction(async (tx) => {
     const identity = await tx.identity.findUnique({
       where: { username: input.username, deletedAt: null },
+      include: {
+        roles: { where: { deletedAt: null }, select: { name: true } },
+      },
     });
 
     if (!identity || !identity.active) {
@@ -171,7 +174,7 @@ const verifyIdentity = async (input: VerifyIdentityInput) => {
         : []),
     ]);
 
-    return updated;
+    return { ...updated, roles: identity.roles };
   });
 };
 
@@ -251,6 +254,9 @@ const getIdentityById = async (id: string) => {
   const identity = await prisma.identity.findUnique({
     where: { id, deletedAt: null },
     omit: { hash: true, salt: true },
+    include: {
+      roles: { where: { deletedAt: null }, select: { name: true } },
+    },
   });
 
   if (!identity) throw new IdentityNotFoundError();

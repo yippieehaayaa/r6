@@ -22,7 +22,19 @@ export const authMiddleware = (): MiddlewareHandler<{
 			);
 		}
 
-		const token = authHeader.slice(7);
+		const parts = authHeader.split(" ");
+
+		if (parts[0] !== "Bearer" || !parts[1]) {
+			return c.json(
+				{
+					error: "unauthorized",
+					message: "Missing or invalid Authorization header",
+				},
+				401,
+			);
+		}
+
+		const token = parts[1];
 
 		try {
 			const payload = await verifyAccessToken(token);

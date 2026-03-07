@@ -65,6 +65,8 @@ auth.post("/login", async (c) => {
 		const accessToken = await signAccessToken({
 			sub: identity.id,
 			kind: identity.kind,
+			status: identity.status,
+			roles: identity.roles.map((r) => r.name),
 		});
 
 		const rawRefreshToken = randomUUID();
@@ -127,6 +129,8 @@ auth.post("/refresh", async (c) => {
 		const accessToken = await signAccessToken({
 			sub: identity.id,
 			kind: identity.kind,
+			status: identity.status,
+			roles: identity.roles.map((r) => r.name),
 		});
 
 		return c.json({
