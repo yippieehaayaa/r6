@@ -155,33 +155,21 @@ const evaluateAccess = async (input: EvaluateAccessInput) => {
 				where: { deletedAt: null },
 				include: { policies: { where: { deletedAt: null } } },
 			},
-			groups: {
-				where: { deletedAt: null },
-				include: {
-					roles: {
-						where: { deletedAt: null },
-						include: { policies: { where: { deletedAt: null } } },
-					},
-				},
-			},
 		},
 	});
 
 	if (!identity) throw new IdentityNotFoundError();
 
-	const directPolicies = identity.roles.flatMap((r) => r.policies);
-	const groupPolicies = identity.groups.flatMap((g) =>
-		g.roles.flatMap((r) => r.policies),
-	);
+	const allPolicies = identity.roles.flatMap((r) => r.policies);
 
 	const seen = new Set<string>();
-	const allPolicies = [...directPolicies, ...groupPolicies].filter((p) => {
+	const uniquePolicies = allPolicies.filter((p) => {
 		if (seen.has(p.id)) return false;
 		seen.add(p.id);
 		return true;
 	});
 
-	const matching = allPolicies.filter(
+	const matching = uniquePolicies.filter(
 		(p) =>
 			p.audience.includes(input.audience) &&
 			p.permissions.some((granted) =>

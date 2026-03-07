@@ -1,4 +1,4 @@
-model RefreshToken {
+model Session {
     id        String    @id @default(uuid())
     token     String    @unique
     kind      TokenKind @default(REFRESH)
@@ -20,5 +20,5 @@ model RefreshToken {
     @@index([identityId])
     @@index([family])
     @@index([expiresAt])
-    @@map("refresh_tokens")
+    @@map("sessions")
 }

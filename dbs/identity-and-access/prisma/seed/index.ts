@@ -6,19 +6,19 @@
  *
  * Permission format: {service}:{resource}:{action}
  *   service  → iam
- *   resource → identity | session | otp | role | policy | group | service-client | audit-log
+ *   resource → identity | session | otp | role | policy
  *   action   → read | write | delete | list | * (wildcard)
  *
- * Hierarchy: Identity / Group → Role → Policy → permissions[]
+ * Hierarchy: Identity → Role → Policy → permissions[]
  *
  * Seeded identities:
- * ┌────────────┬──────────────┬─────────┬────────────────────────────────────────────┐
- * │ username   │ password     │ kind    │ access path                                │
- * ├────────────┼──────────────┼─────────┼────────────────────────────────────────────┤
- * │ admin      │ Admin@1234!  │ ADMIN   │ direct role: admin (iam:*:*)               │
- * │ testuser   │ User@1234!   │ USER    │ direct role: user                          │
- * │ devuser    │ Dev@1234!    │ USER    │ group: developers → role: operator         │
- * └────────────┴──────────────┴─────────┴────────────────────────────────────────────┘
+ * ┌────────────┬──────────────┬─────────┬──────────────────────────────────────┐
+ * │ username   │ password     │ kind    │ permissions                          │
+ * ├────────────┼──────────────┼─────────┼──────────────────────────────────────┤
+ * │ admin      │ Admin@1234!  │ ADMIN   │ iam:*:*  (role: admin)               │
+ * │ testuser   │ User@1234!   │ USER    │ iam:identity:read, iam:session:*,    │
+ * │            │              │         │ iam:otp:read/write  (role: user)     │
+ * └────────────┴──────────────┴─────────┴──────────────────────────────────────┘
  */
 
 import { encryptPassword } from "@r6/bcrypt";
@@ -97,19 +97,6 @@ async function upsertRole(name: string, description: string) {
 	return r;
 }
 
-async function upsertGroup(name: string, description: string) {
-	const exists = await prisma.group.findUnique({ where: { name } });
-
-	if (exists) {
-		skip(`group "${name}"`);
-		return exists;
-	}
-
-	const g = await prisma.group.create({ data: { name, description } });
-	log(`group "${name}"`);
-	return g;
-}
-
 async function linkPolicyToRole(
 	roleId: string,
 	policyId: string,
@@ -154,52 +141,11 @@ async function linkRoleToIdentity(
 	log(`role → identity "${label}"`);
 }
 
-async function linkRoleToGroup(roleId: string, groupId: string, label: string) {
-	const r = await prisma.role.findUnique({
-		where: { id: roleId },
-		include: { groups: { where: { id: groupId } } },
-	});
-
-	if (r?.groups.length) {
-		skip(`role → group "${label}"`);
-		return;
-	}
-
-	await prisma.role.update({
-		where: { id: roleId },
-		data: { groups: { connect: { id: groupId } } },
-	});
-	log(`role → group "${label}"`);
-}
-
-async function linkIdentityToGroup(
-	identityId: string,
-	groupId: string,
-	label: string,
-) {
-	const g = await prisma.group.findUnique({
-		where: { id: groupId },
-		include: { identities: { where: { id: identityId } } },
-	});
-
-	if (g?.identities.length) {
-		skip(`identity → group "${label}"`);
-		return;
-	}
-
-	await prisma.group.update({
-		where: { id: groupId },
-		data: { identities: { connect: { id: identityId } } },
-	});
-	log(`identity → group "${label}"`);
-}
-
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
 	console.log("\n── Policies ──────────────────────────────────");
 
-	// Admin: full IAM wildcard
 	const adminPolicy = await upsertPolicy({
 		name: "iam:admin:full-access",
 		description: "Grants full access to all IAM resources and actions",
@@ -208,36 +154,6 @@ async function main() {
 		audience: ["iam-api"],
 	});
 
-	// Operator: identity / session / group management — no role or policy management
-	const operatorIdentityPolicy = await upsertPolicy({
-		name: "iam:operator:identity",
-		description: "Read and write access to identities",
-		effect: "ALLOW",
-		permissions: [
-			"iam:identity:list",
-			"iam:identity:read",
-			"iam:identity:write",
-		],
-		audience: ["iam-api"],
-	});
-
-	const operatorSessionPolicy = await upsertPolicy({
-		name: "iam:operator:session",
-		description: "Read and revoke sessions",
-		effect: "ALLOW",
-		permissions: ["iam:session:list", "iam:session:read", "iam:session:delete"],
-		audience: ["iam-api"],
-	});
-
-	const operatorGroupPolicy = await upsertPolicy({
-		name: "iam:operator:group",
-		description: "Read and write access to groups",
-		effect: "ALLOW",
-		permissions: ["iam:group:list", "iam:group:read", "iam:group:write"],
-		audience: ["iam-api"],
-	});
-
-	// User: self-service only
 	const userIdentityPolicy = await upsertPolicy({
 		name: "iam:user:identity",
 		description: "Read own identity",
@@ -269,20 +185,9 @@ async function main() {
 	console.log("\n── Roles ─────────────────────────────────────");
 
 	const adminRole = await upsertRole("admin", "Full IAM administration access");
-	const operatorRole = await upsertRole(
-		"operator",
-		"Operational access — identity, session, and group management",
-	);
 	const userRole = await upsertRole(
 		"user",
 		"Standard self-service user access",
-	);
-
-	console.log("\n── Groups ────────────────────────────────────");
-
-	const developersGroup = await upsertGroup(
-		"developers",
-		"Development team — operator-level access via group membership",
 	);
 
 	console.log("\n── Role → Policy assignments ─────────────────");
@@ -292,23 +197,6 @@ async function main() {
 		adminPolicy.id,
 		"admin → iam:admin:full-access",
 	);
-
-	await linkPolicyToRole(
-		operatorRole.id,
-		operatorIdentityPolicy.id,
-		"operator → iam:operator:identity",
-	);
-	await linkPolicyToRole(
-		operatorRole.id,
-		operatorSessionPolicy.id,
-		"operator → iam:operator:session",
-	);
-	await linkPolicyToRole(
-		operatorRole.id,
-		operatorGroupPolicy.id,
-		"operator → iam:operator:group",
-	);
-
 	await linkPolicyToRole(
 		userRole.id,
 		userIdentityPolicy.id,
@@ -320,14 +208,6 @@ async function main() {
 		"user → iam:user:session",
 	);
 	await linkPolicyToRole(userRole.id, userOtpPolicy.id, "user → iam:user:otp");
-
-	console.log("\n── Role → Group assignments ──────────────────");
-
-	await linkRoleToGroup(
-		operatorRole.id,
-		developersGroup.id,
-		"operator → developers",
-	);
 
 	console.log("\n── Identities ────────────────────────────────");
 
@@ -345,13 +225,6 @@ async function main() {
 		kind: "USER",
 	});
 
-	const devUser = await upsertIdentity({
-		username: "devuser",
-		email: "devuser@example.com",
-		password: "Dev@1234!",
-		kind: "USER",
-	});
-
 	console.log("\n── Identity → Role assignments ───────────────");
 
 	await linkRoleToIdentity(
@@ -361,23 +234,11 @@ async function main() {
 	);
 	await linkRoleToIdentity(userRole.id, testUser.id, "testuser → role:user");
 
-	console.log("\n── Identity → Group assignments ──────────────");
-
-	// devuser gets operator permissions via group membership, not a direct role
-	await linkIdentityToGroup(
-		devUser.id,
-		developersGroup.id,
-		"devuser → group:developers",
-	);
-
 	console.log("\n── Done ──────────────────────────────────────\n");
 	console.log("Test credentials & resolved permissions:");
 	console.log("  admin    → iam:*:*  (role:admin → iam:admin:full-access)");
 	console.log(
 		"  testuser → iam:identity:read, iam:session:read/write/delete, iam:otp:read/write  (role:user)",
-	);
-	console.log(
-		"  devuser  → iam:identity:list/read/write, iam:session:list/read/delete, iam:group:list/read/write  (group:developers → role:operator)",
 	);
 	console.log();
 }

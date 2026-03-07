@@ -13,21 +13,6 @@ enum IdentityKind {
     ADMIN
 }
 
-// OTP
-
-enum OtpPurpose {
-    REGISTRATION
-    LOGIN
-    PASSWORD_RESET
-    EMAIL_VERIFICATION
-}
-
-enum OtpStatus {
-    PENDING
-    VERIFIED
-    EXPIRED
-}
-
 // Policy
 
 enum PolicyEffect {
@@ -40,12 +25,4 @@ enum PolicyEffect {
 enum TokenKind {
     REFRESH
     API_KEY
-}
-
-// Audit
-
-enum AuditOutcome {
-    ALLOWED
-    DENIED
-    ERROR
 }

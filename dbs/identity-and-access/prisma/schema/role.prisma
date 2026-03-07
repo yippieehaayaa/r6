@@ -9,10 +9,8 @@ model Role {
     deletedAt DateTime?
 
     // Relations (many-to-many)
-    policies       Policy[]
-    identities     Identity[]
-    groups         Group[]
-    serviceClients ServiceClient[]
+    policies   Policy[]
+    identities Identity[]
 
     // Indexes
     @@index([deletedAt])

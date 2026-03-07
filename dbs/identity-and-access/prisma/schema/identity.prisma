@@ -18,15 +18,12 @@ model Identity {
 
     // Relations (many-to-many)
     roles  Role[]
-    groups Group[]
 
     // Relations
-    otps              Otp[]
-    refreshTokens     RefreshToken[]
+    sessions          Session[]
     passwordHistories PasswordHistory[]
     emailHistories    EmailHistory[]
     ipAddresses       IpAddress[]
-    serviceClients    ServiceClient[]
 
     // Indexes
     @@index([status])
