@@ -25,6 +25,7 @@ export type AccessTokenPayload = {
 	kind: string;
 	status: string;
 	roles: string[];
+	permissions: string[];
 };
 
 export const signAccessToken = async (
@@ -38,6 +39,7 @@ export const signAccessToken = async (
 		kind: payload.kind,
 		status: payload.status,
 		roles: payload.roles,
+		permissions: payload.permissions,
 	})
 		.setProtectedHeader({ alg: "RS256" })
 		.setSubject(payload.sub)
@@ -67,4 +69,23 @@ export const getPublicJwk = async () => {
 	const kid = await calculateJwkThumbprint(jwk);
 
 	return { ...jwk, use: "sig", alg: "RS256", kid };
+};
+
+/**
+ * Returns true if any entry in `granted` satisfies `required` using
+ * 3-segment wildcard matching: `{service}:{resource}:{action}`.
+ *
+ * Example: checkPermission("iam:otp:write", ["iam:*:*"]) → true
+ */
+export const checkPermission = (
+	required: string,
+	granted: string[],
+): boolean => {
+	const r = required.split(":");
+	if (r.length !== 3) return false;
+	return granted.some((g) => {
+		const parts = g.split(":");
+		if (parts.length !== 3) return false;
+		return parts.every((seg, i) => seg === "*" || seg === r[i]);
+	});
 };

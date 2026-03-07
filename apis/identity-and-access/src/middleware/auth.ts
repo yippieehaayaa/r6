@@ -3,7 +3,7 @@ import type { JWTPayload } from "jose";
 import { verifyAccessToken } from "../lib/jwt.js";
 
 export type HonoVariables = {
-	jwtPayload: JWTPayload & { kind?: string };
+	jwtPayload: JWTPayload & { kind?: string; permissions?: string[] };
 };
 
 export const authMiddleware = (): MiddlewareHandler<{

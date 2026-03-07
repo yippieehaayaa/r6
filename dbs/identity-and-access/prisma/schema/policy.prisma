@@ -3,8 +3,7 @@ model Policy {
     name        String       @unique
     description String?
     effect      PolicyEffect
-    actions     String[]
-    resources   String[]
+    permissions String[]
     audience    String[]
     conditions  Json?
 

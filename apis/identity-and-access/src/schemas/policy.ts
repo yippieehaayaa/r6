@@ -1,8 +1,7 @@
 import { z } from "zod";
 
 const NAME_REGEX = /^[a-zA-Z0-9_\- ]+$/;
-const ACTION_REGEX = /^(\*|[a-z0-9_-]+(\.[a-z0-9_*-]+)*)$/;
-const RESOURCE_REGEX = /^(\*|[a-z0-9_-]+(\.[a-z0-9_*-]+)*)$/;
+const PERMISSION_REGEX = /^(\*|[a-z0-9_-]+):(\*|[a-z0-9_-]+):(\*|[a-z0-9_-]+)$/;
 const AUDIENCE_REGEX = /^[a-zA-Z0-9_\-.:]+$/;
 
 export const policyParamsSchema = z.object({
@@ -17,27 +16,15 @@ export const createPolicySchema = z.object({
 		.regex(NAME_REGEX, "Policy name contains invalid characters"),
 	description: z.string().min(1).max(255).optional(),
 	effect: z.enum(["ALLOW", "DENY"]),
-	actions: z
+	permissions: z
 		.array(
 			z
 				.string()
 				.min(1)
 				.max(128)
 				.regex(
-					ACTION_REGEX,
-					"Action must be dot-notation or wildcard (e.g. identity.create, *)",
-				),
-		)
-		.min(1),
-	resources: z
-		.array(
-			z
-				.string()
-				.min(1)
-				.max(128)
-				.regex(
-					RESOURCE_REGEX,
-					"Resource must be dot-notation or wildcard (e.g. identities.*, *)",
+					PERMISSION_REGEX,
+					"Permission must be {service}:{resource}:{action} format, wildcards allowed (e.g. iam:otp:write, iam:*:*)",
 				),
 		)
 		.min(1),
@@ -65,23 +52,16 @@ export const updatePolicySchema = z.object({
 		.optional(),
 	description: z.string().min(1).max(255).optional(),
 	effect: z.enum(["ALLOW", "DENY"]).optional(),
-	actions: z
+	permissions: z
 		.array(
 			z
 				.string()
 				.min(1)
 				.max(128)
-				.regex(ACTION_REGEX, "Action must be dot-notation or wildcard"),
-		)
-		.min(1)
-		.optional(),
-	resources: z
-		.array(
-			z
-				.string()
-				.min(1)
-				.max(128)
-				.regex(RESOURCE_REGEX, "Resource must be dot-notation or wildcard"),
+				.regex(
+					PERMISSION_REGEX,
+					"Permission must be {service}:{resource}:{action} format, wildcards allowed",
+				),
 		)
 		.min(1)
 		.optional(),
@@ -107,16 +87,14 @@ export const listPoliciesSchema = z.object({
 
 export const evaluateAccessSchema = z.object({
 	identityId: z.uuid(),
-	action: z
+	permission: z
 		.string()
 		.min(1)
 		.max(128)
-		.regex(ACTION_REGEX, "Action must be dot-notation or wildcard"),
-	resource: z
-		.string()
-		.min(1)
-		.max(128)
-		.regex(RESOURCE_REGEX, "Resource must be dot-notation or wildcard"),
+		.regex(
+			PERMISSION_REGEX,
+			"Permission must be {service}:{resource}:{action} format, wildcards allowed",
+		),
 	audience: z
 		.string()
 		.min(1)

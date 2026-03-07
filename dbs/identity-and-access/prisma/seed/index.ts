@@ -4,14 +4,21 @@
  * Idempotent — safe to run multiple times. Existing records are skipped.
  * Run with: pnpm db:seed  (from dbs/identity-and-access/)
  *
- * Seeded identities for API testing:
- * ┌────────────┬──────────────┬───────┬───────┐
- * │ username   │ password     │ kind  │ role  │
- * ├────────────┼──────────────┼───────┼───────┤
- * │ admin      │ Admin@1234!  │ ADMIN │ admin │
- * │ testuser   │ User@1234!   │ USER  │ user  │
- * │ devuser    │ Dev@1234!    │ USER  │ user  │
- * └────────────┴──────────────┴───────┴───────┘
+ * Permission format: {service}:{resource}:{action}
+ *   service  → iam
+ *   resource → identity | session | otp | role | policy | group | service-client | audit-log
+ *   action   → read | write | delete | list | * (wildcard)
+ *
+ * Hierarchy: Identity / Group → Role → Policy → permissions[]
+ *
+ * Seeded identities:
+ * ┌────────────┬──────────────┬─────────┬────────────────────────────────────────────┐
+ * │ username   │ password     │ kind    │ access path                                │
+ * ├────────────┼──────────────┼─────────┼────────────────────────────────────────────┤
+ * │ admin      │ Admin@1234!  │ ADMIN   │ direct role: admin (iam:*:*)               │
+ * │ testuser   │ User@1234!   │ USER    │ direct role: user                          │
+ * │ devuser    │ Dev@1234!    │ USER    │ group: developers → role: operator         │
+ * └────────────┴──────────────┴─────────┴────────────────────────────────────────────┘
  */
 
 import { encryptPassword } from "@r6/bcrypt";
@@ -60,8 +67,7 @@ async function upsertPolicy(input: {
 	name: string;
 	description: string;
 	effect: "ALLOW" | "DENY";
-	actions: string[];
-	resources: string[];
+	permissions: string[];
 	audience: string[];
 }) {
 	const exists = await prisma.policy.findUnique({
@@ -89,6 +95,19 @@ async function upsertRole(name: string, description: string) {
 	const r = await prisma.role.create({ data: { name, description } });
 	log(`role "${name}"`);
 	return r;
+}
+
+async function upsertGroup(name: string, description: string) {
+	const exists = await prisma.group.findUnique({ where: { name } });
+
+	if (exists) {
+		skip(`group "${name}"`);
+		return exists;
+	}
+
+	const g = await prisma.group.create({ data: { name, description } });
+	log(`group "${name}"`);
+	return g;
 }
 
 async function linkPolicyToRole(
@@ -135,38 +154,180 @@ async function linkRoleToIdentity(
 	log(`role → identity "${label}"`);
 }
 
+async function linkRoleToGroup(roleId: string, groupId: string, label: string) {
+	const r = await prisma.role.findUnique({
+		where: { id: roleId },
+		include: { groups: { where: { id: groupId } } },
+	});
+
+	if (r?.groups.length) {
+		skip(`role → group "${label}"`);
+		return;
+	}
+
+	await prisma.role.update({
+		where: { id: roleId },
+		data: { groups: { connect: { id: groupId } } },
+	});
+	log(`role → group "${label}"`);
+}
+
+async function linkIdentityToGroup(
+	identityId: string,
+	groupId: string,
+	label: string,
+) {
+	const g = await prisma.group.findUnique({
+		where: { id: groupId },
+		include: { identities: { where: { id: identityId } } },
+	});
+
+	if (g?.identities.length) {
+		skip(`identity → group "${label}"`);
+		return;
+	}
+
+	await prisma.group.update({
+		where: { id: groupId },
+		data: { identities: { connect: { id: identityId } } },
+	});
+	log(`identity → group "${label}"`);
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
 	console.log("\n── Policies ──────────────────────────────────");
 
+	// Admin: full IAM wildcard
 	const adminPolicy = await upsertPolicy({
-		name: "admin:full-access",
-		description: "Grants full access to all resources",
+		name: "iam:admin:full-access",
+		description: "Grants full access to all IAM resources and actions",
 		effect: "ALLOW",
-		actions: ["*"],
-		resources: ["*"],
-		audience: ["api.example.com"],
+		permissions: ["iam:*:*"],
+		audience: ["iam-api"],
 	});
 
-	const userReadPolicy = await upsertPolicy({
-		name: "user:read-self",
-		description: "Allows a user to read their own identity",
+	// Operator: identity / session / group management — no role or policy management
+	const operatorIdentityPolicy = await upsertPolicy({
+		name: "iam:operator:identity",
+		description: "Read and write access to identities",
 		effect: "ALLOW",
-		actions: ["identity:read"],
-		resources: ["identity:*"],
-		audience: ["api.example.com"],
+		permissions: [
+			"iam:identity:list",
+			"iam:identity:read",
+			"iam:identity:write",
+		],
+		audience: ["iam-api"],
+	});
+
+	const operatorSessionPolicy = await upsertPolicy({
+		name: "iam:operator:session",
+		description: "Read and revoke sessions",
+		effect: "ALLOW",
+		permissions: ["iam:session:list", "iam:session:read", "iam:session:delete"],
+		audience: ["iam-api"],
+	});
+
+	const operatorGroupPolicy = await upsertPolicy({
+		name: "iam:operator:group",
+		description: "Read and write access to groups",
+		effect: "ALLOW",
+		permissions: ["iam:group:list", "iam:group:read", "iam:group:write"],
+		audience: ["iam-api"],
+	});
+
+	// User: self-service only
+	const userIdentityPolicy = await upsertPolicy({
+		name: "iam:user:identity",
+		description: "Read own identity",
+		effect: "ALLOW",
+		permissions: ["iam:identity:read"],
+		audience: ["iam-api"],
+	});
+
+	const userSessionPolicy = await upsertPolicy({
+		name: "iam:user:session",
+		description: "Manage own sessions (login, refresh, logout)",
+		effect: "ALLOW",
+		permissions: [
+			"iam:session:read",
+			"iam:session:write",
+			"iam:session:delete",
+		],
+		audience: ["iam-api"],
+	});
+
+	const userOtpPolicy = await upsertPolicy({
+		name: "iam:user:otp",
+		description: "Request and verify OTPs",
+		effect: "ALLOW",
+		permissions: ["iam:otp:read", "iam:otp:write"],
+		audience: ["iam-api"],
 	});
 
 	console.log("\n── Roles ─────────────────────────────────────");
 
-	const adminRole = await upsertRole("admin", "Full administrative access");
-	const userRole = await upsertRole("user", "Standard user access");
+	const adminRole = await upsertRole("admin", "Full IAM administration access");
+	const operatorRole = await upsertRole(
+		"operator",
+		"Operational access — identity, session, and group management",
+	);
+	const userRole = await upsertRole(
+		"user",
+		"Standard self-service user access",
+	);
+
+	console.log("\n── Groups ────────────────────────────────────");
+
+	const developersGroup = await upsertGroup(
+		"developers",
+		"Development team — operator-level access via group membership",
+	);
 
 	console.log("\n── Role → Policy assignments ─────────────────");
 
-	await linkPolicyToRole(adminRole.id, adminPolicy.id, "admin");
-	await linkPolicyToRole(userRole.id, userReadPolicy.id, "user");
+	await linkPolicyToRole(
+		adminRole.id,
+		adminPolicy.id,
+		"admin → iam:admin:full-access",
+	);
+
+	await linkPolicyToRole(
+		operatorRole.id,
+		operatorIdentityPolicy.id,
+		"operator → iam:operator:identity",
+	);
+	await linkPolicyToRole(
+		operatorRole.id,
+		operatorSessionPolicy.id,
+		"operator → iam:operator:session",
+	);
+	await linkPolicyToRole(
+		operatorRole.id,
+		operatorGroupPolicy.id,
+		"operator → iam:operator:group",
+	);
+
+	await linkPolicyToRole(
+		userRole.id,
+		userIdentityPolicy.id,
+		"user → iam:user:identity",
+	);
+	await linkPolicyToRole(
+		userRole.id,
+		userSessionPolicy.id,
+		"user → iam:user:session",
+	);
+	await linkPolicyToRole(userRole.id, userOtpPolicy.id, "user → iam:user:otp");
+
+	console.log("\n── Role → Group assignments ──────────────────");
+
+	await linkRoleToGroup(
+		operatorRole.id,
+		developersGroup.id,
+		"operator → developers",
+	);
 
 	console.log("\n── Identities ────────────────────────────────");
 
@@ -193,21 +354,32 @@ async function main() {
 
 	console.log("\n── Identity → Role assignments ───────────────");
 
-	await linkRoleToIdentity(adminRole.id, adminIdentity.id, "admin → admin");
-	await linkRoleToIdentity(userRole.id, testUser.id, "testuser → user");
-	await linkRoleToIdentity(userRole.id, devUser.id, "devuser → user");
+	await linkRoleToIdentity(
+		adminRole.id,
+		adminIdentity.id,
+		"admin → role:admin",
+	);
+	await linkRoleToIdentity(userRole.id, testUser.id, "testuser → role:user");
+
+	console.log("\n── Identity → Group assignments ──────────────");
+
+	// devuser gets operator permissions via group membership, not a direct role
+	await linkIdentityToGroup(
+		devUser.id,
+		developersGroup.id,
+		"devuser → group:developers",
+	);
 
 	console.log("\n── Done ──────────────────────────────────────\n");
-	console.log("Test credentials:");
+	console.log("Test credentials & resolved permissions:");
+	console.log("  admin    → iam:*:*  (role:admin → iam:admin:full-access)");
 	console.log(
-		"  POST /auth/login  { username: 'admin',    password: 'Admin@1234!' }",
+		"  testuser → iam:identity:read, iam:session:read/write/delete, iam:otp:read/write  (role:user)",
 	);
 	console.log(
-		"  POST /auth/login  { username: 'testuser', password: 'User@1234!'  }",
+		"  devuser  → iam:identity:list/read/write, iam:session:list/read/delete, iam:group:list/read/write  (group:developers → role:operator)",
 	);
-	console.log(
-		"  POST /auth/login  { username: 'devuser',  password: 'Dev@1234!'   }\n",
-	);
+	console.log();
 }
 
 main()

@@ -67,6 +67,7 @@ auth.post("/login", async (c) => {
 			kind: identity.kind,
 			status: identity.status,
 			roles: identity.roles.map((r) => r.name),
+			permissions: identity.permissions,
 		});
 
 		const rawRefreshToken = randomUUID();
@@ -131,6 +132,7 @@ auth.post("/refresh", async (c) => {
 			kind: identity.kind,
 			status: identity.status,
 			roles: identity.roles.map((r) => r.name),
+			permissions: identity.permissions,
 		});
 
 		return c.json({
