@@ -1,0 +1,21 @@
+model Policy {
+    id          String       @id @default(uuid())
+    name        String       @unique
+    description String?
+    effect      PolicyEffect
+    permissions String[]
+    audience    String[]
+    conditions  Json?
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Relations (many-to-many)
+    roles Role[]
+
+    // Indexes
+    @@index([deletedAt])
+    @@map("policies")
+}

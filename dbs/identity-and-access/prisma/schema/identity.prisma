@@ -1,0 +1,85 @@
+model Identity {
+    id                  String         @id @default(uuid())
+    username            String         @unique
+    email               String?        @unique
+    hash                String
+    salt                String
+    failedLoginAttempts Int            @default(0)
+    lockedUntil         DateTime?
+    changePassword      Boolean        @default(true)
+    active              Boolean        @default(true)
+    kind                IdentityKind   @default(USER)
+    status              IdentityStatus @default(PENDING_VERIFICATION)
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Relations (many-to-many)
+    roles  Role[]
+
+    // Relations
+    sessions          Session[]
+    passwordHistories PasswordHistory[]
+    emailHistories    EmailHistory[]
+    ipAddresses       IpAddress[]
+
+    // Indexes
+    @@index([status])
+    @@index([deletedAt])
+    @@map("identities")
+}
+
+model PasswordHistory {
+    id        String  @id @default(uuid())
+    password  String
+    ipAddress String?
+
+    // Timestamps
+    changedAt DateTime @default(now())
+
+    // References
+    identityId String
+    identity   Identity @relation(fields: [identityId], references: [id])
+
+    // Indexes
+    @@index([identityId])
+    @@map("password_histories")
+}
+
+model EmailHistory {
+    id        String  @id @default(uuid())
+    oldEmail  String?
+    newEmail  String
+    ipAddress String?
+
+    // Timestamps
+    changedAt DateTime @default(now())
+
+    // References
+    identityId String
+    identity   Identity @relation(fields: [identityId], references: [id])
+
+    // Indexes
+    @@index([identityId])
+    @@map("email_histories")
+}
+
+model IpAddress {
+    id        String  @id @default(uuid())
+    address   String
+    userAgent String?
+
+    // Timestamps
+    loggedAt DateTime @default(now())
+
+    // References
+    identityId String
+    identity   Identity @relation(fields: [identityId], references: [id])
+
+    // Indexes
+    @@index([identityId])
+    @@index([address])
+    @@map("ip_addresses")
+}

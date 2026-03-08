@@ -1,0 +1,28 @@
+// Identity
+
+enum IdentityStatus {
+    ACTIVE
+    INACTIVE
+    SUSPENDED
+    PENDING_VERIFICATION
+}
+
+enum IdentityKind {
+    USER
+    SERVICE
+    ADMIN
+}
+
+// Policy
+
+enum PolicyEffect {
+    ALLOW
+    DENY
+}
+
+// Token
+
+enum TokenKind {
+    REFRESH
+    API_KEY
+}

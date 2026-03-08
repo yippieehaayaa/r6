@@ -1,0 +1,19 @@
+{
+  "name": "@r6/qr-api",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@hono/node-server": "1.19.10",
+    "hono": "4.12.4"
+  },
+  "devDependencies": {
+    "@r6/typescript-config": "0.0.0",
+    "@types/node": "^25.3.5",
+    "tsx": "^4.21.0",
+    "typescript": "5.9.3"
+  }
+}

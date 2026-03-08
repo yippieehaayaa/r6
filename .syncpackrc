@@ -1,0 +1,70 @@
+{
+	"$schema": "https://unpkg.com/syncpack@13.0.4/dist/schema.json",
+	"sortFirst": [
+		"name",
+		"version",
+		"private",
+		"type",
+		"scripts",
+		"dependencies",
+		"devDependencies",
+		"peerDependencies",
+		"packageManager",
+		"engines",
+		"workspaces"
+	],
+	"semverGroups": [
+		{
+			"range": "",
+			"dependencies": ["typescript"],
+			"label": "Pin typescript to exact version"
+		}
+	],
+	"versionGroups": [
+		{
+			"label": "Internal packages",
+			"dependencies": ["@btm/*"],
+			"pinVersion": "*"
+		},
+		{
+			"label": "Pin express to exact version",
+			"dependencies": ["express"],
+			"pinVersion": "5.2.1"
+		},
+		{
+			"label": "Pin hono to exact version",
+			"dependencies": ["hono"],
+			"pinVersion": "4.12.4"
+		},
+		{
+			"label": "Pin hono node server to exact version",
+			"dependencies": ["@hono/node-server"],
+			"pinVersion": "1.19.10"
+		},
+		{
+			"label": "Pin hono zod openapi to exact version",
+			"dependencies": ["@hono/zod-openapi"],
+			"pinVersion": "1.2.2"
+		},
+		{
+			"label": "Pin zod to exact version",
+			"dependencies": ["zod"],
+			"pinVersion": "4.3.6"
+		},
+		{
+			"label": "Pin prisma to exact version",
+			"dependencies": ["prisma", "@prisma/client"],
+			"pinVersion": "6.19.0"
+		},
+		{
+			"label": "Pin tsup to exact version",
+			"dependencies": ["tsup"],
+			"pinVersion": "8.5.1"
+		},
+		{
+			"label": "Pin biome to exact version",
+			"dependencies": ["@biomejs/biome"],
+			"pinVersion": "2.4.4"
+		}
+	]
+}

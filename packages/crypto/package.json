@@ -1,0 +1,30 @@
+{
+  "name": "@r6/crypto",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsup src",
+    "check": "biome check --write .",
+    "format": "biome format --write .",
+    "lint": "biome lint --write .",
+    "watch": "tsup src --watch"
+  },
+  "devDependencies": {
+    "@r6/typescript-config": "0.0.0",
+    "tsup": "8.5.1",
+    "typescript": "5.9.3"
+  },
+  "author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
+  "description": "HMAC and SHA-256 hashing utilities",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts"
+}
