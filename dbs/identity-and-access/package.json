@@ -1,72 +1,69 @@
 {
-  "name": "@r6/db-identity-and-access",
-  "version": "0.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "check": "biome check --write .",
-    "build": "prisma generate && tsup src",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:push": "prisma db push",
-    "db:seed": "prisma db seed",
-    "db:studio": "prisma studio",
-    "format": "biome format --write .",
-    "lint": "biome lint --write ."
-  },
-  "dependencies": {
-    "@prisma/adapter-pg": "^7.4.2",
-    "@prisma/client": "6.19.0",
-    "@r6/bcrypt": "0.0.0",
-    "@r6/crypto": "0.0.0",
-    "dotenv": "^17.3.1",
-    "pg": "^8.20.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "2.4.4",
-    "@r6/typescript-config": "0.0.0",
-    "@types/pg": "^8.18.0",
-    "prisma": "6.19.0",
-    "tsx": "^4.21.0",
-    "typescript": "5.9.3"
-  },
-  "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
-    },
-    "./models/account": {
-      "types": "./src/models/account.ts",
-      "default": "./src/models/account.ts"
-    },
-    "./models/session": {
-      "types": "./src/models/session.ts",
-      "default": "./src/models/session.ts"
-    },
-    "./models/group": {
-      "types": "./src/models/group.ts",
-      "default": "./src/models/group.ts"
-    },
-    "./models/role": {
-      "types": "./src/models/role.ts",
-      "default": "./src/models/role.ts"
-    },
-    "./models/policy": {
-      "types": "./src/models/policy.ts",
-      "default": "./src/models/policy.ts"
-    },
-    "./client": {
-      "types": "./src/client.ts",
-      "default": "./src/client.ts"
-    },
-    "./errors": {
-      "types": "./src/errors.ts",
-      "default": "./src/errors.ts"
-    }
-  },
-  "license": "MIT",
-  "prisma": {
-    "schema": "prisma/schema",
-    "seed": "npx tsx prisma/seed/index.ts"
-  }
+	"name": "@r6/db-identity-and-access",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"check": "biome check --write .",
+		"build": "prisma generate && tsup src",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:push": "prisma db push",
+		"db:seed": "prisma db seed",
+		"db:studio": "prisma studio",
+		"format": "biome format --write .",
+		"lint": "biome lint --write ."
+	},
+	"dependencies": {
+		"@prisma/adapter-pg": "^7.4.2",
+		"@prisma/client": "6.19.0",
+		"@r6/bcrypt": "0.0.0",
+		"@r6/crypto": "0.0.0",
+		"dotenv": "^17.3.1",
+		"pg": "^8.20.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@r6/typescript-config": "0.0.0",
+		"@types/pg": "^8.18.0",
+		"prisma": "6.19.0",
+		"tsx": "^4.21.0",
+		"typescript": "5.9.3"
+	},
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./build/index.js"
+		},
+		"./models/account": {
+			"types": "./src/models/account.ts",
+			"default": "./build/models/account.js"
+		},
+		"./models/session": {
+			"types": "./src/models/session.ts",
+			"default": "./build/models/session.js"
+		},
+		"./models/role": {
+			"types": "./src/models/role.ts",
+			"default": "./build/models/role.js"
+		},
+		"./models/policy": {
+			"types": "./src/models/policy.ts",
+			"default": "./build/models/policy.js"
+		},
+		"./client": {
+			"types": "./src/client.ts",
+			"default": "./build/client.js"
+		},
+		"./errors": {
+			"types": "./src/errors.ts",
+			"default": "./build/errors.js"
+		}
+	},
+	"author": "Joshua Dave E. Oropilla",
+	"license": "MIT",
+	"prisma": {
+		"schema": "prisma/schema",
+		"seed": "npx tsx prisma/seed/index.ts"
+	}
 }
