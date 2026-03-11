@@ -1,37 +1,37 @@
 import { type Prisma, prisma } from "../../../utils/prisma";
 
 export type ListSuppliersInput = {
-	page: number;
-	limit: number;
-	search?: string;
-	isActive?: boolean;
+  page: number;
+  limit: number;
+  search?: string;
+  isActive?: boolean;
 };
 
 const buildWhere = (
-	input: Omit<ListSuppliersInput, "page" | "limit">,
+  input: Omit<ListSuppliersInput, "page" | "limit">,
 ): Prisma.SupplierWhereInput => ({
-	deletedAt: { isSet: false },
-	...(input.isActive !== undefined && { isActive: input.isActive }),
-	...(input.search && {
-		name: { contains: input.search, mode: "insensitive" },
-	}),
+  deletedAt: { isSet: false },
+  ...(input.isActive !== undefined && { isActive: input.isActive }),
+  ...(input.search && {
+    name: { contains: input.search, mode: "insensitive" },
+  }),
 });
 
 const listSuppliers = async (input: ListSuppliersInput) => {
-	const where = buildWhere(input);
-	const skip = (input.page - 1) * input.limit;
+  const where = buildWhere(input);
+  const skip = (input.page - 1) * input.limit;
 
-	const [data, total] = await Promise.all([
-		prisma.supplier.findMany({
-			where,
-			skip,
-			take: input.limit,
-			orderBy: { createdAt: "desc" },
-		}),
-		prisma.supplier.count({ where }),
-	]);
+  const [data, total] = await Promise.all([
+    prisma.supplier.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.supplier.count({ where }),
+  ]);
 
-	return { data, total, page: input.page, limit: input.limit };
+  return { data, total, page: input.page, limit: input.limit };
 };
 
 export default listSuppliers;

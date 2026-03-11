@@ -2,13 +2,13 @@ import { SupplierNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
 const getSupplierById = async (id: string) => {
-	const supplier = await prisma.supplier.findUnique({
-		where: { id, deletedAt: { isSet: false } },
-	});
+  const supplier = await prisma.supplier.findUnique({
+    where: { id, deletedAt: { isSet: false } },
+  });
 
-	if (!supplier) throw new SupplierNotFoundError();
+  if (!supplier) throw new SupplierNotFoundError();
 
-	return supplier;
+  return supplier;
 };
 
 export default getSupplierById;

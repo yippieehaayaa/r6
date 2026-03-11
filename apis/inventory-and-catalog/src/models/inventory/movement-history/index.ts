@@ -1,4 +1,4 @@
 export {
-	default as listMovements,
-	type ListMovementsInput,
+  default as listMovements,
+  type ListMovementsInput,
 } from "./listMovements";
