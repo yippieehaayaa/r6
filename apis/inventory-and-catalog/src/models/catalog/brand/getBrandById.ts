@@ -1,14 +1,14 @@
-import { BrandNotFoundError } from "../../../errors";
+import { BrandNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
 const getBrandById = async (id: string) => {
-  const brand = await prisma.brand.findUnique({
-    where: { id, deletedAt: { isSet: false } },
-  });
+	const brand = await prisma.brand.findUnique({
+		where: { id, deletedAt: { isSet: false } },
+	});
 
-  if (!brand) throw new BrandNotFoundError();
+	if (!brand) throw new BrandNotFoundError();
 
-  return brand;
+	return brand;
 };
 
 export default getBrandById;
