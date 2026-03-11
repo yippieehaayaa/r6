@@ -173,3 +173,35 @@ export class WarehouseHasInventoryError extends Error {
 		Object.setPrototypeOf(this, WarehouseHasInventoryError.prototype);
 	}
 }
+
+export class SupplierNotFoundError extends Error {
+	constructor(message = "Supplier not found") {
+		super(message);
+		this.name = "SupplierNotFoundError";
+		Object.setPrototypeOf(this, SupplierNotFoundError.prototype);
+	}
+}
+
+export class SupplierNameExistsError extends Error {
+	constructor(message = "Supplier name already exists") {
+		super(message);
+		this.name = "SupplierNameExistsError";
+		Object.setPrototypeOf(this, SupplierNameExistsError.prototype);
+	}
+}
+
+export class SupplierCodeExistsError extends Error {
+	constructor(message = "Supplier code already exists") {
+		super(message);
+		this.name = "SupplierCodeExistsError";
+		Object.setPrototypeOf(this, SupplierCodeExistsError.prototype);
+	}
+}
+
+export class SupplierHasOrdersError extends Error {
+	constructor(message = "Supplier has active purchase orders") {
+		super(message);
+		this.name = "SupplierHasOrdersError";
+		Object.setPrototypeOf(this, SupplierHasOrdersError.prototype);
+	}
+}
