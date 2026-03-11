@@ -1,0 +1,28 @@
+// Product lifecycle state
+enum ProductStatus {
+    DRAFT
+    ACTIVE
+    DISCONTINUED
+    ARCHIVED
+}
+
+// Stock movement direction and cause
+enum MovementType {
+    RECEIPT
+    SALE
+    ADJUSTMENT
+    TRANSFER_IN
+    TRANSFER_OUT
+    RETURN
+    DAMAGE
+}
+
+// Purchase order lifecycle state
+enum PurchaseOrderStatus {
+    DRAFT
+    SENT
+    CONFIRMED
+    PARTIALLY_RECEIVED
+    RECEIVED
+    CANCELLED
+}

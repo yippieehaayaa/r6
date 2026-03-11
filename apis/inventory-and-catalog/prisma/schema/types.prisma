@@ -1,0 +1,15 @@
+// Embedded image document used in ProductVariant.images[]
+type ImageEmbed {
+    url      String
+    altText  String?
+    isPrimary Boolean @default(false)
+}
+
+// Embedded address document used in Warehouse and Supplier
+type AddressEmbed {
+    street  String?
+    city    String?
+    state   String?
+    country String
+    postal  String?
+}
