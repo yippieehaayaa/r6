@@ -9,10 +9,17 @@
 		"dev": "tsx watch ./src/index.ts",
 		"format": "biome format --write .",
 		"lint": "biome lint --write .",
-		"start": "node ./dist/index.js"
+		"start": "node ./dist/index.js",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:push": "prisma db push",
+		"db:seed": "prisma db seed",
+		"db:seed:fresh": "tsx prisma/seed/index.ts --fresh",
+		"db:studio": "prisma studio"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
+		"@faker-js/faker": "^9.9.0",
 		"@r6/typescript-config": "*",
 		"@types/express": "^5.0.6",
 		"@types/morgan": "^1.9.10",
@@ -29,6 +36,7 @@
 		"zod": "^4.3.6"
 	},
 	"prisma": {
-		"schema": "prisma/schema"
+		"schema": "prisma/schema",
+		"seed": "npx tsx prisma/seed/index.ts"
 	}
 }
