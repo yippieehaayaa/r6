@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { SoftDeleteSchema, TimestampsSchema } from "../base-schemas";
-import { DimensionUnitSchema, ProductStatusSchema, WeightUnitSchema } from "./enums";
+import {
+  DimensionUnitSchema,
+  ProductStatusSchema,
+  WeightUnitSchema,
+} from "./enums";
 
 // ─── Shared Embedded Types ────────────────────────────────────────────────────
 

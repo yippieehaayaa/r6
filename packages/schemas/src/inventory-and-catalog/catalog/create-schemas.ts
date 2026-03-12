@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { ImageEmbedSchema } from "./base-schemas";
-import { DimensionUnitSchema, ProductStatusSchema, WeightUnitSchema } from "./enums";
+import {
+  DimensionUnitSchema,
+  ProductStatusSchema,
+  WeightUnitSchema,
+} from "./enums";
 
 export const CreateCategorySchema = z.strictObject({
   name: z.string(),

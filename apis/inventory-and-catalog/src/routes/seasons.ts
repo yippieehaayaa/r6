@@ -1,11 +1,6 @@
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 import { seasonsService } from "../modules/seasons";
-import {
-  SeasonNameExistsError,
-  SeasonNotFoundError,
-  SeasonSlugExistsError,
-} from "../utils/errors";
 
 const router: Router = Router();
 
@@ -27,7 +22,6 @@ const updateSeasonSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-// GET /seasons — paginated list with optional filters
 router.get("/", async (req: Request, res: Response) => {
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
@@ -49,105 +43,36 @@ router.get("/", async (req: Request, res: Response) => {
   res.json(result);
 });
 
-// GET /seasons/slug/:slug — O(1) lookup by unique slug (must precede /:id)
 router.get("/slug/:slug", async (req: Request, res: Response) => {
-  try {
-    const season = await seasonsService.getSeasonBySlug(
-      req.params.slug as string,
-    );
-    res.json(season);
-  } catch (error) {
-    if (error instanceof SeasonNotFoundError) {
-      res.status(404).json({ message: error.message });
-      return;
-    }
-    throw error;
-  }
+  const season = await seasonsService.getSeasonBySlug(
+    req.params.slug as string,
+  );
+  res.json(season);
 });
 
-// GET /seasons/:id — O(1) lookup by id
 router.get("/:id", async (req: Request, res: Response) => {
-  try {
-    const season = await seasonsService.getSeasonById(req.params.id as string);
-    res.json(season);
-  } catch (error) {
-    if (error instanceof SeasonNotFoundError) {
-      res.status(404).json({ message: error.message });
-      return;
-    }
-    throw error;
-  }
+  const season = await seasonsService.getSeasonById(req.params.id as string);
+  res.json(season);
 });
 
-// POST /seasons — create a new season
 router.post("/", async (req: Request, res: Response) => {
-  const parsed = createSeasonSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res
-      .status(400)
-      .json({ message: "Invalid request body", issues: parsed.error.issues });
-    return;
-  }
-
-  try {
-    const season = await seasonsService.createSeason(parsed.data);
-    res.status(201).json(season);
-  } catch (error) {
-    if (
-      error instanceof SeasonNameExistsError ||
-      error instanceof SeasonSlugExistsError
-    ) {
-      res.status(409).json({ message: error.message });
-      return;
-    }
-    throw error;
-  }
+  const parsed = createSeasonSchema.parse(req.body);
+  const season = await seasonsService.createSeason(parsed);
+  res.status(201).json(season);
 });
 
-// PATCH /seasons/:id — partial update
 router.patch("/:id", async (req: Request, res: Response) => {
-  const parsed = updateSeasonSchema.safeParse(req.body);
-  if (!parsed.success) {
-    res
-      .status(400)
-      .json({ message: "Invalid request body", issues: parsed.error.issues });
-    return;
-  }
-
-  try {
-    const season = await seasonsService.updateSeason(
-      req.params.id as string,
-      parsed.data,
-    );
-    res.json(season);
-  } catch (error) {
-    if (error instanceof SeasonNotFoundError) {
-      res.status(404).json({ message: error.message });
-      return;
-    }
-    if (
-      error instanceof SeasonNameExistsError ||
-      error instanceof SeasonSlugExistsError
-    ) {
-      res.status(409).json({ message: error.message });
-      return;
-    }
-    throw error;
-  }
+  const parsed = updateSeasonSchema.parse(req.body);
+  const season = await seasonsService.updateSeason(
+    req.params.id as string,
+    parsed,
+  );
+  res.json(season);
 });
 
-// DELETE /seasons/:id — soft delete
 router.delete("/:id", async (req: Request, res: Response) => {
-  try {
-    await seasonsService.deleteSeason(req.params.id as string);
-    res.sendStatus(204);
-  } catch (error) {
-    if (error instanceof SeasonNotFoundError) {
-      res.status(404).json({ message: error.message });
-      return;
-    }
-    throw error;
-  }
+  await seasonsService.deleteSeason(req.params.id as string);
+  res.sendStatus(204);
 });
 
 export default router;
