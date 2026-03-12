@@ -37,6 +37,7 @@ model InventoryItem {
     warehouseId String    @db.ObjectId
     warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
 
+    createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     // Composite unique → O(1) "stock for variant X in warehouse Y"
@@ -66,6 +67,7 @@ model StockMovement {
 
     // Indexes
     @@index([variantId])
+    @@index([variantId, createdAt])
     @@index([warehouseId])
     @@index([type])
     @@index([referenceId])

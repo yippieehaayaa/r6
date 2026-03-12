@@ -8,3 +8,9 @@ export const ProductStatusSchema = z.enum([
 ]);
 
 export type ProductStatus = z.infer<typeof ProductStatusSchema>;
+
+export const DimensionUnitSchema = z.enum(["CM", "MM", "IN", "FT", "M"]);
+export type DimensionUnit = z.infer<typeof DimensionUnitSchema>;
+
+export const WeightUnitSchema = z.enum(["G", "KG", "LB", "OZ"]);
+export type WeightUnit = z.infer<typeof WeightUnitSchema>;

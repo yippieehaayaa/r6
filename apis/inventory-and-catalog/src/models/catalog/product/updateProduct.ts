@@ -13,7 +13,6 @@ export type UpdateProductInput = {
   slug?: string;
   description?: string;
   tags?: string[];
-  isActive?: boolean;
   metadata?: object;
   categoryId?: string;
   brandId?: string;

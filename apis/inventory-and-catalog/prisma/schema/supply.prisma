@@ -47,6 +47,7 @@ model PurchaseOrder {
 
     // Indexes
     @@index([supplierId])
+    @@index([supplierId, status])
     @@index([warehouseId])
     @@index([status])
     @@index([deletedAt])

@@ -64,7 +64,6 @@ export async function seedProducts(
             { weight: 1, value: "DISCONTINUED" as const },
             { weight: 1, value: "ARCHIVED" as const },
           ]),
-          isActive: true,
           categoryId: category.id,
           brandId: faker.helpers.arrayElement(brands).id,
           metadata: {
@@ -103,6 +102,12 @@ export async function seedProducts(
           .toUpperCase()
           .slice(0, 5)}`;
 
+        const price = faker.number.float({
+          min: 9.99,
+          max: 1299.99,
+          fractionDigits: 2,
+        });
+
         const variant = await prisma.productVariant.upsert({
           where: { sku: vSku },
           update: {},
@@ -110,9 +115,10 @@ export async function seedProducts(
             sku: vSku,
             name: `${name} — ${optionVal}`,
             options: option,
-            price: faker.number.float({
-              min: 9.99,
-              max: 1299.99,
+            price,
+            costPrice: faker.number.float({
+              min: price * 0.3,
+              max: price * 0.7,
               fractionDigits: 2,
             }),
             compareAtPrice: faker.datatype.boolean(0.3)
@@ -123,6 +129,12 @@ export async function seedProducts(
               max: 8,
               fractionDigits: 2,
             }),
+            length: faker.number.float({ min: 5, max: 60, fractionDigits: 1 }),
+            width: faker.number.float({ min: 5, max: 60, fractionDigits: 1 }),
+            height: faker.number.float({ min: 1, max: 40, fractionDigits: 1 }),
+            dimensionUnit: "CM",
+            weightUnit: "KG",
+            currency: "PHP",
             isActive: true,
             productId: product.id,
             createdAt,

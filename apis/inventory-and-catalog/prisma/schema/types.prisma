@@ -3,10 +3,12 @@ type ImageEmbed {
     url      String
     altText  String?
     isPrimary Boolean @default(false)
+    sortOrder Int     @default(0)
 }
 
 // Embedded address document used in Warehouse and Supplier
 type AddressEmbed {
+    line2   String?
     street  String?
     city    String?
     state   String?

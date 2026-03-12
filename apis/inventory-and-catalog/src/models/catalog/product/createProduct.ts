@@ -13,7 +13,6 @@ export type CreateProductInput = {
   description?: string;
   tags?: string[];
   status?: ProductStatus;
-  isActive?: boolean;
   metadata?: object;
   categoryId: string;
   brandId?: string;
@@ -42,7 +41,6 @@ const createProduct = async (input: CreateProductInput) => {
         description: input.description,
         tags: input.tags ?? [],
         status: input.status,
-        isActive: input.isActive,
         metadata: input.metadata,
         categoryId: input.categoryId,
         brandId: input.brandId,

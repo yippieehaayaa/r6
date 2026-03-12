@@ -17,7 +17,6 @@ export const WarehouseSchema = z.strictObject({
   ...SoftDeleteSchema.shape,
 });
 
-// InventoryItem has no createdAt — only updatedAt
 export const InventoryItemSchema = z.strictObject({
   id: z.string().readonly(),
   quantityOnHand: z.number().int(),
@@ -26,6 +25,7 @@ export const InventoryItemSchema = z.strictObject({
   reorderQuantity: z.number().int(),
   variantId: z.string().readonly(),
   warehouseId: z.string().readonly(),
+  createdAt: z.string(),
   updatedAt: z.string(),
 });
 

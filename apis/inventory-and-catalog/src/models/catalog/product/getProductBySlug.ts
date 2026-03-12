@@ -3,7 +3,7 @@ import { prisma } from "../../../utils/prisma";
 
 const getProductBySlug = async (slug: string) => {
   const product = await prisma.product.findUnique({
-    where: { slug, deletedAt: { isSet: false }, isActive: true },
+    where: { slug, deletedAt: { isSet: false }, status: "ACTIVE" },
     include: {
       variants: { where: { deletedAt: { isSet: false }, isActive: true } },
     },

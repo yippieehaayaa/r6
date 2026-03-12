@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { ImageEmbedSchema } from "./base-schemas";
-import { ProductStatusSchema } from "./enums";
+import { DimensionUnitSchema, ProductStatusSchema, WeightUnitSchema } from "./enums";
 
 export const CreateCategorySchema = z.strictObject({
   name: z.string(),
@@ -26,7 +26,6 @@ export const CreateProductSchema = z.strictObject({
   description: z.string().optional(),
   tags: z.string().array(),
   status: ProductStatusSchema,
-  isActive: z.boolean(),
   metadata: z.unknown().optional(),
   categoryId: z.string(),
   brandId: z.string().optional(),
@@ -37,8 +36,15 @@ export const CreateProductVariantSchema = z.strictObject({
   name: z.string(),
   options: z.unknown(),
   price: z.number(),
+  costPrice: z.number().optional(),
   compareAtPrice: z.number().optional(),
   weight: z.number().optional(),
+  length: z.number().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  dimensionUnit: DimensionUnitSchema.optional(),
+  weightUnit: WeightUnitSchema.optional(),
+  currency: z.string().optional(),
   images: ImageEmbedSchema.array(),
   isActive: z.boolean(),
   productId: z.string(),

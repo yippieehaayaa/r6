@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const AddressEmbedSchema = z.strictObject({
+	line2: z.string().optional(),
 	street: z.string().optional(),
 	city: z.string().optional(),
 	state: z.string().optional(),

@@ -2,15 +2,27 @@ import {
   ProductVariantNotFoundError,
   ProductVariantSkuExistsError,
 } from "../../../utils/errors";
-import { type ImageEmbed, prisma } from "../../../utils/prisma";
+import {
+  type DimensionUnit,
+  type ImageEmbed,
+  prisma,
+  type WeightUnit,
+} from "../../../utils/prisma";
 
 export type UpdateVariantInput = {
   sku?: string;
   name?: string;
   options?: Record<string, string>;
   price?: number;
+  costPrice?: number;
   compareAtPrice?: number;
   weight?: number;
+  length?: number;
+  width?: number;
+  height?: number;
+  dimensionUnit?: DimensionUnit;
+  weightUnit?: WeightUnit;
+  currency?: string;
   images?: ImageEmbed[];
   isActive?: boolean;
 };

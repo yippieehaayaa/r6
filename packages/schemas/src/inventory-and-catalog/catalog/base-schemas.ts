@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SoftDeleteSchema, TimestampsSchema } from "../base-schemas";
-import { ProductStatusSchema } from "./enums";
+import { DimensionUnitSchema, ProductStatusSchema, WeightUnitSchema } from "./enums";
 
 // ─── Shared Embedded Types ────────────────────────────────────────────────────
 
@@ -8,6 +8,7 @@ export const ImageEmbedSchema = z.strictObject({
   url: z.string(),
   altText: z.string().optional(),
   isPrimary: z.boolean(),
+  sortOrder: z.number().int(),
 });
 
 // ─── Model Base Schemas ───────────────────────────────────────────────────────
@@ -43,7 +44,6 @@ export const ProductSchema = z.strictObject({
   description: z.string().optional(),
   tags: z.string().array(),
   status: ProductStatusSchema,
-  isActive: z.boolean(),
   metadata: z.unknown().optional(),
   categoryId: z.string().readonly(),
   brandId: z.string().readonly().optional(),
@@ -57,8 +57,15 @@ export const ProductVariantSchema = z.strictObject({
   name: z.string(),
   options: z.unknown(),
   price: z.number(),
+  costPrice: z.number().optional(),
   compareAtPrice: z.number().optional(),
   weight: z.number().optional(),
+  length: z.number().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  dimensionUnit: DimensionUnitSchema.optional(),
+  weightUnit: WeightUnitSchema.optional(),
+  currency: z.string(),
   images: ImageEmbedSchema.array(),
   isActive: z.boolean(),
   productId: z.string().readonly(),

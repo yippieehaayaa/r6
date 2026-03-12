@@ -26,3 +26,18 @@ enum PurchaseOrderStatus {
     RECEIVED
     CANCELLED
 }
+
+enum DimensionUnit {
+    CM
+    MM
+    IN
+    FT
+    M
+}
+
+enum WeightUnit {
+    G
+    KG
+    LB
+    OZ
+}
