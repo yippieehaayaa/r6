@@ -1,9 +1,8 @@
-import { prisma } from "../../../utils/prisma";
-import type { PHSeason } from "./types";
+import { prisma, type Season } from "../../../utils/prisma";
 
 const getProductSeasonalSales = async (
   productId: string,
-  seasons: PHSeason[],
+  seasons: Season[],
 ) => {
   const variants = await prisma.productVariant.findMany({
     where: {

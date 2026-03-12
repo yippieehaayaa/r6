@@ -1,1 +1,1 @@
-export type { DateRange, PHSeason } from "../../types";
+export type { DateRange } from "../../types";

@@ -6,4 +6,4 @@ export { default as getWarehouseSalesBySeason } from "./getWarehouseSalesBySeaso
 export { default as getWarehouseStockUtilization } from "./getWarehouseStockUtilization";
 export { default as getWarehouseThroughput } from "./getWarehouseThroughput";
 export { default as getWarehouseTopProducts } from "./getWarehouseTopProducts";
-export type { DateRange, PHSeason } from "./types";
+export type { DateRange } from "./types";

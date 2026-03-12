@@ -1,7 +1,6 @@
-import { prisma } from "../../../utils/prisma";
-import type { PHSeason } from "./types";
+import { prisma, type Season } from "../../../utils/prisma";
 
-const compareWarehousesBySeasonalDemand = async (season: PHSeason) => {
+const compareWarehousesBySeasonalDemand = async (season: Season) => {
   const warehouses = await prisma.warehouse.findMany({
     where: { deletedAt: { isSet: false }, isActive: true },
     select: { id: true, name: true, code: true },

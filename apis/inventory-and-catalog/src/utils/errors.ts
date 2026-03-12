@@ -251,3 +251,27 @@ export class PurchaseOrderItemDuplicateVariantError extends Error {
     );
   }
 }
+
+export class SeasonNotFoundError extends Error {
+  constructor(message = "Season not found") {
+    super(message);
+    this.name = "SeasonNotFoundError";
+    Object.setPrototypeOf(this, SeasonNotFoundError.prototype);
+  }
+}
+
+export class SeasonNameExistsError extends Error {
+  constructor(message = "Season name already exists") {
+    super(message);
+    this.name = "SeasonNameExistsError";
+    Object.setPrototypeOf(this, SeasonNameExistsError.prototype);
+  }
+}
+
+export class SeasonSlugExistsError extends Error {
+  constructor(message = "Season slug already exists") {
+    super(message);
+    this.name = "SeasonSlugExistsError";
+    Object.setPrototypeOf(this, SeasonSlugExistsError.prototype);
+  }
+}

@@ -7,4 +7,4 @@ export { default as getBrandTopWarehouseForSales } from "./getBrandTopWarehouseF
 export { default as getBrandWarehouseDistribution } from "./getBrandWarehouseDistribution";
 export { default as getTopSellingBrands } from "./getTopSellingBrands";
 export { default as getTotalSoldByBrand } from "./getTotalSoldByBrand";
-export type { DateRange, PHSeason } from "./types";
+export type { DateRange } from "./types";

@@ -1,10 +1,10 @@
-import { prisma } from "../../../utils/prisma";
-import type { DateRange, PHSeason } from "./types";
+import { prisma, type Season } from "../../../utils/prisma";
+import type { DateRange } from "./types";
 
 const getTopSellingBrands = async (
   limit: number,
   dateRange?: DateRange,
-  season?: PHSeason,
+  season?: Season,
 ) => {
   const effectiveRange = season
     ? { from: season.startDate, to: season.endDate }

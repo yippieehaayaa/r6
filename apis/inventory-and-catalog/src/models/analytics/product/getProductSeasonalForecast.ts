@@ -1,5 +1,4 @@
-import { prisma } from "../../../utils/prisma";
-import type { PHSeason } from "./types";
+import { prisma, type Season } from "../../../utils/prisma";
 
 const shiftDateByYears = (date: Date, offsetYears: number): Date =>
   new Date(
@@ -16,7 +15,7 @@ const shiftDateByYears = (date: Date, offsetYears: number): Date =>
 
 const getProductSeasonalForecast = async (
   productId: string,
-  upcomingSeason: PHSeason,
+  upcomingSeason: Season,
   yearsBack = 3,
 ) => {
   const emptyResult = {

@@ -1,9 +1,8 @@
-import { prisma } from "../../../utils/prisma";
-import type { PHSeason } from "./types";
+import { prisma, type Season } from "../../../utils/prisma";
 
 const getWarehouseSalesBySeason = async (
   warehouseId: string,
-  seasons: PHSeason[],
+  seasons: Season[],
 ) => {
   const seasonalResults = await Promise.all(
     seasons.map(async (season) => {

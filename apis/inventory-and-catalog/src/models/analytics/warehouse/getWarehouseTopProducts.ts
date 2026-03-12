@@ -1,10 +1,9 @@
-import { prisma } from "../../../utils/prisma";
-import type { PHSeason } from "./types";
+import { prisma, type Season } from "../../../utils/prisma";
 
 const getWarehouseTopProducts = async (
   warehouseId: string,
   limit: number,
-  season?: PHSeason,
+  season?: Season,
 ) => {
   const movements = await prisma.stockMovement.findMany({
     where: {
