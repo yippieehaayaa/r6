@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const AddressEmbedSchema = z.strictObject({
+	street: z.string().optional(),
+	city: z.string().optional(),
+	state: z.string().optional(),
+	country: z.string(),
+	postal: z.string().optional(),
+});
+
+export type AddressEmbed = z.infer<typeof AddressEmbedSchema>;
+
 export const TimestampsSchema = z.strictObject({
 	createdAt: z.string(),
 	updatedAt: z.string(),

@@ -1,9 +1,9 @@
 import type { z } from "zod";
 import {
-	BrandSchema,
-	CategorySchema,
-	ProductSchema,
-	ProductVariantSchema,
+  BrandSchema,
+  CategorySchema,
+  ProductSchema,
+  ProductVariantSchema,
 } from "./base-schemas";
 
 export const CategoryResponseSchema = CategorySchema;
@@ -15,5 +15,5 @@ export type CategoryResponse = z.infer<typeof CategoryResponseSchema>;
 export type BrandResponse = z.infer<typeof BrandResponseSchema>;
 export type ProductResponse = z.infer<typeof ProductResponseSchema>;
 export type ProductVariantResponse = z.infer<
-	typeof ProductVariantResponseSchema
+  typeof ProductVariantResponseSchema
 >;

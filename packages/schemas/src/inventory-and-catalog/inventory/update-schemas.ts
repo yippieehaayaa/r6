@@ -1,13 +1,13 @@
 import type { z } from "zod";
 import {
-  InventoryItemSchema,
-  StockMovementSchema,
-  WarehouseSchema,
-} from "./base-schemas";
+  CreateInventoryItemSchema,
+  CreateStockMovementSchema,
+  CreateWarehouseSchema,
+} from "./create-schemas";
 
-export const UpdateWarehouseSchema = WarehouseSchema.partial();
-export const UpdateInventoryItemSchema = InventoryItemSchema.partial();
-export const UpdateStockMovementSchema = StockMovementSchema.partial();
+export const UpdateWarehouseSchema = CreateWarehouseSchema.partial();
+export const UpdateInventoryItemSchema = CreateInventoryItemSchema.partial();
+export const UpdateStockMovementSchema = CreateStockMovementSchema.partial();
 
 export type UpdateWarehouse = z.infer<typeof UpdateWarehouseSchema>;
 export type UpdateInventoryItem = z.infer<typeof UpdateInventoryItemSchema>;
