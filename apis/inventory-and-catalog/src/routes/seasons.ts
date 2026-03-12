@@ -1,13 +1,6 @@
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
-import {
-  createSeason,
-  deleteSeason,
-  getSeasonById,
-  getSeasonBySlug,
-  listSeasons,
-  updateSeason,
-} from "../models/catalog/season";
+import { seasonsService } from "../modules/seasons";
 import {
   SeasonNameExistsError,
   SeasonNotFoundError,
@@ -46,14 +39,22 @@ router.get("/", async (req: Request, res: Response) => {
   const year =
     req.query.year !== undefined ? Number(req.query.year) : undefined;
 
-  const result = await listSeasons({ page, limit, search, isActive, year });
+  const result = await seasonsService.listSeasons({
+    page,
+    limit,
+    search,
+    isActive,
+    year,
+  });
   res.json(result);
 });
 
 // GET /seasons/slug/:slug — O(1) lookup by unique slug (must precede /:id)
 router.get("/slug/:slug", async (req: Request, res: Response) => {
   try {
-    const season = await getSeasonBySlug(req.params.slug as string);
+    const season = await seasonsService.getSeasonBySlug(
+      req.params.slug as string,
+    );
     res.json(season);
   } catch (error) {
     if (error instanceof SeasonNotFoundError) {
@@ -67,7 +68,7 @@ router.get("/slug/:slug", async (req: Request, res: Response) => {
 // GET /seasons/:id — O(1) lookup by id
 router.get("/:id", async (req: Request, res: Response) => {
   try {
-    const season = await getSeasonById(req.params.id as string);
+    const season = await seasonsService.getSeasonById(req.params.id as string);
     res.json(season);
   } catch (error) {
     if (error instanceof SeasonNotFoundError) {
@@ -89,7 +90,7 @@ router.post("/", async (req: Request, res: Response) => {
   }
 
   try {
-    const season = await createSeason(parsed.data);
+    const season = await seasonsService.createSeason(parsed.data);
     res.status(201).json(season);
   } catch (error) {
     if (
@@ -114,7 +115,10 @@ router.patch("/:id", async (req: Request, res: Response) => {
   }
 
   try {
-    const season = await updateSeason(req.params.id as string, parsed.data);
+    const season = await seasonsService.updateSeason(
+      req.params.id as string,
+      parsed.data,
+    );
     res.json(season);
   } catch (error) {
     if (error instanceof SeasonNotFoundError) {
@@ -135,7 +139,7 @@ router.patch("/:id", async (req: Request, res: Response) => {
 // DELETE /seasons/:id — soft delete
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
-    await deleteSeason(req.params.id as string);
+    await seasonsService.deleteSeason(req.params.id as string);
     res.sendStatus(204);
   } catch (error) {
     if (error instanceof SeasonNotFoundError) {
