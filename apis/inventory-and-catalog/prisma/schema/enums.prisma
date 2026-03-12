@@ -15,6 +15,8 @@ enum MovementType {
     TRANSFER_OUT
     RETURN
     DAMAGE
+    RESERVATION
+    RESERVATION_RELEASE
 }
 
 // Purchase order lifecycle state

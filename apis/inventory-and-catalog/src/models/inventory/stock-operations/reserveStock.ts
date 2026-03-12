@@ -8,6 +8,7 @@ const reserveStock = async (
   variantId: string,
   warehouseId: string,
   qty: number,
+  performedBy: string,
 ) => {
   return await prisma.$transaction(async (tx) => {
     const item = await tx.inventoryItem.findUnique({
@@ -20,10 +21,22 @@ const reserveStock = async (
       throw new InsufficientStockError();
     }
 
-    return await tx.inventoryItem.update({
+    const inventoryItem = await tx.inventoryItem.update({
       where: { variantId_warehouseId: { variantId, warehouseId } },
       data: { quantityReserved: { increment: qty } },
     });
+
+    const movement = await tx.stockMovement.create({
+      data: {
+        type: "RESERVATION",
+        quantity: qty,
+        variantId,
+        warehouseId,
+        performedBy,
+      },
+    });
+
+    return { inventoryItem, movement };
   });
 };
 

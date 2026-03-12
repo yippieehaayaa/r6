@@ -8,6 +8,8 @@ export const MovementTypeSchema = z.enum([
   "TRANSFER_OUT",
   "RETURN",
   "DAMAGE",
+  "RESERVATION",
+  "RESERVATION_RELEASE",
 ]);
 
 export type MovementType = z.infer<typeof MovementTypeSchema>;

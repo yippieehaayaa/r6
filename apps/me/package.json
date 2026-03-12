@@ -1,6 +1,8 @@
 {
 	"name": "@r6/me",
-	"version": "0.0.0",
+	"version": "1.0.0",
+	"author": "Joshua Dave E. Oropilla",
+	"license": "MIT",
 	"scripts": {
 		"ng": "ng",
 		"start": "ng serve",

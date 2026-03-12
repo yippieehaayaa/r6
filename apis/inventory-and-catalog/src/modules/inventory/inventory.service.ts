@@ -45,13 +45,16 @@ export const reserveStock = (
   variantId: string,
   warehouseId: string,
   qty: number,
-) => inventoryRepo.reserveStock(variantId, warehouseId, qty);
+  performedBy: string,
+) => inventoryRepo.reserveStock(variantId, warehouseId, qty, performedBy);
 
 export const releaseReservation = (
   variantId: string,
   warehouseId: string,
   qty: number,
-) => inventoryRepo.releaseReservation(variantId, warehouseId, qty);
+  performedBy: string,
+) =>
+  inventoryRepo.releaseReservation(variantId, warehouseId, qty, performedBy);
 
 export const commitSale = (
   variantId: string,
