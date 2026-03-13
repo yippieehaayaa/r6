@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
 const applyYear = (date: Date, year: number): Date => {
@@ -94,8 +95,14 @@ const getSeasonalDemandReport = async (
   return {
     seasonName: season.name,
     dateRange: { from: startDate, to: endDate },
-    topBrands: sort([...brandMap.values()]),
-    topProducts: sort([...productMap.values()]),
+    topBrands: sort([...brandMap.values()]).map((b) => ({
+      ...b,
+      revenue: toMajorUnits(b.revenue),
+    })),
+    topProducts: sort([...productMap.values()]).map((p) => ({
+      ...p,
+      revenue: toMajorUnits(p.revenue),
+    })),
   };
 };
 

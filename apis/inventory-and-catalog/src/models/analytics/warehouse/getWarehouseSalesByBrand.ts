@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
@@ -53,9 +54,12 @@ const getWarehouseSalesByBrand = async (
     brandMap.set(brand.id, existing);
   }
 
-  const brands = [...brandMap.values()].sort(
-    (a, b) => b.totalUnitsSold - a.totalUnitsSold,
-  );
+  const brands = [...brandMap.values()]
+    .sort((a, b) => b.totalUnitsSold - a.totalUnitsSold)
+    .map((b) => ({
+      ...b,
+      revenue: toMajorUnits(b.revenue),
+    }));
 
   return { warehouseId, brands };
 };

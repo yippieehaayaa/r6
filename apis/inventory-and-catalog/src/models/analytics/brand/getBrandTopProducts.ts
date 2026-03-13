@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
@@ -80,6 +81,7 @@ const getBrandTopProducts = async (
           name: info?.name,
           slug: info?.slug,
           ...stats,
+          revenue: toMajorUnits(stats.revenue),
         };
       }),
   };

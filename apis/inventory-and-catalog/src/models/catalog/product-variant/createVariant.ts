@@ -1,3 +1,4 @@
+import { toMinorUnits } from "../../../utils/currency";
 import {
   ProductNotFoundError,
   ProductVariantSkuExistsError,
@@ -8,7 +9,6 @@ import {
   prisma,
   type WeightUnit,
 } from "../../../utils/prisma";
-import { toMinorUnits } from "../../../utils/currency";
 
 export type CreateVariantInput = {
   sku: string;

@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
 const getWarehouseTopProducts = async (
@@ -60,7 +61,11 @@ const getWarehouseTopProducts = async (
 
   const products = [...productMap.values()]
     .sort((a, b) => b.totalUnitsSold - a.totalUnitsSold)
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((p) => ({
+      ...p,
+      revenue: toMajorUnits(p.revenue),
+    }));
 
   return { warehouseId, season: season?.name, products };
 };

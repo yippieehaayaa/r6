@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
@@ -84,7 +85,11 @@ const getTopSellingBrands = async (
 
   return [...brandMap.values()]
     .sort((a, b) => b.totalUnitsSold - a.totalUnitsSold)
-    .slice(0, limit);
+    .slice(0, limit)
+    .map((b) => ({
+      ...b,
+      revenue: toMajorUnits(b.revenue),
+    }));
 };
 
 export default getTopSellingBrands;

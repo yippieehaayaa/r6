@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 
 const getBrandSalesByMonth = async (brandId: string, year: number) => {
@@ -47,7 +48,14 @@ const getBrandSalesByMonth = async (brandId: string, year: number) => {
     entry.revenue += Math.abs(m.quantity) * price;
   }
 
-  return { brandId, year, months: monthly };
+  return {
+    brandId,
+    year,
+    months: monthly.map((m) => ({
+      ...m,
+      revenue: toMajorUnits(m.revenue),
+    })),
+  };
 };
 
 export default getBrandSalesByMonth;

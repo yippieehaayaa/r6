@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 
 const getDeadStockReport = async (threshold = 90) => {
@@ -45,7 +46,7 @@ const getDeadStockReport = async (threshold = 90) => {
       productName: item.variant.product.name,
       warehouseId: item.warehouseId,
       quantityOnHand: item.quantityOnHand,
-      totalValue: item.quantityOnHand * item.variant.price,
+      totalValue: toMajorUnits(item.quantityOnHand * item.variant.price),
     }));
 
   return {

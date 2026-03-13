@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
 const getProductSeasonalSales = async (
@@ -45,7 +46,7 @@ const getProductSeasonalSales = async (
         startDate: season.startDate,
         endDate: season.endDate,
         totalUnitsSold,
-        revenue,
+        revenue: toMajorUnits(revenue),
       };
     }),
   );

@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 
 const getWarehouseInventoryValue = async (warehouseId: string) => {
@@ -17,7 +18,11 @@ const getWarehouseInventoryValue = async (warehouseId: string) => {
     0,
   );
 
-  return { warehouseId, totalValue, itemCount: items.length };
+  return {
+    warehouseId,
+    totalValue: toMajorUnits(totalValue),
+    itemCount: items.length,
+  };
 };
 
 export default getWarehouseInventoryValue;

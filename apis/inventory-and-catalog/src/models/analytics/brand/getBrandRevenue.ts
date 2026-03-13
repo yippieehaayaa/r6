@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
@@ -31,7 +32,7 @@ const getBrandRevenue = async (brandId: string, dateRange?: DateRange) => {
     return acc + Math.abs(m.quantity) * price;
   }, 0);
 
-  return { brandId, revenue };
+  return { brandId, revenue: toMajorUnits(revenue) };
 };
 
 export default getBrandRevenue;

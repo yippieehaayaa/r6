@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 
 const getProductVariantSalesSplit = async (productId: string) => {
@@ -49,6 +50,7 @@ const getProductVariantSalesSplit = async (productId: string) => {
         name: info?.name,
         options: info?.options,
         ...stats,
+        revenue: toMajorUnits(stats.revenue),
       };
     });
 

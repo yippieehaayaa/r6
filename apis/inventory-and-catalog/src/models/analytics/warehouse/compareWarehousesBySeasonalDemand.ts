@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
 const compareWarehousesBySeasonalDemand = async (season: Season) => {
@@ -44,7 +45,7 @@ const compareWarehousesBySeasonalDemand = async (season: Season) => {
         warehouseName: wh.name,
         warehouseCode: wh.code,
         totalUnitsSold,
-        revenue,
+        revenue: toMajorUnits(revenue),
       };
     }),
   );

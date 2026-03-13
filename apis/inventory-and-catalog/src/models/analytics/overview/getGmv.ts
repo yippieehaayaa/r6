@@ -1,3 +1,4 @@
+import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "../brand/types";
 
@@ -24,7 +25,11 @@ const getGmv = async (dateRange?: DateRange) => {
     totalUnitsSold += units;
   }
 
-  return { gmv, totalUnitsSold, movementCount: movements.length };
+  return {
+    gmv: toMajorUnits(gmv),
+    totalUnitsSold,
+    movementCount: movements.length,
+  };
 };
 
 export default getGmv;
