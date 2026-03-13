@@ -70,6 +70,8 @@ model StockMovement {
     @@index([variantId, createdAt])
     @@index([warehouseId])
     @@index([type])
+    @@index([type, createdAt])
+    @@index([warehouseId, type, createdAt])
     @@index([referenceId])
     @@index([createdAt])
     @@map("stock_movements")

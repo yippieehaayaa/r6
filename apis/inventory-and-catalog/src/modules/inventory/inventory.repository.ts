@@ -8,6 +8,8 @@ export {
   getLowStockItems,
   getStockForProduct,
   getStockForVariant,
+  type ReceiveGoodsInput,
+  receiveGoods,
   recordDamage,
   releaseReservation,
   reserveStock,

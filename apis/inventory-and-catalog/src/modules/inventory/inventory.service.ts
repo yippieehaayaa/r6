@@ -1,7 +1,11 @@
+import type { TransactionClient } from "../../utils/prisma";
 import * as inventoryRepo from "./inventory.repository";
 import * as warehouseRepo from "./warehouse.repository";
 
-export type { ListMovementsInput } from "./inventory.repository";
+export type {
+  ListMovementsInput,
+  ReceiveGoodsInput,
+} from "./inventory.repository";
 
 export type {
   CreateWarehouseInput,
@@ -41,6 +45,11 @@ export const getLowStockItems = (warehouseId?: string) =>
 
 // --- Stock Mutations ---
 
+export const receiveGoods = (
+  tx: TransactionClient,
+  input: inventoryRepo.ReceiveGoodsInput,
+) => inventoryRepo.receiveGoods(tx, input);
+
 export const reserveStock = (
   variantId: string,
   warehouseId: string,
@@ -53,8 +62,7 @@ export const releaseReservation = (
   warehouseId: string,
   qty: number,
   performedBy: string,
-) =>
-  inventoryRepo.releaseReservation(variantId, warehouseId, qty, performedBy);
+) => inventoryRepo.releaseReservation(variantId, warehouseId, qty, performedBy);
 
 export const commitSale = (
   variantId: string,

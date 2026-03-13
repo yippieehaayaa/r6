@@ -4,6 +4,7 @@ import {
   PurchaseOrderNotFoundError,
 } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
+import receiveGoods from "../../inventory/stock-operations/receiveGoods";
 
 export type ReceiptItem = {
   variantId: string;
@@ -44,31 +45,13 @@ const receivePurchaseOrder = async (
           data: { quantityReceived: { increment: receipt.quantityReceived } },
         });
 
-        const inventoryItem = await tx.inventoryItem.upsert({
-          where: {
-            variantId_warehouseId: {
-              variantId: receipt.variantId,
-              warehouseId: po.warehouseId,
-            },
-          },
-          update: { quantityOnHand: { increment: receipt.quantityReceived } },
-          create: {
-            variantId: receipt.variantId,
-            warehouseId: po.warehouseId,
-            quantityOnHand: receipt.quantityReceived,
-          },
-        });
-
-        const movement = await tx.stockMovement.create({
-          data: {
-            type: "RECEIPT",
-            quantity: receipt.quantityReceived,
-            referenceId: id,
-            referenceType: "PURCHASE_ORDER",
-            variantId: receipt.variantId,
-            warehouseId: po.warehouseId,
-            performedBy,
-          },
+        const { inventoryItem, movement } = await receiveGoods(tx, {
+          variantId: receipt.variantId,
+          warehouseId: po.warehouseId,
+          quantity: receipt.quantityReceived,
+          referenceId: id,
+          referenceType: "PURCHASE_ORDER",
+          performedBy,
         });
 
         return { updatedItem, inventoryItem, movement };
