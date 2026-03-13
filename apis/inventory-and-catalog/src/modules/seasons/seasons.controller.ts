@@ -1,26 +1,9 @@
 import { type Request, type Response, Router } from "express";
-import { z } from "zod";
-import { seasonsService } from "../modules/seasons";
+import { validate } from "../../shared/middleware";
+import * as seasonsService from "./seasons.service";
+import { createSeasonSchema, updateSeasonSchema } from "./seasons.validator";
 
-const router: Router = Router();
-
-const createSeasonSchema = z.object({
-  name: z.string().min(1),
-  slug: z.string().min(1),
-  description: z.string().optional(),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-  isActive: z.boolean().optional(),
-});
-
-const updateSeasonSchema = z.object({
-  name: z.string().min(1).optional(),
-  slug: z.string().min(1).optional(),
-  description: z.string().optional(),
-  startDate: z.coerce.date().optional(),
-  endDate: z.coerce.date().optional(),
-  isActive: z.boolean().optional(),
-});
+const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
   const page = Number(req.query.page ?? 1);
@@ -55,20 +38,26 @@ router.get("/:id", async (req: Request, res: Response) => {
   res.json(season);
 });
 
-router.post("/", async (req: Request, res: Response) => {
-  const parsed = createSeasonSchema.parse(req.body);
-  const season = await seasonsService.createSeason(parsed);
-  res.status(201).json(season);
-});
+router.post(
+  "/",
+  validate(createSeasonSchema),
+  async (req: Request, res: Response) => {
+    const season = await seasonsService.createSeason(req.body);
+    res.status(201).json(season);
+  },
+);
 
-router.patch("/:id", async (req: Request, res: Response) => {
-  const parsed = updateSeasonSchema.parse(req.body);
-  const season = await seasonsService.updateSeason(
-    req.params.id as string,
-    parsed,
-  );
-  res.json(season);
-});
+router.patch(
+  "/:id",
+  validate(updateSeasonSchema),
+  async (req: Request, res: Response) => {
+    const season = await seasonsService.updateSeason(
+      req.params.id as string,
+      req.body,
+    );
+    res.json(season);
+  },
+);
 
 router.delete("/:id", async (req: Request, res: Response) => {
   await seasonsService.deleteSeason(req.params.id as string);

@@ -1,10 +1,11 @@
 export {
+  analyticsController,
   brandAnalytics,
   overviewAnalytics,
   productAnalytics,
   warehouseAnalytics,
 } from "./analytics";
-export { catalogService } from "./catalog";
-export { inventoryService } from "./inventory";
-export { procurementService } from "./procurement";
-export { seasonsService } from "./seasons";
+export { catalogController, catalogService } from "./catalog";
+export { inventoryController, inventoryService } from "./inventory";
+export { procurementController, procurementService } from "./procurement";
+export { seasonsController, seasonsService } from "./seasons";
