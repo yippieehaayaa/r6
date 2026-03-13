@@ -8,6 +8,7 @@ import {
   prisma,
   type WeightUnit,
 } from "../../../utils/prisma";
+import { toMinorUnits } from "../../../utils/currency";
 
 export type CreateVariantInput = {
   sku: string;
@@ -41,9 +42,15 @@ const createVariant = async (input: CreateVariantInput) => {
         sku: input.sku,
         name: input.name,
         options: input.options,
-        price: input.price,
-        costPrice: input.costPrice,
-        compareAtPrice: input.compareAtPrice,
+        price: toMinorUnits(input.price),
+        costPrice:
+          input.costPrice !== undefined
+            ? toMinorUnits(input.costPrice)
+            : undefined,
+        compareAtPrice:
+          input.compareAtPrice !== undefined
+            ? toMinorUnits(input.compareAtPrice)
+            : undefined,
         weight: input.weight,
         length: input.length,
         width: input.width,

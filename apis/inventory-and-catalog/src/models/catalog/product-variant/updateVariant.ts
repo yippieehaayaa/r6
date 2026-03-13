@@ -8,6 +8,7 @@ import {
   prisma,
   type WeightUnit,
 } from "../../../utils/prisma";
+import { toMinorUnits } from "../../../utils/currency";
 
 export type UpdateVariantInput = {
   sku?: string;
@@ -34,13 +35,20 @@ const updateVariant = async (id: string, input: UpdateVariantInput) => {
 
   if (!variant) throw new ProductVariantNotFoundError();
 
-  const { images, ...rest } = input;
+  const { images, price, costPrice, compareAtPrice, ...rest } = input;
 
   try {
     return await prisma.productVariant.update({
       where: { id },
       data: {
         ...rest,
+        ...(price !== undefined && { price: toMinorUnits(price) }),
+        ...(costPrice !== undefined && {
+          costPrice: toMinorUnits(costPrice),
+        }),
+        ...(compareAtPrice !== undefined && {
+          compareAtPrice: toMinorUnits(compareAtPrice),
+        }),
         ...(images !== undefined && { images: { set: images } }),
       },
     });
