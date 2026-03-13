@@ -1,3 +1,4 @@
+import { toMinorUnits } from "../../../utils/currency";
 import {
   ProductVariantNotFoundError,
   PurchaseOrderInvalidStatusTransitionError,
@@ -36,7 +37,7 @@ const addItemToOrder = async (
         purchaseOrderId,
         variantId: input.variantId,
         quantityOrdered: input.quantityOrdered,
-        unitCost: input.unitCost,
+        unitCost: toMinorUnits(input.unitCost),
       },
     });
   } catch (error) {

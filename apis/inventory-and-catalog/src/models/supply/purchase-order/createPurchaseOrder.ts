@@ -1,3 +1,4 @@
+import { toMinorUnits } from "../../../utils/currency";
 import {
   ProductVariantNotFoundError,
   PurchaseOrderNumberExistsError,
@@ -63,7 +64,7 @@ const createPurchaseOrder = async (input: CreatePurchaseOrderInput) => {
               purchaseOrderId: po.id,
               variantId: item.variantId,
               quantityOrdered: item.quantityOrdered,
-              unitCost: item.unitCost,
+              unitCost: toMinorUnits(item.unitCost),
             },
           }),
         ),

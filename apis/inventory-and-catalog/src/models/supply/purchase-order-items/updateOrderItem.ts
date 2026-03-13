@@ -1,3 +1,4 @@
+import { toMinorUnits } from "../../../utils/currency";
 import {
   PurchaseOrderInvalidStatusTransitionError,
   PurchaseOrderItemNotFoundError,
@@ -29,9 +30,14 @@ const updateOrderItem = async (
 
   if (!item) throw new PurchaseOrderItemNotFoundError();
 
+  const { unitCost, ...rest } = input;
+
   return await prisma.purchaseOrderItem.update({
     where: { purchaseOrderId_variantId: { purchaseOrderId, variantId } },
-    data: input,
+    data: {
+      ...rest,
+      ...(unitCost !== undefined && { unitCost: toMinorUnits(unitCost) }),
+    },
   });
 };
 
