@@ -132,7 +132,12 @@ const getDailySalesReport = async (date: Date): Promise<DailySalesReport> => {
   >();
   const revenueByVariant = new Map<
     string,
-    { sku: string; productName: string; unitsSold: number; revenueMinor: number }
+    {
+      sku: string;
+      productName: string;
+      unitsSold: number;
+      revenueMinor: number;
+    }
   >();
 
   for (const movement of movements) {
@@ -208,14 +213,14 @@ const getDailySalesReport = async (date: Date): Promise<DailySalesReport> => {
   const averageTransactionValue =
     totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
 
-  const byBrand: DailySalesByBrand[] = Array.from(
-    revenueByBrand.entries(),
-  ).map(([brandId, value]) => ({
-    brandId,
-    brandName: value.name,
-    unitsSold: value.unitsSold,
-    revenue: toMajorUnits(value.revenueMinor),
-  }));
+  const byBrand: DailySalesByBrand[] = Array.from(revenueByBrand.entries()).map(
+    ([brandId, value]) => ({
+      brandId,
+      brandName: value.name,
+      unitsSold: value.unitsSold,
+      revenue: toMajorUnits(value.revenueMinor),
+    }),
+  );
 
   const byProduct: DailySalesByProduct[] = Array.from(
     revenueByProduct.entries(),
@@ -280,4 +285,3 @@ const getDailySalesReport = async (date: Date): Promise<DailySalesReport> => {
 };
 
 export default getDailySalesReport;
-

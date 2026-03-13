@@ -1,4 +1,5 @@
 import {
+  getDailySalesReport as _getDailySalesReport,
   getDeadStockReport as _getDeadStockReport,
   getGmv as _getGmv,
   getPreSeasonInventoryHealth as _getPreSeasonInventoryHealth,
@@ -7,6 +8,8 @@ import {
 } from "../../models/analytics/overview";
 import type { Season } from "../../utils/prisma";
 import type { DateRange } from "./analytics.types";
+
+export const getDailySalesReport = (date: Date) => _getDailySalesReport(date);
 
 export const getGmv = (dateRange?: DateRange) => _getGmv(dateRange);
 

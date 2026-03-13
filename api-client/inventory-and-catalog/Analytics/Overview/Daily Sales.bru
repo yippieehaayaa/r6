@@ -1,0 +1,16 @@
+meta {
+  name: Daily Sales
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseURL}}/analytics/overview/gmv
+  body: none
+  auth: none
+}
+
+params:query {
+  ~from: 2025-01-01T00:00:00.000Z
+  ~to: 2025-12-31T23:59:59.999Z
+}

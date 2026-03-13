@@ -1,2 +1,2 @@
 export { errorHandler } from "./error-handler";
-export { validate } from "./validate";
+export { validate, validateQuery } from "./validate";

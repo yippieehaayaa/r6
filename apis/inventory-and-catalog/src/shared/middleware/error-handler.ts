@@ -9,15 +9,31 @@ export function errorHandler(
   _next: NextFunction,
 ) {
   if (err instanceof DomainError) {
-    res.status(err.httpStatus).json({ message: err.message });
+    res.status(err.httpStatus).json({
+      error: {
+        message: err.message,
+        code: err.name,
+      },
+    });
     return;
   }
 
   if (err instanceof ZodError) {
-    res.status(400).json({ message: "Validation failed", issues: err.issues });
+    res.status(400).json({
+      error: {
+        message: "Validation failed",
+        code: "VALIDATION_ERROR",
+        details: err.issues,
+      },
+    });
     return;
   }
 
   console.error(err);
-  res.status(500).json({ message: "Internal server error" });
+  res.status(500).json({
+    error: {
+      message: "Internal server error",
+      code: "INTERNAL_SERVER_ERROR",
+    },
+  });
 }
