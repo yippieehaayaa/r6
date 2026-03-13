@@ -1,0 +1,19 @@
+meta {
+  name: List Seasons
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/seasons?page=1&limit=20
+  body: none
+  auth: none
+}
+
+params:query {
+  page: 1
+  limit: 20
+  ~search: 
+  ~isActive: true
+  ~year: 2026
+}

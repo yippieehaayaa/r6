@@ -1,0 +1,23 @@
+meta {
+  name: Receive Order
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseURL}}/procurement/orders/{{orderId}}/receive
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "receipts": [
+      {
+        "variantId": "{{variantId}}",
+        "quantityReceived": 100
+      }
+    ],
+    "performedBy": "test-user-1"
+  }
+}

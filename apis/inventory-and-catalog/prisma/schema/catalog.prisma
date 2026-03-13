@@ -87,9 +87,9 @@ model ProductVariant {
     sku            String       @unique
     name           String
     options        Json         // { "color": "red", "size": "M" }
-    price          Float
-    costPrice      Float?
-    compareAtPrice Float?
+    price          Int
+    costPrice      Int?
+    compareAtPrice Int?
     weight         Float?
     length         Float?
     width          Float?

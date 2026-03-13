@@ -1,0 +1,18 @@
+meta {
+  name: Update Brand
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseURL}}/catalog/brands/{{brandId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Nike Inc.",
+    "description": "Just Do It — Updated"
+  }
+}

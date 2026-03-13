@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SoftDeleteSchema, TimestampsSchema } from "../base-schemas";
+import { PriceSchema, SoftDeleteSchema, TimestampsSchema } from "../base-schemas";
 import {
   DimensionUnitSchema,
   ProductStatusSchema,
@@ -60,9 +60,9 @@ export const ProductVariantSchema = z.strictObject({
   sku: z.string(),
   name: z.string(),
   options: z.unknown(),
-  price: z.number(),
-  costPrice: z.number().optional(),
-  compareAtPrice: z.number().optional(),
+  price: PriceSchema,
+  costPrice: PriceSchema.optional(),
+  compareAtPrice: PriceSchema.optional(),
   weight: z.number().optional(),
   length: z.number().optional(),
   width: z.number().optional(),

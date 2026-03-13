@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   AddressEmbedSchema,
+  PriceSchema,
   SoftDeleteSchema,
   TimestampsSchema,
 } from "../base-schemas";
@@ -41,7 +42,7 @@ export const PurchaseOrderItemSchema = z.strictObject({
   id: z.string().readonly(),
   quantityOrdered: z.number().int(),
   quantityReceived: z.number().int(),
-  unitCost: z.number(),
+  unitCost: PriceSchema,
   purchaseOrderId: z.string().readonly(),
   variantId: z.string().readonly(),
   ...TimestampsSchema.shape,

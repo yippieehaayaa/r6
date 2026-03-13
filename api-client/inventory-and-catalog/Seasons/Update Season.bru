@@ -1,0 +1,18 @@
+meta {
+  name: Update Season
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseURL}}/seasons/{{seasonId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Spring/Summer 2026 (Updated)",
+    "description": "Updated Spring/Summer collection for 2026"
+  }
+}

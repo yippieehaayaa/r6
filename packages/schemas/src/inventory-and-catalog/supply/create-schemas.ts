@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AddressEmbedSchema } from "../base-schemas";
+import { AddressEmbedSchema, PriceSchema } from "../base-schemas";
 import { PurchaseOrderStatusSchema } from "./enums";
 
 const dateTimeField = z
@@ -28,7 +28,7 @@ export const CreatePurchaseOrderSchema = z.strictObject({
 export const CreatePurchaseOrderItemSchema = z.strictObject({
   quantityOrdered: z.number().int(),
   quantityReceived: z.number().int(),
-  unitCost: z.number(),
+  unitCost: PriceSchema,
   purchaseOrderId: z.string(),
   variantId: z.string(),
 });

@@ -1,0 +1,11 @@
+meta {
+  name: Warehouse Utilization
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseURL}}/analytics/warehouses/{{warehouseId}}/utilization
+  body: none
+  auth: none
+}

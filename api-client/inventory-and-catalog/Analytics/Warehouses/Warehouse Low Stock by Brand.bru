@@ -1,0 +1,15 @@
+meta {
+  name: Warehouse Low Stock by Brand
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseURL}}/analytics/warehouses/{{warehouseId}}/low-stock-by-brand
+  body: none
+  auth: none
+}
+
+params:query {
+  brandId: {{brandId}}
+}

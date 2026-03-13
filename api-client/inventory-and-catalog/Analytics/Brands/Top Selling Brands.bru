@@ -1,0 +1,18 @@
+meta {
+  name: Top Selling Brands
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/analytics/brands/top-selling
+  body: none
+  auth: none
+}
+
+params:query {
+  ~limit: 10
+  ~seasonId: {{seasonId}}
+  ~from: 2025-01-01T00:00:00.000Z
+  ~to: 2025-12-31T23:59:59.999Z
+}

@@ -1,0 +1,19 @@
+meta {
+  name: Update Product
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseURL}}/catalog/products/{{productId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Classic Runner V2",
+    "description": "An updated timeless running shoe",
+    "tags": ["running", "classic", "v2"]
+  }
+}

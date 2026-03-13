@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PriceSchema } from "../base-schemas";
 import { ImageEmbedSchema } from "./base-schemas";
 import {
   DimensionUnitSchema,
@@ -39,9 +40,9 @@ export const CreateProductVariantSchema = z.strictObject({
   sku: z.string(),
   name: z.string(),
   options: z.unknown(),
-  price: z.number(),
-  costPrice: z.number().optional(),
-  compareAtPrice: z.number().optional(),
+  price: PriceSchema,
+  costPrice: PriceSchema.optional(),
+  compareAtPrice: PriceSchema.optional(),
   weight: z.number().optional(),
   length: z.number().optional(),
   width: z.number().optional(),

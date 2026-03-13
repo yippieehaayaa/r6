@@ -1,0 +1,21 @@
+meta {
+  name: Record Damage
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseURL}}/inventory/stock/record-damage
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "variantId": "{{variantId}}",
+    "warehouseId": "{{warehouseId}}",
+    "qty": 1,
+    "notes": "Shipping damage on arrival",
+    "performedBy": "test-user-1"
+  }
+}

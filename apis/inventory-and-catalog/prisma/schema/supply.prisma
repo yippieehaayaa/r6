@@ -59,7 +59,7 @@ model PurchaseOrderItem {
     id               String @id @default(auto()) @map("_id") @db.ObjectId
     quantityOrdered  Int
     quantityReceived Int    @default(0)
-    unitCost         Float
+    unitCost         Int
 
     // Relations
     purchaseOrderId String        @db.ObjectId

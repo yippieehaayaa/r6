@@ -1,0 +1,16 @@
+meta {
+  name: Seasonal Demand
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseURL}}/analytics/overview/seasonal-demand/{{seasonId}}
+  body: none
+  auth: none
+}
+
+params:query {
+  ~limit: 10
+  ~year: 2025
+}

@@ -1,0 +1,17 @@
+meta {
+  name: Brand Top Products
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseURL}}/analytics/brands/{{brandId}}/top-products
+  body: none
+  auth: none
+}
+
+params:query {
+  ~limit: 10
+  ~from: 2025-01-01T00:00:00.000Z
+  ~to: 2025-12-31T23:59:59.999Z
+}

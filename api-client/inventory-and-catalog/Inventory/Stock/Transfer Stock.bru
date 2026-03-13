@@ -1,0 +1,21 @@
+meta {
+  name: Transfer Stock
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseURL}}/inventory/stock/transfer
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "variantId": "{{variantId}}",
+    "fromWarehouseId": "{{warehouseId}}",
+    "toWarehouseId": "<second-warehouse-id>",
+    "qty": 3,
+    "performedBy": "test-user-1"
+  }
+}

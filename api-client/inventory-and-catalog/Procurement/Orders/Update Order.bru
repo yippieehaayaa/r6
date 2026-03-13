@@ -1,0 +1,19 @@
+meta {
+  name: Update Order
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseURL}}/procurement/orders/{{orderId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "orderNumber": "PO-2025-001-REV",
+    "expectedAt": "2025-07-01T00:00:00.000Z",
+    "notes": "Updated delivery date"
+  }
+}

@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const PriceSchema = z.number().nonnegative().finite();
+
 export const AddressEmbedSchema = z.strictObject({
   line2: z.string().optional(),
   street: z.string().optional(),
