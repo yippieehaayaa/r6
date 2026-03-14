@@ -5,11 +5,11 @@ meta {
 }
 
 get {
-  url: {{baseURL}}/analytics/overview/dead-stock
+  url: {{baseURL}}/analytics/overview/dead-stock?threshold=300
   body: none
   auth: none
 }
 
 params:query {
-  ~threshold: 90
+  threshold: 300
 }
