@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { PriceSchema, SoftDeleteSchema, TimestampsSchema } from "../base-schemas";
+import {
+  PriceSchema,
+  SoftDeleteSchema,
+  TimestampsSchema,
+} from "../base-schemas";
 import {
   DimensionUnitSchema,
   ProductStatusSchema,
