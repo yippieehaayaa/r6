@@ -12,6 +12,7 @@ r6 also serves as my **living portfolio**. Every API, application, database laye
 - [Workspace Overview](#workspace-overview)
 - [APIs](#apis)
   - [@r6/identity-and-access](#r6identity-and-access)
+  - [@r6/inventory-and-catalog](#r6inventory-and-catalog)
   - [@r6/qr-api](#r6qr-api)
 - [Apps](#apps)
   - [@r6/me](#r6me)
@@ -20,6 +21,7 @@ r6 also serves as my **living portfolio**. Every API, application, database laye
 - [Packages](#packages)
   - [@r6/bcrypt](#r6bcrypt)
   - [@r6/crypto](#r6crypto)
+  - [@r6/schemas](#r6schemas)
   - [@r6/typescript-config](#r6typescript-config)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
@@ -38,14 +40,16 @@ The repository is managed with [Turborepo](https://turborepo.dev) and [npm works
 r6/
 ├── apis/                         # Back-end HTTP services
 │   ├── identity-and-access/      # Authentication, authorization, RBAC/ABAC
+│   ├── inventory-and-catalog/    # Inventory management and product catalog API
 │   └── qr-api/                   # QR code generation service (WIP)
 ├── apps/                         # Front-end applications
-│   └── me/                       # Personal web application (TanStack Start)
+│   └── me/                       # Personal web application (Angular 21 + SSR)
 ├── dbs/                          # Database packages (Prisma clients + models)
 │   └── identity-and-access/      # Prisma + PostgreSQL for the IAM domain
 └── packages/                     # Shared internal libraries
     ├── bcrypt/                   # Password hashing and verification
     ├── crypto/                   # HMAC and SHA-256 utilities
+    ├── schemas/                  # Shared Zod validation schemas
     └── typescript-config/        # Shared tsconfig presets
 ```
 
@@ -56,11 +60,13 @@ r6/
 | Package | Path | Description |
 |---|---|---|
 | `@r6/identity-and-access` | `apis/identity-and-access` | Identity and access management REST API |
+| `@r6/inventory-and-catalog` | `apis/inventory-and-catalog` | Inventory management and product catalog REST API |
 | `@r6/qr-api` | `apis/qr-api` | QR code generation API (scaffold) |
-| `@r6/me` | `apps/me` | Personal web application built with TanStack Start |
+| `@r6/me` | `apps/me` | Personal web application built with Angular 21 + SSR |
 | `@r6/db-identity-and-access` | `dbs/identity-and-access` | Prisma client and model layer for the IAM database |
 | `@r6/bcrypt` | `packages/bcrypt` | bcrypt password hashing and verification utilities |
 | `@r6/crypto` | `packages/crypto` | Node.js HMAC and SHA-256 hashing utilities |
+| `@r6/schemas` | `packages/schemas` | Shared Zod validation schemas for the inventory-and-catalog domain |
 | `@r6/typescript-config` | `packages/typescript-config` | Shared `tsconfig.json` presets for the monorepo |
 
 ---
@@ -123,28 +129,197 @@ A Hono-based API service scaffolded for QR code generation. This service is curr
 
 ---
 
+### @r6/inventory-and-catalog
+
+A full-featured inventory management and product catalog REST API. Handles products, variants, categories, brands, seasons, warehouses, stock operations, procurement workflows, and analytics. The data layer is powered by MongoDB via Prisma; all request and response validation is delegated to the shared `@r6/schemas` package.
+
+**Technology:** [Express 5](https://expressjs.com) · [Prisma 6](https://www.prisma.io) · [MongoDB](https://www.mongodb.com) · [Zod](https://zod.dev) via [`@r6/schemas`](#r6schemas) · [helmet](https://helmetjs.github.io) · [TypeScript](https://www.typescriptlang.org)
+
+#### Architecture
+
+Layered module pattern per domain: `controller → service → repository → Prisma`
+
+Modules: `catalog`, `inventory`, `procurement`, `seasons`, `analytics`
+
+#### Routes
+
+##### Health Check
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Health check — returns HTTP 200 |
+
+##### Catalog — `/catalog`
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/catalog/categories` | List categories (paginated; filters: `search`, `parentId`, `isActive`) |
+| `GET` | `/catalog/categories/:id` | Get category by ID |
+| `GET` | `/catalog/categories/:id/tree` | Get full subtree rooted at category |
+| `POST` | `/catalog/categories` | Create category |
+| `PATCH` | `/catalog/categories/:id` | Update category |
+| `DELETE` | `/catalog/categories/:id` | Soft-delete category |
+| `GET` | `/catalog/brands` | List brands (paginated; filters: `search`, `isActive`) |
+| `GET` | `/catalog/brands/:id` | Get brand by ID |
+| `POST` | `/catalog/brands` | Create brand |
+| `PATCH` | `/catalog/brands/:id` | Update brand |
+| `DELETE` | `/catalog/brands/:id` | Soft-delete brand |
+| `GET` | `/catalog/products` | List products (paginated; filters: `search`, `categoryId`, `brandId`, `status`, `tags`) |
+| `GET` | `/catalog/products/slug/:slug` | Get product by slug |
+| `GET` | `/catalog/products/:id` | Get product by ID |
+| `POST` | `/catalog/products` | Create product |
+| `PATCH` | `/catalog/products/:id` | Update product |
+| `POST` | `/catalog/products/:id/publish` | Transition product → `ACTIVE` |
+| `POST` | `/catalog/products/:id/discontinue` | Transition product → `DISCONTINUED` |
+| `POST` | `/catalog/products/:id/archive` | Transition product → `ARCHIVED` |
+| `DELETE` | `/catalog/products/:id` | Soft-delete product |
+| `GET` | `/catalog/products/:productId/variants` | List variants for a product (paginated; filters: `search`, `isActive`) |
+| `GET` | `/catalog/variants/:id` | Get variant by ID |
+| `POST` | `/catalog/products/:productId/variants` | Create variant under product |
+| `PATCH` | `/catalog/variants/:id` | Update variant |
+| `DELETE` | `/catalog/variants/:id` | Soft-delete variant |
+
+##### Inventory — `/inventory`
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/inventory/warehouses` | List warehouses (paginated; filters: `search`, `isActive`) |
+| `GET` | `/inventory/warehouses/:id` | Get warehouse by ID |
+| `POST` | `/inventory/warehouses` | Create warehouse |
+| `PATCH` | `/inventory/warehouses/:id` | Update warehouse |
+| `DELETE` | `/inventory/warehouses/:id` | Soft-delete warehouse |
+| `GET` | `/inventory/stock/:variantId/:warehouseId` | Get current stock for a variant in a warehouse |
+| `GET` | `/inventory/stock/product/:productId` | Get stock across all variants and warehouses for a product |
+| `GET` | `/inventory/low-stock` | Get all items at or below reorder point (filter: `warehouseId`) |
+| `POST` | `/inventory/stock/reserve` | Reserve stock — creates `RESERVATION` movement |
+| `POST` | `/inventory/stock/release` | Release reservation — creates `RESERVATION_RELEASE` movement |
+| `POST` | `/inventory/stock/commit-sale` | Commit a sale, reducing on-hand stock — creates `SALE` movement |
+| `POST` | `/inventory/stock/adjust` | Manual stock adjustment — creates `ADJUSTMENT` movement |
+| `POST` | `/inventory/stock/transfer` | Transfer stock between warehouses — creates `TRANSFER_OUT` + `TRANSFER_IN` |
+| `POST` | `/inventory/stock/record-damage` | Record damaged or lost stock — creates `DAMAGE` movement |
+| `GET` | `/inventory/movements/:variantId` | List movement history for a variant (paginated; filters: `type`, `warehouseId`, `from`, `to`) |
+
+##### Procurement — `/procurement`
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/procurement/suppliers` | List suppliers (paginated; filters: `search`, `isActive`) |
+| `GET` | `/procurement/suppliers/:id` | Get supplier by ID |
+| `POST` | `/procurement/suppliers` | Create supplier |
+| `PATCH` | `/procurement/suppliers/:id` | Update supplier |
+| `DELETE` | `/procurement/suppliers/:id` | Soft-delete supplier |
+| `GET` | `/procurement/orders` | List purchase orders (paginated; filters: `supplierId`, `warehouseId`, `status`, `from`, `to`) |
+| `GET` | `/procurement/orders/:id` | Get purchase order by ID |
+| `POST` | `/procurement/orders` | Create purchase order |
+| `PATCH` | `/procurement/orders/:id` | Update purchase order |
+| `DELETE` | `/procurement/orders/:id` | Soft-delete purchase order |
+| `POST` | `/procurement/orders/:id/send` | Transition order → `SENT` |
+| `POST` | `/procurement/orders/:id/confirm` | Transition order → `CONFIRMED` |
+| `POST` | `/procurement/orders/:id/cancel` | Transition order → `CANCELLED` |
+| `POST` | `/procurement/orders/:id/receive` | Receive items — credits stock via `RECEIPT` movements; transitions order → `RECEIVED` or `PARTIALLY_RECEIVED` |
+| `POST` | `/procurement/orders/:id/items` | Add line item to order |
+| `PATCH` | `/procurement/orders/:id/items/:variantId` | Update line item quantity or cost |
+| `DELETE` | `/procurement/orders/:id/items/:variantId` | Remove line item |
+
+##### Seasons — `/seasons`
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/seasons` | List seasons (paginated; filters: `search`, `isActive`, `year`) |
+| `GET` | `/seasons/slug/:slug` | Get season by slug |
+| `GET` | `/seasons/:id` | Get season by ID |
+| `POST` | `/seasons` | Create season |
+| `PATCH` | `/seasons/:id` | Update season |
+| `DELETE` | `/seasons/:id` | Soft-delete season |
+
+##### Analytics — `/analytics`
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/analytics/overview/gmv` | Gross Merchandise Value (filter: `from`, `to`) |
+| `GET` | `/analytics/overview/dead-stock` | Dead stock report (filter: `threshold`) |
+| `GET` | `/analytics/overview/seasonal-demand/:seasonId` | Top-N demand for a season (filter: `limit`, `year`) |
+| `GET` | `/analytics/overview/pre-season-health/:seasonId` | Inventory health before a season starts |
+| `GET` | `/analytics/overview/supplier-fill-rate/:supplierId` | Supplier fill rate (filter: `from`, `to`) |
+| `GET` | `/analytics/overview/daily-sales` | Daily sales report (filter: `date`) |
+| `GET` | `/analytics/brands/top-selling` | Top-N selling brands (filter: `limit`, `from`, `to`, `seasonId`) |
+| `GET` | `/analytics/brands/:id/revenue` | Revenue for a brand (filter: `from`, `to`) |
+| `GET` | `/analytics/brands/:id/sales-by-month` | Monthly sales breakdown for a brand (filter: `year`) |
+| `GET` | `/analytics/brands/:id/seasonal-sales` | Sales performance per season for a brand (filter: `year`, `isActive`) |
+| `GET` | `/analytics/brands/:id/stock-health` | Stock health summary for a brand |
+| `GET` | `/analytics/brands/:id/top-products` | Top-N products for a brand (filter: `limit`, `from`, `to`) |
+| `GET` | `/analytics/brands/:id/warehouse-distribution` | Stock distribution across warehouses for a brand |
+| `GET` | `/analytics/products/top-selling` | Top-N selling product variants (filter: `limit`, `from`, `to`, `warehouseId`) |
+| `GET` | `/analytics/products/:id/turnover` | Stock turnover for a product (`from` + `to` required) |
+| `GET` | `/analytics/products/:id/return-rate` | Return rate for a product (filter: `from`, `to`) |
+| `GET` | `/analytics/products/:id/seasonal-sales` | Sales per season for a product (filter: `year`, `isActive`) |
+| `GET` | `/analytics/products/:id/variant-split` | Sales split across variants for a product |
+| `GET` | `/analytics/products/:id/sales-by-warehouse` | Product sales broken down by warehouse |
+| `GET` | `/analytics/warehouses/compare-seasonal-demand` | Cross-warehouse demand comparison for a season (query: `seasonId`) |
+| `GET` | `/analytics/warehouses/:id/top-products` | Top-N products in a warehouse (filter: `limit`, `seasonId`) |
+| `GET` | `/analytics/warehouses/:id/inventory-value` | Total inventory value for a warehouse |
+| `GET` | `/analytics/warehouses/:id/throughput` | Throughput (in/out volume) for a warehouse (filter: `from`, `to`) |
+| `GET` | `/analytics/warehouses/:id/utilization` | Stock utilization for a warehouse |
+| `GET` | `/analytics/warehouses/:id/low-stock-by-brand` | Low-stock items filtered by brand (query: `brandId`) |
+| `GET` | `/analytics/warehouses/:id/sales-by-brand` | Sales by brand for a warehouse (filter: `from`, `to`) |
+| `GET` | `/analytics/warehouses/:id/sales-by-season` | Sales per season for a warehouse (filter: `year`, `isActive`) |
+
+#### Database Schema
+
+The API uses MongoDB with Prisma's multi-file schema.
+
+| Model | Collection | Key Fields |
+|---|---|---|
+| `Category` | `categories` | `name`, `slug` (unique), `parentId` (self-referential), `isActive`, `sortOrder`; soft-delete |
+| `Brand` | `brands` | `name` (unique), `slug` (unique), `logoUrl`, `isActive`; soft-delete |
+| `Product` | `products` | `sku` (unique), `slug` (unique), `status` (`ProductStatus`), `tags[]`, `metadata` (JSON), FK: `categoryId`, `brandId`; soft-delete |
+| `ProductVariant` | `product_variants` | `sku` (unique), pricing fields, dimension and weight fields, `images` (embedded array), `isActive`; soft-delete |
+| `Warehouse` | `warehouses` | `name` (unique), `code` (unique), `address` (embedded), `isActive`; soft-delete |
+| `InventoryItem` | `inventory_items` | Composite unique `[variantId, warehouseId]`; `quantityOnHand`, `quantityReserved`, `reorderPoint`, `reorderQuantity` |
+| `StockMovement` | `stock_movements` | `type` (`MovementType`), `quantity` (±), `referenceId`, `referenceType`, `performedBy`; append-only |
+| `Supplier` | `suppliers` | `name` (unique), `code` (unique), contact fields, `address` (embedded), `isActive`; soft-delete |
+| `PurchaseOrder` | `purchase_orders` | `orderNumber` (unique), `status` (`PurchaseOrderStatus`), `expectedAt`, FK: `supplierId`, `warehouseId`; soft-delete |
+| `PurchaseOrderItem` | `purchase_order_items` | Composite unique `[purchaseOrderId, variantId]`; `quantityOrdered`, `quantityReceived`, `unitCost` |
+| `Season` | `seasons` | `name`, `slug` (unique), `startDate`, `endDate`, `year` (denormalised), `isActive`; soft-delete |
+
+**Embedded types:** `ImageEmbed` (`url`, `altText`, `isPrimary`, `sortOrder`) · `AddressEmbed` (`street`, `city`, `state`, `country`, `postal`, `line2`)
+
+**Enums:** `ProductStatus` (`DRAFT`, `ACTIVE`, `DISCONTINUED`, `ARCHIVED`) · `MovementType` (`RECEIPT`, `SALE`, `ADJUSTMENT`, `TRANSFER_IN`, `TRANSFER_OUT`, `RETURN`, `DAMAGE`, `RESERVATION`, `RESERVATION_RELEASE`) · `PurchaseOrderStatus` (`DRAFT`, `SENT`, `CONFIRMED`, `PARTIALLY_RECEIVED`, `RECEIVED`, `CANCELLED`)
+
+#### Middleware Stack
+
+1. `helmet()` — security headers
+2. `morgan('dev')` — HTTP request logging
+3. `express.json()` — JSON body parser
+4. `express.urlencoded({ extended: true })` — form body parser
+5. `errorHandler` — global error handler
+
+#### Environment Variables
+
+```
+PORT=3000
+DATABASE_URL="mongodb://user:password@localhost:27017/inventory?authSource=admin"
+```
+
+---
+
 ## Apps
 
 ### @r6/me
 
-The primary front-end application for the r6 project. Built with TanStack Start for full-stack React with server-side rendering, file-based routing, and deep integration with the TanStack ecosystem. Styled with Tailwind CSS v4.
+The primary front-end application for the r6 project. Built with Angular 21 using the modern standalone component API and server-side rendering powered by `@angular/ssr`. Styled with Tailwind CSS v4.
 
-**Technology:** [TanStack Start](https://tanstack.com/start) · [React 19](https://react.dev) · [TanStack Router](https://tanstack.com/router) · [TanStack Query](https://tanstack.com/query) · [TanStack Form](https://tanstack.com/form) · [TanStack Table](https://tanstack.com/table) · [Tailwind CSS v4](https://tailwindcss.com) · [Vite](https://vitejs.dev) · [Vitest](https://vitest.dev) · [TypeScript](https://www.typescriptlang.org)
+**Technology:** [Angular 21](https://angular.dev) · [@angular/ssr](https://angular.dev/guide/ssr) · [Express 5](https://expressjs.com) · [Tailwind CSS v4](https://tailwindcss.com) · [Vitest](https://vitest.dev) · [TypeScript](https://www.typescriptlang.org)
 
 #### Features
 
-- **SSR + file-based routing** powered by TanStack Start and TanStack Router — routes are auto-generated from the `src/routes/` directory
-- **Server state management** with TanStack Query — all async data fetching, caching, and synchronisation
-- **Form handling** with TanStack Form — type-safe form state and validation
-- **Data grids** with TanStack Table — full-featured headless table primitives
-- **Utility-first styling** with Tailwind CSS v4 via the official Vite plugin
-- **End-to-end type safety** from the router context (`QueryClient`) through to route components
-- **Development tooling** — TanStack Devtools panel with Router and Query sub-panels in development
-- **Testing** with Vitest + Testing Library (DOM and React)
+- **Server-side rendering** via `@angular/ssr` and Express 5 — the SSR server entry (`src/server.ts`) handles all requests and serves the hydrated application
+- **Client hydration with event replay** — `provideClientHydration(withEventReplay())` ensures a seamless SSR-to-client handoff with no interaction loss
+- **Angular Signals** — reactive state using Angular's native signals primitive
+- **Standalone component API** — no `NgModule` declarations; all components are self-contained
+- **Angular Router** — client-side navigation configured via `provideRouter()`
 
-#### Application Shell
-
-The root route (`__root.tsx`) establishes the HTML document shell, injects global styles, mounts `TanStackQueryProvider`, and renders all devtools panels in development. Scroll restoration and intent-based preloading are enabled at the router level.
+> **Status:** Work in progress — SSR is fully configured and the application shell is in place. Feature routing and views are actively being developed.
 
 ---
 
@@ -286,6 +461,26 @@ Ships as dual CJS + ESM with type declarations.
 
 ---
 
+### @r6/schemas
+
+The single source of truth for all request and response shapes in the monorepo. Every create, update, query, and response schema for the inventory-and-catalog domain is defined here and consumed by the API at its validation layer. TypeScript types are inferred directly from Zod schemas with `z.infer<>` — no duplication between runtime validation and static type definitions.
+
+**Technology:** [Zod](https://zod.dev) · [TypeScript](https://www.typescriptlang.org) · [tsup](https://tsup.egoist.dev)
+
+#### Exported Schema Groups
+
+| Group | Contents |
+|---|---|
+| Base | `PriceSchema`, `AddressEmbedSchema`, `TimestampsSchema`, `SoftDeleteSchema` |
+| Catalog | Create/update/query/response schemas for categories, brands, products, and variants; `ProductStatusSchema`, `DimensionUnitSchema`, `WeightUnitSchema` |
+| Inventory | Create/update/query/response schemas for warehouses, stock operations, and movements; `MovementTypeSchema` |
+| Supply | Create/update/query/response schemas for suppliers, purchase orders, and order items; `PurchaseOrderStatusSchema` |
+| Seasons | Create/update/query/response schemas for seasons |
+
+Ships as dual CJS + ESM with TypeScript declaration files. Sub-path exports per domain (`@r6/schemas/inventory-and-catalog`) are also available.
+
+---
+
 ### @r6/typescript-config
 
 Shared TypeScript configuration presets consumed by every workspace in the monorepo.
@@ -306,22 +501,19 @@ Shared TypeScript configuration presets consumed by every workspace in the monor
 |---|---|
 | Monorepo tooling | [Turborepo](https://turborepo.dev), [npm workspaces](https://docs.npmjs.com/cli/using-npm/workspaces) |
 | Language | [TypeScript 5.9](https://www.typescriptlang.org) |
-| Back-end framework | [Hono](https://hono.dev), [@hono/node-server](https://github.com/honojs/node-server) |
-| Front-end framework | [React 19](https://react.dev), [TanStack Start](https://tanstack.com/start) |
-| Routing | [TanStack Router](https://tanstack.com/router) |
-| Server state | [TanStack Query](https://tanstack.com/query) |
-| Forms | [TanStack Form](https://tanstack.com/form) |
-| Tables | [TanStack Table](https://tanstack.com/table) |
+| Back-end framework | [Hono](https://hono.dev) · [@hono/node-server](https://github.com/honojs/node-server) · [Express 5](https://expressjs.com) |
+| Front-end framework | [Angular 21](https://angular.dev) |
+| Routing | [Angular Router](https://angular.dev/guide/routing) |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com) |
-| Build tooling | [Vite](https://vitejs.dev), [tsup](https://tsup.egoist.dev) |
+| Build tooling | [tsup](https://tsup.egoist.dev) |
 | Authentication | [jose](https://github.com/panva/jose) (RS256 JWT) |
-| Validation | [Zod](https://zod.dev) |
+| Validation | [Zod](https://zod.dev) via [`@r6/schemas`](#r6schemas) |
 | ORM | [Prisma 6](https://www.prisma.io) |
-| Database | [PostgreSQL](https://www.postgresql.org) |
+| Database | [PostgreSQL](https://www.postgresql.org) · [MongoDB](https://www.mongodb.com) |
 | Password hashing | [bcrypt](https://github.com/kelektiv/node.bcrypt.js) |
 | Linting / formatting | [Biome](https://biomejs.dev) |
 | Dependency management | [syncpack](https://github.com/JamieMason/syncpack) |
-| Testing | [Vitest](https://vitest.dev), [Testing Library](https://testing-library.com) |
+| Testing | [Vitest](https://vitest.dev), [Angular Testing Library](https://testing-library.com/docs/angular-testing-library/intro/) |
 | Containerisation | [Docker](https://www.docker.com) (distroless and Alpine images) |
 | API client | [Bruno](https://www.usebruno.com) |
 
@@ -334,6 +526,7 @@ Shared TypeScript configuration presets consumed by every workspace in the monor
 - [Node.js](https://nodejs.org) >= 18
 - npm >= 11 (`npm@11.3.0` is the configured package manager)
 - A running [PostgreSQL](https://www.postgresql.org) instance for the IAM database
+- A running [MongoDB](https://www.mongodb.com) instance for the inventory-and-catalog API
 
 ### Installation
 
@@ -353,6 +546,9 @@ cp apis/identity-and-access/.env.sample apis/identity-and-access/.env
 
 # Identity and Access Database
 cp dbs/identity-and-access/.env.sample dbs/identity-and-access/.env
+
+# Inventory and Catalog API
+cp apis/inventory-and-catalog/.env.sample apis/inventory-and-catalog/.env
 ```
 
 Run database migrations for the IAM database:
@@ -416,17 +612,17 @@ docker run -p 3000:3000 --env-file apis/identity-and-access/.env r6-identity-and
 
 The production image is based on `gcr.io/distroless/nodejs22-debian12` for a minimal attack surface.
 
-### @r6/me
+### @r6/inventory-and-catalog
 
 ```bash
 # Build
-docker build -f apps/me/Dockerfile -t r6-me .
+docker build -f apis/inventory-and-catalog/Dockerfile -t r6-inventory-and-catalog .
 
 # Run
-docker run -p 3000:3000 r6-me
+docker run -p 3000:3000 --env-file apis/inventory-and-catalog/.env r6-inventory-and-catalog
 ```
 
-The production image is based on `node:22-alpine` and runs under a non-root system user.
+The production image uses a minimal Alpine-based Node.js image and runs under a non-root system user.
 
 ---
 
@@ -436,10 +632,16 @@ HTTP request collections for all implemented APIs are maintained in the `api-cli
 
 ```
 api-client/
-└── identity-and-access/
-    ├── Auth/          # Register, Login, Logout, Refresh
-    ├── Main/          # Health Check, Me
-    └── Well-Known/    # JWKS
+├── identity-and-access/
+│   ├── Auth/          # Register, Login, Logout, Refresh
+│   ├── Main/          # Health Check, Me
+│   └── Well-Known/    # JWKS
+└── inventory-and-catalog/
+    ├── Catalog/       # Brands, Categories, Products, Variants
+    ├── Inventory/     # Stock, Warehouses, Movements
+    ├── Procurement/   # Suppliers, Purchase Orders, Order Items
+    ├── Seasons/       # Season management
+    └── Analytics/     # Brands, Products, Warehouses, Overview
 ```
 
 To use the collections, open Bruno and import the relevant folder. A `local` environment is pre-configured pointing to `http://localhost:3000`.
