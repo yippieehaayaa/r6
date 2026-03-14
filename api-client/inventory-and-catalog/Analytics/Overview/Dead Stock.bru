@@ -1,0 +1,15 @@
+meta {
+  name: Dead Stock
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/analytics/overview/dead-stock?threshold=300
+  body: none
+  auth: none
+}
+
+params:query {
+  threshold: 300
+}

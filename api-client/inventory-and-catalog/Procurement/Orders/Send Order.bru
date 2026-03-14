@@ -1,0 +1,11 @@
+meta {
+  name: Send Order
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/procurement/orders/{{orderId}}/send
+  body: none
+  auth: none
+}

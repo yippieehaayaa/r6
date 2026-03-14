@@ -1,0 +1,18 @@
+meta {
+  name: Update Category
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseURL}}/catalog/categories/{{categoryId}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Footwear & Sneakers",
+    "description": "All footwear and sneaker products"
+  }
+}

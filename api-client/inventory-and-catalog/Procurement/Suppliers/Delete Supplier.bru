@@ -1,0 +1,11 @@
+meta {
+  name: Delete Supplier
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseURL}}/procurement/suppliers/{{supplierId}}
+  body: none
+  auth: none
+}

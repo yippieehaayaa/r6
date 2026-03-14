@@ -1,0 +1,9 @@
+node_modules/
+generated/
+dist/
+.env
+.env.local
+.env.production
+.DS_Store
+*.log
+/src/generated/prisma

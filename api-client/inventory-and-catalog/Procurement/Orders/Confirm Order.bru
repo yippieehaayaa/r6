@@ -1,0 +1,11 @@
+meta {
+  name: Confirm Order
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseURL}}/procurement/orders/{{orderId}}/confirm
+  body: none
+  auth: none
+}

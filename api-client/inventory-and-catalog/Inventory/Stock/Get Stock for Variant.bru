@@ -1,0 +1,11 @@
+meta {
+  name: Get Stock for Variant
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/inventory/stock/{{variantId}}/{{warehouseId}}
+  body: none
+  auth: none
+}

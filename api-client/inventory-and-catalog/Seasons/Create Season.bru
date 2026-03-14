@@ -1,0 +1,28 @@
+meta {
+  name: Create Season
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/seasons
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Spring/Summer 2026",
+    "slug": "ss-2026",
+    "description": "Spring/Summer collection for 2026",
+    "startDate": "2026-03-01T00:00:00.000Z",
+    "endDate": "2026-08-31T23:59:59.000Z",
+    "isActive": true
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("seasonId", res.body.id);
+  }
+}

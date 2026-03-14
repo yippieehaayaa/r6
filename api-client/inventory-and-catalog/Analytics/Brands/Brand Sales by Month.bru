@@ -1,0 +1,15 @@
+meta {
+  name: Brand Sales by Month
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseURL}}/analytics/brands/{{brandId}}/sales-by-month
+  body: none
+  auth: none
+}
+
+params:query {
+  ~year: 2026
+}

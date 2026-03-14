@@ -1,0 +1,43 @@
+{
+	"name": "@r6/inventory-and-catalog",
+	"version": "1.0.0",
+	"author": "Joshua Dave E. Oropilla",
+	"license": "MIT",
+	"scripts": {
+		"build": "tsc",
+		"check": "biome check --write .",
+		"dev": "tsx watch ./src/index.ts",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
+		"start": "node ./dist/index.js",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:push": "prisma db push",
+		"db:seed": "prisma db seed",
+		"db:seed:fresh": "tsx prisma/seed/index.ts --fresh",
+		"db:studio": "prisma studio"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@faker-js/faker": "^9.9.0",
+		"@r6/typescript-config": "*",
+		"@r6/schemas": "*",
+		"@types/express": "^5.0.6",
+		"@types/morgan": "^1.9.10",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"@prisma/client": "^6.19.0",
+		"dotenv": "^17.3.1",
+		"express": "^5.2.1",
+		"helmet": "^8.1.0",
+		"morgan": "^1.10.1",
+		"prisma": "^6.19.0",
+		"tsx": "^4.21.0",
+		"zod": "^4.3.6"
+	},
+	"prisma": {
+		"schema": "prisma/schema",
+		"seed": "npx tsx prisma/seed/index.ts"
+	}
+}

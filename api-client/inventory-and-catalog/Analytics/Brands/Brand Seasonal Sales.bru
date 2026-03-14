@@ -1,0 +1,16 @@
+meta {
+  name: Brand Seasonal Sales
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseURL}}/analytics/brands/{{brandId}}/seasonal-sales
+  body: none
+  auth: none
+}
+
+params:query {
+  ~year: 2026
+  ~isActive: true
+}

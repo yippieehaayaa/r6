@@ -1,0 +1,35 @@
+meta {
+  name: Create Supplier
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/procurement/suppliers
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Acme Textiles",
+    "code": "ACME-TEX",
+    "contactName": "Jane Doe",
+    "contactEmail": "jane@acmetextiles.com",
+    "contactPhone": "+1-555-0100",
+    "address": {
+      "street": "123 Fabric Lane",
+      "city": "New York",
+      "state": "NY",
+      "country": "US",
+      "postal": "10001"
+    },
+    "isActive": true
+  }
+}
+
+script:post-response {
+  if (res.status === 201) {
+    bru.setEnvVar("supplierId", res.body.id);
+  }
+}

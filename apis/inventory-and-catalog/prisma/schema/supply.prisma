@@ -1,0 +1,79 @@
+// Vendor / supplier of goods
+model Supplier {
+    id             String        @id @default(auto()) @map("_id") @db.ObjectId
+    name           String        @unique
+    code           String        @unique
+    contactName    String?
+    contactEmail   String?
+    contactPhone   String?
+    address        AddressEmbed?
+    isActive       Boolean       @default(true)
+
+    // Relations
+    purchaseOrders PurchaseOrder[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Indexes
+    @@index([isActive])
+    @@index([deletedAt])
+    @@map("suppliers")
+}
+
+// Replenishment order raised against a supplier
+model PurchaseOrder {
+    id          String              @id @default(auto()) @map("_id") @db.ObjectId
+    orderNumber String              @unique
+    status      PurchaseOrderStatus @default(DRAFT)
+    expectedAt  DateTime?
+    notes       String?
+
+    // Relations
+    supplierId String   @db.ObjectId
+    supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+    warehouseId String    @db.ObjectId
+    warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+    items PurchaseOrderItem[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Indexes
+    @@index([supplierId])
+    @@index([supplierId, status])
+    @@index([warehouseId])
+    @@index([status])
+    @@index([deletedAt])
+    @@map("purchase_orders")
+}
+
+// Individual line item on a purchase order — O(1) via composite unique
+model PurchaseOrderItem {
+    id               String @id @default(auto()) @map("_id") @db.ObjectId
+    quantityOrdered  Int
+    quantityReceived Int    @default(0)
+    unitCost         Int
+
+    // Relations
+    purchaseOrderId String        @db.ObjectId
+    purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id])
+
+    variantId String         @db.ObjectId
+    variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Composite unique → prevents duplicate line items per order
+    @@unique([purchaseOrderId, variantId])
+    @@index([variantId])
+    @@map("purchase_order_items")
+}
