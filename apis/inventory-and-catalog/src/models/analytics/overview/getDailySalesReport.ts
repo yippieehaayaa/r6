@@ -211,7 +211,9 @@ const getDailySalesReport = async (date: Date): Promise<DailySalesReport> => {
   const totalRevenue = toMajorUnits(totalRevenueMinor);
   const totalTransactions = transactionIds.size;
   const averageTransactionValue =
-    totalTransactions > 0 ? totalRevenue / totalTransactions : 0;
+    totalTransactions > 0
+      ? toMajorUnits(totalRevenueMinor / totalTransactions)
+      : 0;
 
   const byBrand: DailySalesByBrand[] = Array.from(revenueByBrand.entries()).map(
     ([brandId, value]) => ({
