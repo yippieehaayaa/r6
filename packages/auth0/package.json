@@ -1,0 +1,37 @@
+{
+	"name": "@r6/auth0",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"build": "tsup src",
+		"check": "biome check --write .",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
+		"watch": "tsup src --watch"
+	},
+	"dependencies": {
+		"express-oauth2-jwt-bearer": "^1.7.1",
+		"express-openid-connect": "^2.19.3"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@r6/typescript-config": "0.0.0",
+		"@types/express": "^5.0.5",
+		"tsup": "8.5.1",
+		"typescript": "5.9.3"
+	},
+	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
+	"description": "Shared Auth0 (Okta) middleware helpers for Express services",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		}
+	},
+	"license": "MIT",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"sideEffects": false,
+	"types": "./dist/index.d.ts"
+}
