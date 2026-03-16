@@ -229,8 +229,8 @@ export default function ScrollJourneyScene({
 		const scene = new THREE.Scene();
 		scene.fog = new THREE.FogExp2(0x07040b, 0.06);
 
-		const camera = new THREE.PerspectiveCamera(52, width / height, 0.1, 70);
-		camera.position.set(0, 1.4, 4.2);
+		const camera = new THREE.PerspectiveCamera(72, width / height, 0.1, 90);
+		camera.position.set(0, 2.6, 9.6);
 
 		const renderer = new THREE.WebGLRenderer({
 			antialias: false,
@@ -451,7 +451,7 @@ export default function ScrollJourneyScene({
 		}
 
 		const car = new THREE.Group();
-		car.scale.setScalar(0.72);
+		car.scale.setScalar(0.38);
 		scene.add(car);
 
 		const bodyMaterial = new THREE.MeshStandardMaterial({
@@ -593,7 +593,7 @@ export default function ScrollJourneyScene({
 		);
 		scene.add(stars);
 
-		const cameraOffset = new THREE.Vector3(0, 1.45, 3.85);
+		const cameraOffset = new THREE.Vector3(0, 2.4, 8.1);
 		const targetQuat = new THREE.Quaternion();
 		const lookAhead = new THREE.Vector3();
 		const cameraTarget = new THREE.Vector3();

@@ -653,19 +653,21 @@ section[id] {
 .journey-panel-stack {
   position: relative;
   display: grid;
-  width: min(860px, 100%);
+  width: min(1020px, 100%);
+  max-width: 100%;
   align-self: center;
 }
 
 .journey-panel {
   grid-area: 1 / 1;
-  transition: opacity 260ms ease, transform 320ms ease;
-  will-change: opacity, transform;
+  transition: none;
+  will-change: auto;
 }
 
 .journey-card {
   pointer-events: auto;
-  max-height: min(68dvh, 760px);
+  width: 100%;
+  max-height: min(76dvh, 860px);
   min-width: 0;
   overflow: auto;
   border-radius: calc(var(--radius) * 1.25);
@@ -681,12 +683,12 @@ section[id] {
 
 .journey-card-content {
   display: grid;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 
 .journey-copy-primary {
   margin: 0;
-  font-size: clamp(1rem, 0.86rem + 0.72vw, 1.45rem);
+  font-size: clamp(1.12rem, 0.9rem + 0.95vw, 1.95rem);
   line-height: 1.3;
   color: color-mix(in oklab, var(--foreground) 92%, var(--primary));
   font-weight: 620;
@@ -694,16 +696,10 @@ section[id] {
 
 .journey-description {
   margin: 0;
-  max-width: 64ch;
-  line-height: 1.6;
+  max-width: 72ch;
+  line-height: 1.7;
   color: var(--muted-foreground);
-  font-size: 0.92rem;
-}
-
-.journey-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.56rem;
+  font-size: 1rem;
 }
 
 .journey-list {
@@ -716,14 +712,14 @@ section[id] {
 
 .journey-work-grid {
   display: grid;
-  gap: 0.62rem;
+  gap: 0.78rem;
 }
 
 .journey-work-item {
   border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
   border-radius: calc(var(--radius) * 0.88);
   background: color-mix(in oklab, var(--background) 35%, transparent);
-  padding: 0.72rem 0.78rem;
+  padding: 0.92rem 0.96rem;
 }
 
 .journey-work-item h3 {
@@ -734,7 +730,7 @@ section[id] {
 
 .journey-work-item p {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: 0.92rem;
   line-height: 1.5;
   color: var(--muted-foreground);
 }
@@ -748,7 +744,7 @@ section[id] {
 
 .journey-skills-grid {
   display: grid;
-  gap: 0.72rem;
+  gap: 0.92rem;
 }
 
 .journey-skill-group {
@@ -802,14 +798,9 @@ section[id] {
 }
 
 .journey-contact-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.56rem;
-}
-
-.journey-contact-separator {
-  width: 100%;
-  margin-block: 0.2rem;
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
 }
 
 .journey-contact-note {
@@ -923,11 +914,11 @@ section[id] {
   .journey-panel-stack {
     align-self: flex-start;
     margin-left: min(4vw, 2.4rem);
-    width: min(760px, 100%);
+    width: min(960px, calc(100% - min(4vw, 2.4rem) * 2));
   }
 
   .journey-progress-rail {
-    width: min(640px, calc(100% - min(4vw, 2.8rem) * 2));
+    width: min(760px, calc(100% - min(4vw, 2.8rem) * 2));
     align-self: flex-start;
     margin-left: min(4vw, 2.8rem);
   }
@@ -935,7 +926,7 @@ section[id] {
 
 @media (max-width: 900px) {
   .journey-card {
-    max-height: min(60dvh, 640px);
+    max-height: min(72dvh, 760px);
   }
 
   .journey-progress-stops {
@@ -950,7 +941,7 @@ section[id] {
 @media (max-width: 720px) {
   .journey-overlay {
     padding: 0.8rem;
-    gap: 0.64rem;
+    gap: 0.7rem;
   }
 
   .journey-hud {
@@ -972,12 +963,11 @@ section[id] {
   }
 
   .journey-card {
-    max-height: min(65dvh, 620px);
+    max-height: min(70dvh, 760px);
   }
 
-  .journey-actions .inline-flex,
   .journey-contact-actions .inline-flex {
-    flex: 1 1 auto;
+    width: 100%;
   }
 
   .journey-progress-rail {
@@ -996,15 +986,15 @@ section[id] {
   }
 
   .journey-card {
-    max-height: min(67dvh, 620px);
+    max-height: min(72dvh, 760px);
   }
 
   .journey-copy-primary {
-    font-size: 1rem;
+    font-size: 1.08rem;
   }
 
   .journey-description {
-    font-size: 0.86rem;
+    font-size: 0.91rem;
   }
 
   .journey-stop-link {

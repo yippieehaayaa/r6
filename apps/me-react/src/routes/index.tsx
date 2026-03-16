@@ -1,6 +1,6 @@
-import { Badge, Button, Card, CardContent, Progress, Separator } from "@r6/ui";
+import { Badge, Button, Card, CardContent, Progress } from "@r6/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowUpDown, ArrowUpRight, Mail } from "lucide-react";
+import { ArrowUpDown, Mail } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import SkillPill from "../components/SkillPill";
 import {
@@ -15,27 +15,8 @@ const ScrollJourneyScene = lazy(
 	() => import("../components/ScrollJourneyScene"),
 );
 
-const stageRevealWidth: Record<JourneyStage["id"], number> = {
-	hero: 0.24,
-	about: 0.2,
-	work: 0.22,
-	skills: 0.22,
-	contact: 0.2,
-};
-
 function clamp(value: number, min = 0, max = 1) {
 	return Math.min(Math.max(value, min), max);
-}
-
-function stageStrength(
-	progress: number,
-	stageProgress: number,
-	width: number,
-	smoothing = 1,
-) {
-	const distance = Math.abs(progress - stageProgress);
-	const normalized = clamp(1 - distance / width);
-	return normalized ** smoothing;
 }
 
 function nearestStage(progress: number) {
@@ -202,31 +183,9 @@ function PortfolioJourneyPage() {
 						</div>
 
 						<div className="journey-panel-stack">
-							{journeyStages.map((stage) => {
-								const strength = stageStrength(
-									progress,
-									stage.progress,
-									stageRevealWidth[stage.id],
-									1.35,
-								);
-
-								return (
-									<article
-										key={stage.id}
-										className="journey-panel"
-										aria-hidden={strength < 0.12}
-										style={{
-											opacity: strength,
-											transform: `translate3d(0, ${Math.round(
-												(1 - strength) * 30,
-											)}px, 0) scale(${(0.975 + strength * 0.025).toFixed(3)})`,
-											pointerEvents: strength > 0.5 ? "auto" : "none",
-										}}
-									>
-										<PanelContent stage={stage} />
-									</article>
-								);
-							})}
+							<article key={activeStage.id} className="journey-panel">
+								<PanelContent stage={activeStage} />
+							</article>
 						</div>
 
 						<div className="journey-progress-rail" aria-live="polite">
@@ -282,21 +241,6 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 					<CardContent className="journey-card-content">
 						<p className="journey-copy-primary">{profile.headline}</p>
 						<p className="journey-description">{profile.support}</p>
-						<div className="journey-actions">
-							<Button asChild size="lg">
-								<a href={profile.emailLink}>Start a build conversation</a>
-							</Button>
-							<Button asChild variant="outline" size="lg">
-								<a href={profile.github} target="_blank" rel="noreferrer">
-									GitHub <ArrowUpRight className="size-3.5" />
-								</a>
-							</Button>
-							<Button asChild variant="outline" size="lg">
-								<a href={profile.linkedin} target="_blank" rel="noreferrer">
-									LinkedIn <ArrowUpRight className="size-3.5" />
-								</a>
-							</Button>
-						</div>
 					</CardContent>
 				</Card>
 			);
@@ -368,17 +312,6 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 								{profile.email}
 							</a>
 						</Button>
-						<Button asChild variant="outline" size="lg">
-							<a href={profile.github} target="_blank" rel="noreferrer">
-								GitHub <ArrowUpRight className="size-3.5" />
-							</a>
-						</Button>
-						<Button asChild variant="outline" size="lg">
-							<a href={profile.linkedin} target="_blank" rel="noreferrer">
-								LinkedIn <ArrowUpRight className="size-3.5" />
-							</a>
-						</Button>
-						<Separator className="journey-contact-separator" />
 						<p className="journey-contact-note">
 							Open to building practical software systems with product teams and
 							operations-heavy environments.
