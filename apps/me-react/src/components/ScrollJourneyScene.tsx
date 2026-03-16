@@ -304,94 +304,123 @@ export default function ScrollJourneyScene({
 		}
 
 		const car = new THREE.Group();
+		car.scale.setScalar(0.72);
 		scene.add(car);
 
+		const bodyMaterial = new THREE.MeshStandardMaterial({
+			color: 0xcbd1d7,
+			emissive: 0x1d2127,
+			emissiveIntensity: 0.2,
+			roughness: 0.22,
+			metalness: 0.88,
+		});
+		const glassMaterial = new THREE.MeshStandardMaterial({
+			color: 0x0f1319,
+			emissive: 0x2a3443,
+			emissiveIntensity: 0.28,
+			roughness: 0.12,
+			metalness: 0.54,
+		});
+		const trimMaterial = new THREE.MeshStandardMaterial({
+			color: 0x101318,
+			roughness: 0.5,
+			metalness: 0.5,
+		});
+
 		const carBody = new THREE.Mesh(
-			new THREE.BoxGeometry(1.04, 0.28, 1.86),
-			new THREE.MeshStandardMaterial({
-				color: 0xffd362,
-				emissive: 0x6f4b00,
-				emissiveIntensity: 0.48,
-				roughness: 0.38,
-				metalness: 0.54,
-			}),
+			new THREE.BoxGeometry(1.02, 0.17, 1.62),
+			bodyMaterial,
 		);
-		carBody.position.y = 0.15;
+		carBody.position.y = 0.08;
 		car.add(carBody);
 
-		const carCabin = new THREE.Mesh(
-			new THREE.BoxGeometry(0.64, 0.25, 0.72),
-			new THREE.MeshStandardMaterial({
-				color: 0x131419,
-				emissive: 0x332640,
-				emissiveIntensity: 0.2,
-				roughness: 0.2,
-				metalness: 0.4,
-			}),
+		const hoodWedge = new THREE.Mesh(
+			new THREE.BoxGeometry(0.94, 0.16, 0.82),
+			bodyMaterial,
 		);
-		carCabin.position.set(0, 0.36, 0.08);
+		hoodWedge.position.set(0, 0.21, -0.32);
+		hoodWedge.rotation.x = -0.28;
+		car.add(hoodWedge);
+
+		const bedWedge = new THREE.Mesh(
+			new THREE.BoxGeometry(0.94, 0.13, 0.74),
+			bodyMaterial,
+		);
+		bedWedge.position.set(0, 0.24, 0.47);
+		bedWedge.rotation.x = 0.24;
+		car.add(bedWedge);
+
+		const carCabin = new THREE.Mesh(
+			new THREE.BoxGeometry(0.64, 0.12, 0.72),
+			glassMaterial,
+		);
+		carCabin.position.set(0, 0.34, 0.03);
+		carCabin.rotation.x = -0.2;
 		car.add(carCabin);
 
 		const carRoof = new THREE.Mesh(
-			new THREE.BoxGeometry(0.46, 0.12, 0.5),
-			new THREE.MeshStandardMaterial({
-				color: 0x1a171f,
-				emissive: 0x2a2034,
-				emissiveIntensity: 0.2,
-				roughness: 0.25,
-				metalness: 0.36,
-			}),
+			new THREE.BoxGeometry(0.48, 0.05, 0.46),
+			bodyMaterial,
 		);
-		carRoof.position.set(0, 0.5, 0.1);
+		carRoof.position.set(0, 0.42, 0.09);
+		carRoof.rotation.x = -0.18;
 		car.add(carRoof);
 
-		const spoiler = new THREE.Mesh(
-			new THREE.BoxGeometry(0.56, 0.07, 0.13),
-			new THREE.MeshStandardMaterial({
-				color: 0x0f0d14,
-				roughness: 0.5,
-				metalness: 0.5,
-			}),
+		const sideSkirtLeft = new THREE.Mesh(
+			new THREE.BoxGeometry(0.06, 0.1, 1.36),
+			trimMaterial,
 		);
-		spoiler.position.set(0, 0.34, 0.92);
-		car.add(spoiler);
+		sideSkirtLeft.position.set(-0.53, 0.06, 0);
+		car.add(sideSkirtLeft);
 
-		const wheelGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.14);
+		const sideSkirtRight = sideSkirtLeft.clone();
+		sideSkirtRight.position.x = 0.53;
+		car.add(sideSkirtRight);
+
+		const rearTopTrim = new THREE.Mesh(
+			new THREE.BoxGeometry(0.86, 0.04, 0.2),
+			trimMaterial,
+		);
+		rearTopTrim.position.set(0, 0.35, 0.78);
+		car.add(rearTopTrim);
+
+		const wheelGeometry = new THREE.CylinderGeometry(0.14, 0.14, 0.1, 14);
 		const wheelMaterial = new THREE.MeshStandardMaterial({
-			color: 0x0a090d,
-			roughness: 0.78,
-			metalness: 0.1,
+			color: 0x08090b,
+			roughness: 0.8,
+			metalness: 0.12,
 		});
 		const wheelOffsets = [
-			[-0.43, 0.02, -0.62],
-			[0.43, 0.02, -0.62],
-			[-0.43, 0.02, 0.62],
-			[0.43, 0.02, 0.62],
+			[-0.44, -0.01, -0.5],
+			[0.44, -0.01, -0.5],
+			[-0.44, -0.01, 0.5],
+			[0.44, -0.01, 0.5],
 		] as const;
 		const wheels: THREE.Mesh[] = [];
 		for (const [x, y, z] of wheelOffsets) {
 			const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
+			wheel.rotation.z = Math.PI / 2;
 			wheel.position.set(x, y, z);
 			car.add(wheel);
 			wheels.push(wheel);
 		}
 
 		const frontPixels = new THREE.Mesh(
-			new THREE.BoxGeometry(0.5, 0.06, 0.03),
+			new THREE.BoxGeometry(0.76, 0.04, 0.03),
 			new THREE.MeshBasicMaterial({
-				color: 0xfff8d5,
+				color: 0xf8f7f2,
 			}),
 		);
-		frontPixels.position.set(0, 0.15, -0.95);
+		frontPixels.position.set(0, 0.2, -0.98);
 		car.add(frontPixels);
 
 		const rearPixels = new THREE.Mesh(
-			new THREE.BoxGeometry(0.5, 0.05, 0.03),
+			new THREE.BoxGeometry(0.7, 0.036, 0.03),
 			new THREE.MeshBasicMaterial({
-				color: 0xff4f9d,
+				color: 0xff3f87,
 			}),
 		);
-		rearPixels.position.set(0, 0.15, 0.95);
+		rearPixels.position.set(0, 0.23, 0.95);
 		car.add(rearPixels);
 
 		const starsCount = lowPowerDevice ? 180 : 280;
@@ -441,7 +470,7 @@ export default function ScrollJourneyScene({
 			const bodyLift = allowMotion
 				? Math.sin(elapsed * 6.2 + steppedProgress * 9) * 0.013
 				: 0;
-			car.position.set(point.x, point.y + 0.18 + bodyLift, point.z);
+			car.position.set(point.x, point.y + 0.08 + bodyLift, point.z);
 
 			const wheelSpin = allowMotion ? elapsed * 8 : 0;
 			for (const wheel of wheels) {
