@@ -7,7 +7,9 @@
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc -b && vite build",
-		"lint": "eslint .",
+		"check": "biome check --write .",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
 		"preview": "vite preview"
 	},
 	"dependencies": {
@@ -15,6 +17,7 @@
 		"react-dom": "^19.2.4"
 	},
 	"devDependencies": {
+		"@r6/typescript-config": "*",
 		"@babel/core": "^7.29.0",
 		"@biomejs/biome": "2.4.4",
 		"@rolldown/plugin-babel": "^0.2.0",
