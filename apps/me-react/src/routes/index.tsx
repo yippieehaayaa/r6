@@ -1,13 +1,6 @@
-import {
-	Badge,
-	Button,
-	Card,
-	CardContent,
-	Progress,
-	Separator,
-} from "@r6/ui";
+import { Badge, Button, Card, CardContent, Progress, Separator } from "@r6/ui";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowDown, ArrowUpRight, Mail, MapPin } from "lucide-react";
+import { ArrowUpDown, ArrowUpRight, Mail } from "lucide-react";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import SkillPill from "../components/SkillPill";
 import {
@@ -63,55 +56,98 @@ export const Route = createFileRoute("/")({
 });
 
 function PortfolioJourneyPage() {
-	const trackRef = useRef<HTMLDivElement | null>(null);
-	const stageRefs = useRef<
-		Partial<Record<JourneyStage["id"], HTMLElement | null>>
-	>({});
-	const [progress, setProgress] = useState(0);
+	const initialProgress = journeyStages[0]?.progress ?? 0;
+	const progressRef = useRef(initialProgress);
+	const targetProgressRef = useRef(initialProgress);
+	const keysRef = useRef({ up: false, down: false });
+	const [progress, setProgress] = useState(initialProgress);
 
 	useEffect(() => {
-		const track = trackRef.current;
-		if (!track) {
-			return;
-		}
+		progressRef.current = progress;
+	}, [progress]);
 
+	useEffect(() => {
 		let frame = 0;
+		let previousTime = performance.now();
 
-		const measureProgress = () => {
-			const totalScrollable = Math.max(
-				track.offsetHeight - window.innerHeight,
-				1,
-			);
-			const topOffset = track.getBoundingClientRect().top;
-			const traveled = clamp(-topOffset, 0, totalScrollable);
-			const nextProgress = clamp(traveled / totalScrollable);
+		const shouldIgnoreKey = (target: EventTarget | null) => {
+			if (!(target instanceof HTMLElement)) {
+				return false;
+			}
 
-			setProgress((current) =>
-				Math.abs(current - nextProgress) > 0.0008 ? nextProgress : current,
+			const tagName = target.tagName.toLowerCase();
+			return (
+				tagName === "input" ||
+				tagName === "textarea" ||
+				tagName === "select" ||
+				target.isContentEditable
 			);
 		};
 
-		const requestMeasure = () => {
-			if (frame !== 0) {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (shouldIgnoreKey(event.target)) {
 				return;
 			}
-			frame = window.requestAnimationFrame(() => {
-				frame = 0;
-				measureProgress();
-			});
+
+			if (event.key === "ArrowUp") {
+				keysRef.current.up = true;
+				event.preventDefault();
+			}
+			if (event.key === "ArrowDown") {
+				keysRef.current.down = true;
+				event.preventDefault();
+			}
 		};
 
-		const resizeObserver = new ResizeObserver(requestMeasure);
-		resizeObserver.observe(track);
+		const onKeyUp = (event: KeyboardEvent) => {
+			if (event.key === "ArrowUp") {
+				keysRef.current.up = false;
+			}
+			if (event.key === "ArrowDown") {
+				keysRef.current.down = false;
+			}
+		};
 
-		measureProgress();
-		window.addEventListener("scroll", requestMeasure, { passive: true });
-		window.addEventListener("resize", requestMeasure);
+		const clearKeys = () => {
+			keysRef.current.up = false;
+			keysRef.current.down = false;
+		};
+
+		const tick = (time: number) => {
+			const dt = Math.min((time - previousTime) / 1000, 0.05);
+			previousTime = time;
+
+			const speed = 0.52;
+			let target = targetProgressRef.current;
+			if (keysRef.current.up && !keysRef.current.down) {
+				target += speed * dt;
+			}
+			if (keysRef.current.down && !keysRef.current.up) {
+				target -= speed * dt;
+			}
+			target = clamp(target);
+			targetProgressRef.current = target;
+
+			const current = progressRef.current;
+			const lerpFactor = 1 - Math.exp(-8 * dt);
+			const next = current + (target - current) * lerpFactor;
+			if (Math.abs(next - current) > 0.0001) {
+				progressRef.current = next;
+				setProgress(next);
+			}
+
+			frame = window.requestAnimationFrame(tick);
+		};
+
+		frame = window.requestAnimationFrame(tick);
+		window.addEventListener("keydown", onKeyDown, { passive: false });
+		window.addEventListener("keyup", onKeyUp);
+		window.addEventListener("blur", clearKeys);
 
 		return () => {
-			resizeObserver.disconnect();
-			window.removeEventListener("scroll", requestMeasure);
-			window.removeEventListener("resize", requestMeasure);
+			window.removeEventListener("keydown", onKeyDown);
+			window.removeEventListener("keyup", onKeyUp);
+			window.removeEventListener("blur", clearKeys);
 			window.cancelAnimationFrame(frame);
 		};
 	}, []);
@@ -119,15 +155,11 @@ function PortfolioJourneyPage() {
 	const activeStage = useMemo(() => nearestStage(progress), [progress]);
 
 	const goToStage = (stageId: JourneyStage["id"]) => {
-		const stageElement = stageRefs.current[stageId];
-		if (!stageElement) {
+		const stage = journeyStages.find((item) => item.id === stageId);
+		if (!stage) {
 			return;
 		}
-
-		stageElement.scrollIntoView({
-			behavior: "smooth",
-			block: "start",
-		});
+		targetProgressRef.current = stage.progress;
 	};
 
 	return (
@@ -137,7 +169,7 @@ function PortfolioJourneyPage() {
 			</h1>
 			<section
 				className="journey-shell"
-				aria-label="Scroll-driven engineering journey"
+				aria-label="Arrow-key-driven engineering journey"
 			>
 				<div className="journey-sticky">
 					<Suspense fallback={<div className="journey-scene-loading" />}>
@@ -146,10 +178,27 @@ function PortfolioJourneyPage() {
 
 					<div className="journey-overlay">
 						<div className="journey-hud">
-							<p className="journey-hud-meta">
-								<MapPin className="size-3.5" aria-hidden="true" />
-								<span>{profile.location}</span>
-							</p>
+							<p className="journey-hud-name">{profile.name}</p>
+							<div className="journey-hud-links">
+								<a
+									href={profile.github}
+									target="_blank"
+									rel="noreferrer"
+									className="journey-social-link"
+									aria-label="Open GitHub profile"
+								>
+									<SocialLogo kind="github" />
+								</a>
+								<a
+									href={profile.linkedin}
+									target="_blank"
+									rel="noreferrer"
+									className="journey-social-link"
+									aria-label="Open LinkedIn profile"
+								>
+									<SocialLogo kind="linkedin" />
+								</a>
+							</div>
 						</div>
 
 						<div className="journey-panel-stack">
@@ -215,26 +264,10 @@ function PortfolioJourneyPage() {
 						</div>
 
 						<p className="journey-scroll-hint">
-							<ArrowDown className="size-4" aria-hidden="true" />
-							Scroll to continue
+							<ArrowUpDown className="size-4" aria-hidden="true" />
+							Use up/down arrows to drive
 						</p>
 					</div>
-				</div>
-
-				<div ref={trackRef} className="journey-scroll-track" aria-hidden="true">
-					{journeyStages.map((stage) => (
-						<section
-							key={stage.id}
-							id={stage.id}
-							className="journey-scroll-step"
-							ref={(node) => {
-								stageRefs.current[stage.id] = node;
-							}}
-						>
-							<h2 className="sr-only">{stage.title}</h2>
-							<p className="sr-only">{stage.summary}</p>
-						</section>
-					))}
 				</div>
 			</section>
 		</main>
@@ -251,7 +284,7 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 						<p className="journey-description">{profile.support}</p>
 						<div className="journey-actions">
 							<Button asChild size="lg">
-								<a href="#contact">Start a build conversation</a>
+								<a href={profile.emailLink}>Start a build conversation</a>
 							</Button>
 							<Button asChild variant="outline" size="lg">
 								<a href={profile.github} target="_blank" rel="noreferrer">
@@ -273,9 +306,15 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 					<CardContent className="journey-card-content">
 						<p className="journey-description">{stage.summary}</p>
 						<ul className="journey-list">
-							<li>Find process gaps quickly and validate the actual bottleneck.</li>
-							<li>Design maintainable flows across UI, API, and data boundaries.</li>
-							<li>Streamline operations so teams move faster with less friction.</li>
+							<li>
+								Find process gaps quickly and validate the actual bottleneck.
+							</li>
+							<li>
+								Design maintainable flows across UI, API, and data boundaries.
+							</li>
+							<li>
+								Streamline operations so teams move faster with less friction.
+							</li>
 						</ul>
 					</CardContent>
 				</Card>
@@ -350,4 +389,31 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 		default:
 			return null;
 	}
+}
+
+function SocialLogo({ kind }: { kind: "github" | "linkedin" }) {
+	const [failed, setFailed] = useState(false);
+
+	if (failed) {
+		return (
+			<span className="journey-social-fallback" aria-hidden="true">
+				{kind === "linkedin" ? "in" : "GH"}
+			</span>
+		);
+	}
+
+	const src =
+		kind === "github"
+			? "https://cdn.simpleicons.org/github/FFFFFF"
+			: "https://cdn.simpleicons.org/linkedin/0A66C2";
+
+	return (
+		<img
+			src={src}
+			alt=""
+			width={16}
+			height={16}
+			onError={() => setFailed(true)}
+		/>
+	);
 }

@@ -26,7 +26,7 @@ export const journeyStages: JourneyStage[] = [
 		kicker: "Hero",
 		title: profile.headline,
 		summary:
-			"Scroll to drive the scene. This portfolio is a guided engineering journey, not a static resume.",
+			"Use the up and down arrow keys to drive the scene. This portfolio is a guided engineering journey, not a static resume.",
 		progress: 0.04,
 	},
 	{

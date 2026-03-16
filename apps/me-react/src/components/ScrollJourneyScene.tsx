@@ -5,11 +5,10 @@ type ScrollJourneySceneProps = {
 	progress: number;
 };
 
-type NeonGate = {
-	group: THREE.Group;
-	material: THREE.MeshStandardMaterial;
+type StreetLight = {
+	lampMaterial: THREE.MeshStandardMaterial;
+	beamLight: THREE.SpotLight;
 	progress: number;
-	index: number;
 };
 
 const FORWARD = new THREE.Vector3(0, 0, -1);
@@ -34,6 +33,125 @@ function canUseWebGL() {
 	} catch {
 		return false;
 	}
+}
+
+function createBuildingTexture() {
+	const canvas = document.createElement("canvas");
+	canvas.width = 128;
+	canvas.height = 256;
+	const context = canvas.getContext("2d");
+	if (!context) {
+		const fallback = new THREE.Texture();
+		fallback.needsUpdate = true;
+		return fallback;
+	}
+
+	const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+	gradient.addColorStop(0, "#111723");
+	gradient.addColorStop(0.52, "#0d111a");
+	gradient.addColorStop(1, "#090c14");
+	context.fillStyle = gradient;
+	context.fillRect(0, 0, canvas.width, canvas.height);
+
+	context.strokeStyle = "rgba(150, 170, 198, 0.14)";
+	context.lineWidth = 1;
+	for (let x = 0; x <= canvas.width; x += 16) {
+		context.beginPath();
+		context.moveTo(x + 0.5, 0);
+		context.lineTo(x + 0.5, canvas.height);
+		context.stroke();
+	}
+	for (let y = 0; y <= canvas.height; y += 22) {
+		context.beginPath();
+		context.moveTo(0, y + 0.5);
+		context.lineTo(canvas.width, y + 0.5);
+		context.stroke();
+	}
+
+	for (let y = 9; y < canvas.height - 12; y += 14) {
+		for (let x = 8; x < canvas.width - 10; x += 12) {
+			const lit = Math.random() > 0.3;
+			context.fillStyle = lit ? "#f5d77a" : "#1f2a3d";
+			context.fillRect(x, y, 6, 8);
+		}
+	}
+
+	for (let i = 0; i < 14; i++) {
+		const signWidth = 10 + Math.random() * 24;
+		const signHeight = 2 + Math.random() * 4;
+		const signX = Math.random() * (canvas.width - signWidth - 4) + 2;
+		const signY = Math.random() * (canvas.height - 26) + 12;
+		context.fillStyle = Math.random() > 0.5 ? "#2fdcff" : "#ff4aa2";
+		context.globalAlpha = 0.45 + Math.random() * 0.35;
+		context.fillRect(signX, signY, signWidth, signHeight);
+	}
+	context.globalAlpha = 1;
+
+	for (let i = 0; i < 1400; i++) {
+		const noiseX = Math.floor(Math.random() * canvas.width);
+		const noiseY = Math.floor(Math.random() * canvas.height);
+		const alpha = Math.random() * 0.06;
+		context.fillStyle = `rgba(255,255,255,${alpha.toFixed(3)})`;
+		context.fillRect(noiseX, noiseY, 1, 1);
+	}
+
+	context.strokeStyle = "#1b1f2c";
+	context.lineWidth = 2;
+	context.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
+
+	const texture = new THREE.CanvasTexture(canvas);
+	texture.colorSpace = THREE.SRGBColorSpace;
+	texture.wrapS = THREE.RepeatWrapping;
+	texture.wrapT = THREE.RepeatWrapping;
+	texture.repeat.set(1.2, 2.4);
+	texture.magFilter = THREE.NearestFilter;
+	texture.minFilter = THREE.NearestMipMapNearestFilter;
+	return texture;
+}
+
+function createAsphaltTexture() {
+	const canvas = document.createElement("canvas");
+	canvas.width = 128;
+	canvas.height = 128;
+	const context = canvas.getContext("2d");
+	if (!context) {
+		const fallback = new THREE.Texture();
+		fallback.needsUpdate = true;
+		return fallback;
+	}
+
+	context.fillStyle = "#262a31";
+	context.fillRect(0, 0, canvas.width, canvas.height);
+
+	for (let i = 0; i < 5000; i++) {
+		const tone = 34 + Math.floor(Math.random() * 36);
+		const alpha = 0.08 + Math.random() * 0.2;
+		context.fillStyle = `rgba(${tone}, ${tone}, ${tone}, ${alpha.toFixed(3)})`;
+		context.fillRect(
+			Math.floor(Math.random() * canvas.width),
+			Math.floor(Math.random() * canvas.height),
+			1,
+			1,
+		);
+	}
+
+	context.strokeStyle = "rgba(16, 18, 22, 0.45)";
+	context.lineWidth = 1;
+	for (let i = 0; i < 16; i++) {
+		context.beginPath();
+		context.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+		context.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+		context.stroke();
+	}
+
+	const texture = new THREE.CanvasTexture(canvas);
+	texture.colorSpace = THREE.SRGBColorSpace;
+	texture.wrapS = THREE.RepeatWrapping;
+	texture.wrapT = THREE.RepeatWrapping;
+	texture.repeat.set(2.2, 12);
+	texture.magFilter = THREE.NearestFilter;
+	texture.minFilter = THREE.NearestMipMapNearestFilter;
+	return texture;
 }
 
 function disposeObject3D(root: THREE.Object3D) {
@@ -139,51 +257,46 @@ export default function ScrollJourneyScene({
 		const routePath = new THREE.CatmullRomCurve3(
 			[
 				new THREE.Vector3(0, 0, 2),
-				new THREE.Vector3(1.25, 0.1, -2.4),
-				new THREE.Vector3(-1.35, 0.2, -6.8),
-				new THREE.Vector3(1.5, 0.22, -11),
-				new THREE.Vector3(-1.4, 0.2, -14.8),
-				new THREE.Vector3(1.3, 0.15, -18.9),
-				new THREE.Vector3(-0.2, 0.2, -23),
+				new THREE.Vector3(0, 0, -1),
+				new THREE.Vector3(0, 0, -4),
+				new THREE.Vector3(0, 0, -7),
+				new THREE.Vector3(0, 0, -10),
+				new THREE.Vector3(0, 0, -13),
+				new THREE.Vector3(0, 0, -16),
+				new THREE.Vector3(0, 0, -19.5),
+				new THREE.Vector3(0, 0, -23.2),
 			],
 			false,
 			"catmullrom",
-			0.1,
+			0.5,
 		);
 
-		const ground = new THREE.Mesh(
-			new THREE.PlaneGeometry(120, 120),
-			new THREE.MeshStandardMaterial({
-				color: 0x050507,
-				roughness: 1,
-				metalness: 0,
-			}),
-		);
-		ground.rotation.x = -Math.PI / 2;
-		ground.position.y = -0.95;
-		scene.add(ground);
-
-		const roadTilesCount = lowPowerDevice ? 96 : 150;
-		const roadTileGeometry = new THREE.BoxGeometry(1.16, 0.08, 0.7);
-		const laneTileGeometry = new THREE.BoxGeometry(0.14, 0.04, 0.25);
-		const roadMaterialA = new THREE.MeshStandardMaterial({
-			color: 0x120d17,
-			emissive: 0x2f1037,
-			emissiveIntensity: 0.25,
-			roughness: 0.8,
-			metalness: 0.2,
+		const asphaltTexture = createAsphaltTexture();
+		const roadTilesCount = lowPowerDevice ? 120 : 200;
+		const roadTileGeometry = new THREE.BoxGeometry(1.2, 0.08, 0.6);
+		const sidewalkTileGeometry = new THREE.BoxGeometry(0.52, 0.09, 0.6);
+		const curbGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.6);
+		const laneTileGeometry = new THREE.BoxGeometry(0.12, 0.03, 0.2);
+		const roadMaterial = new THREE.MeshStandardMaterial({
+			color: 0x2a2e35,
+			map: asphaltTexture,
+			roughness: 0.96,
+			metalness: 0.04,
 		});
-		const roadMaterialB = new THREE.MeshStandardMaterial({
-			color: 0x0b0911,
-			emissive: 0x1b0f2f,
-			emissiveIntensity: 0.2,
-			roughness: 0.85,
-			metalness: 0.14,
+		const sidewalkMaterial = new THREE.MeshStandardMaterial({
+			color: 0x595f68,
+			roughness: 0.86,
+			metalness: 0.06,
+		});
+		const curbMaterial = new THREE.MeshStandardMaterial({
+			color: 0x747b86,
+			roughness: 0.82,
+			metalness: 0.08,
 		});
 		const laneMaterial = new THREE.MeshBasicMaterial({
-			color: 0xffe499,
+			color: 0xe6e8eb,
 			transparent: true,
-			opacity: 0.58,
+			opacity: 0.64,
 		});
 
 		const tempPoint = new THREE.Vector3();
@@ -194,63 +307,67 @@ export default function ScrollJourneyScene({
 			const t = index / (roadTilesCount - 1);
 			routePath.getPointAt(t, tempPoint);
 			routePath.getTangentAt(t, tempTangent).normalize();
+			tempSide.crossVectors(UP, tempTangent).normalize();
 
-			const tile = new THREE.Mesh(
-				roadTileGeometry,
-				index % 2 === 0 ? roadMaterialA : roadMaterialB,
-			);
+			const tile = new THREE.Mesh(roadTileGeometry, roadMaterial);
 			tile.position.copy(tempPoint);
-			tile.position.y -= 0.1;
+			tile.position.y -= 0.12;
 			tile.quaternion.setFromUnitVectors(FORWARD, tempTangent);
 			scene.add(tile);
+
+			const leftSidewalk = new THREE.Mesh(
+				sidewalkTileGeometry,
+				sidewalkMaterial,
+			);
+			leftSidewalk.position.copy(tempPoint);
+			leftSidewalk.position.addScaledVector(tempSide, 0.9);
+			leftSidewalk.position.y -= 0.08;
+			leftSidewalk.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(leftSidewalk);
+
+			const rightSidewalk = new THREE.Mesh(
+				sidewalkTileGeometry,
+				sidewalkMaterial,
+			);
+			rightSidewalk.position.copy(tempPoint);
+			rightSidewalk.position.addScaledVector(tempSide, -0.9);
+			rightSidewalk.position.y -= 0.08;
+			rightSidewalk.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(rightSidewalk);
+
+			const leftCurb = new THREE.Mesh(curbGeometry, curbMaterial);
+			leftCurb.position.copy(tempPoint);
+			leftCurb.position.addScaledVector(tempSide, 0.63);
+			leftCurb.position.y -= 0.08;
+			leftCurb.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(leftCurb);
+
+			const rightCurb = new THREE.Mesh(curbGeometry, curbMaterial);
+			rightCurb.position.copy(tempPoint);
+			rightCurb.position.addScaledVector(tempSide, -0.63);
+			rightCurb.position.y -= 0.08;
+			rightCurb.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(rightCurb);
 
 			if (index % 2 === 0) {
 				const laneTile = new THREE.Mesh(laneTileGeometry, laneMaterial);
 				laneTile.position.copy(tempPoint);
-				laneTile.position.y += 0.015;
+				laneTile.position.y -= 0.055;
 				laneTile.quaternion.setFromUnitVectors(FORWARD, tempTangent);
 				scene.add(laneTile);
 			}
 		}
 
-		const railSegments = lowPowerDevice ? 78 : 120;
-		const leftRailPoints: THREE.Vector3[] = [];
-		const rightRailPoints: THREE.Vector3[] = [];
-		for (let index = 0; index <= railSegments; index++) {
-			const t = index / railSegments;
-			routePath.getPointAt(t, tempPoint);
-			routePath.getTangentAt(t, tempTangent).normalize();
-			tempSide.crossVectors(UP, tempTangent).normalize().multiplyScalar(0.84);
-			leftRailPoints.push(tempPoint.clone().add(tempSide));
-			rightRailPoints.push(tempPoint.clone().sub(tempSide));
-		}
-		const leftRailMaterial = new THREE.LineBasicMaterial({
-			color: 0xff43a9,
-			transparent: true,
-			opacity: 0.72,
-		});
-		const rightRailMaterial = new THREE.LineBasicMaterial({
-			color: 0x2ee2ff,
-			transparent: true,
-			opacity: 0.64,
-		});
-		const leftRail = new THREE.Line(
-			new THREE.BufferGeometry().setFromPoints(leftRailPoints),
-			leftRailMaterial,
-		);
-		const rightRail = new THREE.Line(
-			new THREE.BufferGeometry().setFromPoints(rightRailPoints),
-			rightRailMaterial,
-		);
-		scene.add(leftRail, rightRail);
-
+		const buildingTexture = createBuildingTexture();
 		const cityBlockGeometry = new THREE.BoxGeometry(1, 1, 1);
 		const cityBlockMaterial = new THREE.MeshStandardMaterial({
 			color: 0x120f16,
-			emissive: 0x2a1230,
-			emissiveIntensity: 0.55,
-			roughness: 0.8,
-			metalness: 0.25,
+			map: buildingTexture,
+			emissiveMap: buildingTexture,
+			emissive: 0x5a3b22,
+			emissiveIntensity: 0.7,
+			roughness: 0.72,
+			metalness: 0.2,
 		});
 		const cityBlocksCount = lowPowerDevice ? 34 : 58;
 		for (let index = 0; index < cityBlocksCount; index++) {
@@ -263,44 +380,74 @@ export default function ScrollJourneyScene({
 			const widthScale = 0.42 + Math.random() * 1.15;
 			const depthScale = 0.45 + Math.random() * 1.25;
 			const sideDirection = Math.random() > 0.5 ? 1 : -1;
-			const sideOffset = 2 + Math.random() * 4.5;
+			const sideOffset = 2 + Math.random() * 4.8;
 
 			const block = new THREE.Mesh(cityBlockGeometry, cityBlockMaterial);
 			block.scale.set(widthScale, heightScale, depthScale);
 			block.position.copy(tempPoint);
 			block.position.addScaledVector(tempSide, sideOffset * sideDirection);
 			block.position.y = heightScale * 0.5 - 0.45;
-			block.position.z += (Math.random() - 0.5) * 1.4;
+			block.position.z += (Math.random() - 0.5) * 1.6;
 			scene.add(block);
 		}
 
-		const neonGates: NeonGate[] = [];
-		const gateProgress = [0.04, 0.26, 0.5, 0.74, 0.93];
-		const gatePostGeometry = new THREE.BoxGeometry(0.07, 0.72, 0.07);
-		const gateTopGeometry = new THREE.BoxGeometry(1.04, 0.08, 0.07);
-		for (const [index, value] of gateProgress.entries()) {
-			routePath.getPointAt(value, tempPoint);
-			routePath.getTangentAt(value, tempTangent).normalize();
-			const gateMaterial = new THREE.MeshStandardMaterial({
-				color: 0xfdf5da,
-				emissive: 0xff4faf,
-				emissiveIntensity: 0.7,
-				roughness: 0.25,
-				metalness: 0.55,
+		const streetLights: StreetLight[] = [];
+		const streetLightCount = lowPowerDevice ? 14 : 24;
+		const poleGeometry = new THREE.CylinderGeometry(0.025, 0.03, 1.3, 6);
+		const armGeometry = new THREE.BoxGeometry(0.26, 0.03, 0.03);
+		const lampGeometry = new THREE.BoxGeometry(0.13, 0.07, 0.09);
+		const poleMaterial = new THREE.MeshStandardMaterial({
+			color: 0x0f1319,
+			roughness: 0.6,
+			metalness: 0.5,
+		});
+
+		for (let index = 0; index < streetLightCount; index++) {
+			const t = 0.04 + (index / (streetLightCount - 1)) * 0.92;
+			routePath.getPointAt(t, tempPoint);
+			routePath.getTangentAt(t, tempTangent).normalize();
+			tempSide.crossVectors(UP, tempTangent).normalize();
+			const side = index % 2 === 0 ? 1 : -1;
+
+			const basePoint = tempPoint.clone().addScaledVector(tempSide, side * 0.9);
+			basePoint.y = -0.05;
+
+			const lampMaterial = new THREE.MeshStandardMaterial({
+				color: 0xfef2cf,
+				emissive: side > 0 ? 0xff3b9e : 0x2ed6ff,
+				emissiveIntensity: 1.2,
+				roughness: 0.2,
+				metalness: 0.7,
 			});
-			const gate = new THREE.Group();
-			const leftPost = new THREE.Mesh(gatePostGeometry, gateMaterial);
-			leftPost.position.set(-0.48, 0, 0);
-			const rightPost = new THREE.Mesh(gatePostGeometry, gateMaterial);
-			rightPost.position.set(0.48, 0, 0);
-			const topBar = new THREE.Mesh(gateTopGeometry, gateMaterial);
-			topBar.position.set(0, 0.36, 0);
-			gate.add(leftPost, rightPost, topBar);
-			gate.position.copy(tempPoint);
-			gate.position.y += 0.28;
-			gate.quaternion.setFromUnitVectors(FORWARD, tempTangent);
-			scene.add(gate);
-			neonGates.push({ group: gate, material: gateMaterial, progress: value, index });
+
+			const poleGroup = new THREE.Group();
+			const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+			pole.position.y = 0.65;
+			const arm = new THREE.Mesh(armGeometry, poleMaterial);
+			arm.position.set(side * 0.12, 1.23, 0);
+			const lamp = new THREE.Mesh(lampGeometry, lampMaterial);
+			lamp.position.set(side * 0.24, 1.18, 0);
+
+			const beamLight = new THREE.SpotLight(
+				0xffefc8,
+				1.15,
+				4.4,
+				Math.PI / 7,
+				0.6,
+				1.7,
+			);
+			beamLight.position.set(side * 0.22, 1.15, 0);
+
+			const beamTarget = new THREE.Object3D();
+			beamTarget.position.set(side * 0.62, -0.08, -0.32);
+			beamLight.target = beamTarget;
+
+			poleGroup.add(pole, arm, lamp, beamLight, beamTarget);
+			poleGroup.position.copy(basePoint);
+			poleGroup.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(poleGroup);
+
+			streetLights.push({ lampMaterial, beamLight, progress: t });
 		}
 
 		const car = new THREE.Group();
@@ -423,12 +570,12 @@ export default function ScrollJourneyScene({
 		rearPixels.position.set(0, 0.23, 0.95);
 		car.add(rearPixels);
 
-		const starsCount = lowPowerDevice ? 180 : 280;
+		const starsCount = lowPowerDevice ? 260 : 420;
 		const starPositions = new Float32Array(starsCount * 3);
 		for (let index = 0; index < starsCount; index++) {
-			const spread = 30;
+			const spread = 42;
 			starPositions[index * 3] = (Math.random() - 0.5) * spread;
-			starPositions[index * 3 + 1] = Math.random() * 8 - 1.8;
+			starPositions[index * 3 + 1] = Math.random() * 11 - 2.6;
 			starPositions[index * 3 + 2] = (Math.random() - 0.5) * spread - 10;
 		}
 		const stars = new THREE.Points(
@@ -438,81 +585,79 @@ export default function ScrollJourneyScene({
 			),
 			new THREE.PointsMaterial({
 				color: 0xf7f5ef,
-				size: lowPowerDevice ? 0.05 : 0.04,
+				size: lowPowerDevice ? 0.055 : 0.045,
 				transparent: true,
-				opacity: 0.72,
+				opacity: 0.86,
 				sizeAttenuation: true,
 			}),
 		);
 		scene.add(stars);
 
-		const cameraOffset = new THREE.Vector3(0, 1.42, 3.8);
+		const cameraOffset = new THREE.Vector3(0, 1.45, 3.85);
 		const targetQuat = new THREE.Quaternion();
 		const lookAhead = new THREE.Vector3();
 		const cameraTarget = new THREE.Vector3();
 		const point = new THREE.Vector3();
 		const tangent = new THREE.Vector3();
-		const neonTarget = new THREE.Vector3();
+		const neonPinkTarget = new THREE.Vector3();
+		const neonBlueTarget = new THREE.Vector3();
 		const clock = new THREE.Clock();
+		let previousTravel = smoothstep(progressRef.current);
+		let wheelRoll = 0;
 
 		const renderScene = (elapsed: number) => {
-			const progressValue = smoothstep(progressRef.current);
-			const steppedProgress = allowMotion
-				? Math.round(progressValue * 260) / 260
-				: progressValue;
+			const travel = smoothstep(progressRef.current);
+			routePath.getPointAt(travel, point);
+			routePath.getTangentAt(travel, tangent).normalize();
 
-			routePath.getPointAt(steppedProgress, point);
-			routePath.getTangentAt(steppedProgress, tangent).normalize();
+			const deltaTravel = travel - previousTravel;
+			previousTravel = travel;
+			wheelRoll += deltaTravel * 520;
 
 			targetQuat.setFromUnitVectors(FORWARD, tangent);
-			car.quaternion.slerp(targetQuat, allowMotion ? 0.28 : 1);
+			car.quaternion.slerp(targetQuat, allowMotion ? 0.16 : 1);
 
 			const bodyLift = allowMotion
-				? Math.sin(elapsed * 6.2 + steppedProgress * 9) * 0.013
+				? Math.sin(elapsed * 3.8 + travel * 10) * 0.009
 				: 0;
 			car.position.set(point.x, point.y + 0.08 + bodyLift, point.z);
 
-			const wheelSpin = allowMotion ? elapsed * 8 : 0;
 			for (const wheel of wheels) {
-				wheel.rotation.x = wheelSpin - steppedProgress * 44;
+				wheel.rotation.x = wheelRoll;
 			}
 
 			cameraTarget
 				.copy(cameraOffset)
 				.applyQuaternion(car.quaternion)
 				.add(car.position);
-			camera.position.lerp(cameraTarget, allowMotion ? 0.09 : 1);
+			camera.position.lerp(cameraTarget, allowMotion ? 0.08 : 1);
 
-			const lookAheadProgress = clamp(steppedProgress + 0.03);
+			const lookAheadProgress = clamp(travel + 0.025);
 			routePath.getPointAt(lookAheadProgress, lookAhead);
 			lookAhead.y += 0.15;
 			camera.lookAt(lookAhead);
 
 			laneMaterial.opacity =
-				0.48 + (allowMotion ? 0.28 * Math.sin(elapsed * 10 - steppedProgress * 15) : 0);
-			leftRailMaterial.opacity =
-				0.45 + (allowMotion ? 0.22 * Math.sin(elapsed * 3.8) : 0.08);
-			rightRailMaterial.opacity =
-				0.45 + (allowMotion ? 0.22 * Math.cos(elapsed * 3.2) : 0.08);
+				0.56 + (allowMotion ? 0.09 * Math.sin(elapsed * 5 - travel * 12) : 0);
 
-			for (const gate of neonGates) {
-				const distance = Math.abs(steppedProgress - gate.progress);
-				const influence = clamp(1 - distance / 0.16);
-				const pulse = allowMotion
-					? 0.5 + 0.5 * Math.sin(elapsed * 4 + gate.index)
-					: 0.5;
-				gate.material.emissiveIntensity = 0.45 + influence * (0.5 + pulse * 0.9);
-				gate.group.scale.setScalar(0.92 + influence * 0.2);
+			for (const streetLight of streetLights) {
+				const distance = Math.abs(travel - streetLight.progress);
+				const influence = clamp(1 - distance / 0.22);
+				const flicker = allowMotion
+					? 0.65 + 0.35 * Math.sin(elapsed * 3 + streetLight.progress * 17)
+					: 0.7;
+				streetLight.lampMaterial.emissiveIntensity =
+					0.9 + flicker * 0.9 + influence * 0.35;
+				streetLight.beamLight.intensity =
+					0.78 + influence * 0.66 + (allowMotion ? flicker * 0.26 : 0.2);
 			}
 
 			stars.rotation.y = elapsed * 0.03;
 
-			neonTarget.set(point.x + 1.6, point.y + 1.5, point.z - 1.4);
-			neonPink.position.lerp(neonTarget, 0.06);
-			neonBlue.position.lerp(
-				new THREE.Vector3(point.x - 1.2, point.y + 0.8, point.z + 2.4),
-				0.06,
-			);
+			neonPinkTarget.set(point.x + 1.55, point.y + 1.5, point.z - 1.3);
+			neonBlueTarget.set(point.x - 1.2, point.y + 0.8, point.z + 2.25);
+			neonPink.position.lerp(neonPinkTarget, 0.06);
+			neonBlue.position.lerp(neonBlueTarget, 0.06);
 
 			renderer.render(scene, camera);
 		};
@@ -603,7 +748,7 @@ export default function ScrollJourneyScene({
 			{showFallback ? (
 				<div className="journey-scene-fallback">
 					<p className="journey-scene-fallback-text">
-						WebGL is unavailable. Scroll to continue through the story.
+						WebGL is unavailable. Use up/down arrow keys to continue.
 					</p>
 				</div>
 			) : null}
