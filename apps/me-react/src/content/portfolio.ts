@@ -23,7 +23,7 @@ export type JourneyStage = {
 export const journeyStages: JourneyStage[] = [
 	{
 		id: "hero",
-		kicker: "Launch",
+		kicker: "Hero",
 		title: profile.headline,
 		summary:
 			"Scroll to drive the scene. This portfolio is a guided engineering journey, not a static resume.",
@@ -31,7 +31,7 @@ export const journeyStages: JourneyStage[] = [
 	},
 	{
 		id: "about",
-		kicker: "Mindset",
+		kicker: "About",
 		title: "I enjoy turning process friction into clear, maintainable systems.",
 		summary:
 			"I look for gaps, remove repetitive steps, and shape solutions teams can keep operating with confidence.",
@@ -39,7 +39,7 @@ export const journeyStages: JourneyStage[] = [
 	},
 	{
 		id: "work",
-		kicker: "Checkpoints",
+		kicker: "Work",
 		title: "Selected builds focused on practical impact",
 		summary:
 			"Internal platforms, workflow automation, and API engineering where reliability and speed both matter.",
@@ -47,7 +47,7 @@ export const journeyStages: JourneyStage[] = [
 	},
 	{
 		id: "skills",
-		kicker: "Stack",
+		kicker: "Skills",
 		title: "Comfortable across product and platform layers",
 		summary:
 			"Frontend, backend, APIs, data, and deployment tooling used to keep systems fast, stable, and easy to evolve.",
@@ -55,7 +55,7 @@ export const journeyStages: JourneyStage[] = [
 	},
 	{
 		id: "contact",
-		kicker: "Dock",
+		kicker: "Contact",
 		title: "Let's build software that makes work easier.",
 		summary:
 			"If you're solving operational complexity, I can help design and ship practical systems around it.",
