@@ -23,7 +23,7 @@
 	"versionGroups": [
 		{
 			"label": "Internal packages",
-			"dependencies": ["@btm/*"],
+			"dependencies": ["@r6/*"],
 			"pinVersion": "*"
 		},
 		{
@@ -34,7 +34,7 @@
 		{
 			"label": "Pin hono to exact version",
 			"dependencies": ["hono"],
-			"pinVersion": "4.12.4"
+			"pinVersion": "4.12.8"
 		},
 		{
 			"label": "Pin hono node server to exact version",

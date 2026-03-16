@@ -24,17 +24,17 @@
 		"@r6/schemas": "*",
 		"@types/express": "^5.0.6",
 		"@types/morgan": "^1.9.10",
-		"typescript": "^5.9.3"
+		"typescript": "5.9.3"
 	},
 	"dependencies": {
-		"@prisma/client": "^6.19.0",
+		"@prisma/client": "6.19.0",
 		"dotenv": "^17.3.1",
-		"express": "^5.2.1",
+		"express": "5.2.1",
 		"helmet": "^8.1.0",
 		"morgan": "^1.10.1",
-		"prisma": "^6.19.0",
+		"prisma": "6.19.0",
 		"tsx": "^4.21.0",
-		"zod": "^4.3.6"
+		"zod": "4.3.6"
 	},
 	"prisma": {
 		"schema": "prisma/schema",
