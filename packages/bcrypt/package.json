@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.4",
-    "@r6/typescript-config": "0.0.0",
+    "@r6/typescript-config": "*",
     "@types/bcrypt": "^6.0.0",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
