@@ -5,15 +5,15 @@ type ScrollJourneySceneProps = {
 	progress: number;
 };
 
-type Checkpoint = {
-	mesh: THREE.Mesh;
-	material: THREE.MeshBasicMaterial;
+type NeonGate = {
+	group: THREE.Group;
+	material: THREE.MeshStandardMaterial;
 	progress: number;
 	index: number;
 };
 
 const FORWARD = new THREE.Vector3(0, 0, -1);
-const WORLD_UP = new THREE.Vector3(0, 1, 0);
+const UP = new THREE.Vector3(0, 1, 0);
 
 function clamp(value: number, min = 0, max = 1) {
 	return Math.min(Math.max(value, min), max);
@@ -109,298 +109,381 @@ export default function ScrollJourneyScene({
 		let frame = 0;
 
 		const scene = new THREE.Scene();
-		scene.fog = new THREE.FogExp2(0x060b17, 0.046);
+		scene.fog = new THREE.FogExp2(0x07040b, 0.06);
 
-		const camera = new THREE.PerspectiveCamera(54, width / height, 0.1, 80);
-		camera.position.set(0, 1.4, 4);
+		const camera = new THREE.PerspectiveCamera(52, width / height, 0.1, 70);
+		camera.position.set(0, 1.4, 4.2);
 
 		const renderer = new THREE.WebGLRenderer({
-			antialias: !lowPowerDevice,
+			antialias: false,
 			alpha: true,
 			powerPreference: lowPowerDevice ? "default" : "high-performance",
 		});
 		renderer.setPixelRatio(
-			Math.min(window.devicePixelRatio || 1, lowPowerDevice ? 1.2 : 1.8),
+			Math.min(window.devicePixelRatio || 1, lowPowerDevice ? 0.9 : 1),
 		);
 		renderer.setSize(width, height);
 		renderer.outputColorSpace = THREE.SRGBColorSpace;
+		renderer.domElement.style.imageRendering = "pixelated";
 		host.appendChild(renderer.domElement);
 
-		const ambient = new THREE.AmbientLight(0x7fa5ff, 0.44);
-		const keyLight = new THREE.DirectionalLight(0x79dbff, 1.05);
-		keyLight.position.set(4, 5, 3);
-		const rimLight = new THREE.PointLight(0x5f7dff, 1.15, 22, 2);
-		rimLight.position.set(-3, 1.8, -4);
-		const underGlowLight = new THREE.PointLight(0x40e6ff, 0.6, 9, 2);
-		scene.add(ambient, keyLight, rimLight, underGlowLight);
+		const ambient = new THREE.AmbientLight(0x3f3136, 0.75);
+		const warmLight = new THREE.DirectionalLight(0xffd162, 1.15);
+		warmLight.position.set(2.8, 4.2, 2.6);
+		const neonPink = new THREE.PointLight(0xff3da5, 1.2, 15, 2);
+		neonPink.position.set(0, 1.8, -1);
+		const neonBlue = new THREE.PointLight(0x28d7ff, 0.9, 12, 2);
+		neonBlue.position.set(0, 0.9, 2);
+		scene.add(ambient, warmLight, neonPink, neonBlue);
 
 		const routePath = new THREE.CatmullRomCurve3(
 			[
 				new THREE.Vector3(0, 0, 2),
-				new THREE.Vector3(1.2, 0.2, -2.5),
-				new THREE.Vector3(-1.35, 0.28, -7),
-				new THREE.Vector3(1.45, 0.35, -11.3),
-				new THREE.Vector3(-1.2, 0.23, -15.7),
-				new THREE.Vector3(0.8, 0.38, -20),
-				new THREE.Vector3(0, 0.26, -24.2),
+				new THREE.Vector3(1.25, 0.1, -2.4),
+				new THREE.Vector3(-1.35, 0.2, -6.8),
+				new THREE.Vector3(1.5, 0.22, -11),
+				new THREE.Vector3(-1.4, 0.2, -14.8),
+				new THREE.Vector3(1.3, 0.15, -18.9),
+				new THREE.Vector3(-0.2, 0.2, -23),
 			],
 			false,
 			"catmullrom",
-			0.4,
+			0.1,
 		);
 
-		const roadGeometry = new THREE.TubeGeometry(
-			routePath,
-			lowPowerDevice ? 110 : 180,
-			0.34,
-			lowPowerDevice ? 10 : 18,
-			false,
+		const ground = new THREE.Mesh(
+			new THREE.PlaneGeometry(120, 120),
+			new THREE.MeshStandardMaterial({
+				color: 0x050507,
+				roughness: 1,
+				metalness: 0,
+			}),
 		);
-		const roadMaterial = new THREE.MeshStandardMaterial({
-			color: 0x0d1e30,
-			emissive: 0x0c3657,
-			emissiveIntensity: 0.45,
-			roughness: 0.7,
-			metalness: 0.24,
+		ground.rotation.x = -Math.PI / 2;
+		ground.position.y = -0.95;
+		scene.add(ground);
+
+		const roadTilesCount = lowPowerDevice ? 96 : 150;
+		const roadTileGeometry = new THREE.BoxGeometry(1.16, 0.08, 0.7);
+		const laneTileGeometry = new THREE.BoxGeometry(0.14, 0.04, 0.25);
+		const roadMaterialA = new THREE.MeshStandardMaterial({
+			color: 0x120d17,
+			emissive: 0x2f1037,
+			emissiveIntensity: 0.25,
+			roughness: 0.8,
+			metalness: 0.2,
 		});
-		const roadMesh = new THREE.Mesh(roadGeometry, roadMaterial);
-		scene.add(roadMesh);
-
-		const laneGeometry = new THREE.TubeGeometry(
-			routePath,
-			lowPowerDevice ? 110 : 180,
-			0.035,
-			lowPowerDevice ? 8 : 12,
-			false,
-		);
-		const laneMaterial = new THREE.MeshStandardMaterial({
-			color: 0xa0f2ff,
-			emissive: 0x2ad2ff,
-			emissiveIntensity: 1.2,
-			roughness: 0.35,
-			metalness: 0.65,
+		const roadMaterialB = new THREE.MeshStandardMaterial({
+			color: 0x0b0911,
+			emissive: 0x1b0f2f,
+			emissiveIntensity: 0.2,
+			roughness: 0.85,
+			metalness: 0.14,
 		});
-		const laneMesh = new THREE.Mesh(laneGeometry, laneMaterial);
-		scene.add(laneMesh);
-
-		const grid = new THREE.GridHelper(80, 56, 0x2b4d78, 0x10233c);
-		grid.position.y = -0.95;
-		const gridMaterial = Array.isArray(grid.material)
-			? grid.material
-			: [grid.material];
-		for (const material of gridMaterial) {
-			material.transparent = true;
-			material.opacity = 0.28;
-		}
-		scene.add(grid);
-
-		const particlesCount = lowPowerDevice ? 220 : 460;
-		const particlePositions = new Float32Array(particlesCount * 3);
-		for (let index = 0; index < particlesCount; index++) {
-			const spread = 24;
-			particlePositions[index * 3] = (Math.random() - 0.5) * spread;
-			particlePositions[index * 3 + 1] = Math.random() * 8 - 2.1;
-			particlePositions[index * 3 + 2] = (Math.random() - 0.5) * spread - 11;
-		}
-		const particlesGeometry = new THREE.BufferGeometry();
-		particlesGeometry.setAttribute(
-			"position",
-			new THREE.BufferAttribute(particlePositions, 3),
-		);
-		const particlesMaterial = new THREE.PointsMaterial({
-			color: 0x8be9ff,
-			size: lowPowerDevice ? 0.034 : 0.026,
+		const laneMaterial = new THREE.MeshBasicMaterial({
+			color: 0xffe499,
 			transparent: true,
-			opacity: 0.5,
-			sizeAttenuation: true,
+			opacity: 0.58,
 		});
-		const particles = new THREE.Points(particlesGeometry, particlesMaterial);
-		scene.add(particles);
 
-		const tunnelRingGeometry = new THREE.TorusGeometry(1.6, 0.015, 10, 64);
-		const tunnelRingMaterial = new THREE.MeshBasicMaterial({
-			color: 0x72dfff,
-			transparent: true,
-			opacity: 0.25,
-		});
-		const tunnelRings: THREE.Mesh[] = [];
-		const tunnelCount = lowPowerDevice ? 20 : 28;
-		for (let index = 0; index < tunnelCount; index++) {
-			const progressPoint = index / (tunnelCount - 1);
-			const position = routePath.getPointAt(progressPoint);
-			const tangent = routePath.getTangentAt(progressPoint).normalize();
+		const tempPoint = new THREE.Vector3();
+		const tempTangent = new THREE.Vector3();
+		const tempSide = new THREE.Vector3();
 
-			const ring = new THREE.Mesh(tunnelRingGeometry, tunnelRingMaterial);
-			ring.position.copy(position);
-			ring.quaternion.setFromUnitVectors(FORWARD, tangent);
-			ring.scale.setScalar(1 + index * 0.02);
-			scene.add(ring);
-			tunnelRings.push(ring);
-		}
+		for (let index = 0; index < roadTilesCount; index++) {
+			const t = index / (roadTilesCount - 1);
+			routePath.getPointAt(t, tempPoint);
+			routePath.getTangentAt(t, tempTangent).normalize();
 
-		const checkpoints: Checkpoint[] = [];
-		const checkpointProgress = [0.04, 0.26, 0.5, 0.74, 0.93];
-		for (const [index, progressValue] of checkpointProgress.entries()) {
-			const position = routePath.getPointAt(progressValue);
-			const tangent = routePath.getTangentAt(progressValue).normalize();
-			const material = new THREE.MeshBasicMaterial({
-				color: 0x73f4ff,
-				transparent: true,
-				opacity: 0.25,
-			});
-			const mesh = new THREE.Mesh(
-				new THREE.TorusGeometry(0.55, 0.028, 12, 48),
-				material,
+			const tile = new THREE.Mesh(
+				roadTileGeometry,
+				index % 2 === 0 ? roadMaterialA : roadMaterialB,
 			);
-			mesh.position.copy(position);
-			mesh.quaternion.setFromUnitVectors(FORWARD, tangent);
-			scene.add(mesh);
-			checkpoints.push({ mesh, material, progress: progressValue, index });
+			tile.position.copy(tempPoint);
+			tile.position.y -= 0.1;
+			tile.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(tile);
+
+			if (index % 2 === 0) {
+				const laneTile = new THREE.Mesh(laneTileGeometry, laneMaterial);
+				laneTile.position.copy(tempPoint);
+				laneTile.position.y += 0.015;
+				laneTile.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+				scene.add(laneTile);
+			}
+		}
+
+		const railSegments = lowPowerDevice ? 78 : 120;
+		const leftRailPoints: THREE.Vector3[] = [];
+		const rightRailPoints: THREE.Vector3[] = [];
+		for (let index = 0; index <= railSegments; index++) {
+			const t = index / railSegments;
+			routePath.getPointAt(t, tempPoint);
+			routePath.getTangentAt(t, tempTangent).normalize();
+			tempSide.crossVectors(UP, tempTangent).normalize().multiplyScalar(0.84);
+			leftRailPoints.push(tempPoint.clone().add(tempSide));
+			rightRailPoints.push(tempPoint.clone().sub(tempSide));
+		}
+		const leftRailMaterial = new THREE.LineBasicMaterial({
+			color: 0xff43a9,
+			transparent: true,
+			opacity: 0.72,
+		});
+		const rightRailMaterial = new THREE.LineBasicMaterial({
+			color: 0x2ee2ff,
+			transparent: true,
+			opacity: 0.64,
+		});
+		const leftRail = new THREE.Line(
+			new THREE.BufferGeometry().setFromPoints(leftRailPoints),
+			leftRailMaterial,
+		);
+		const rightRail = new THREE.Line(
+			new THREE.BufferGeometry().setFromPoints(rightRailPoints),
+			rightRailMaterial,
+		);
+		scene.add(leftRail, rightRail);
+
+		const cityBlockGeometry = new THREE.BoxGeometry(1, 1, 1);
+		const cityBlockMaterial = new THREE.MeshStandardMaterial({
+			color: 0x120f16,
+			emissive: 0x2a1230,
+			emissiveIntensity: 0.55,
+			roughness: 0.8,
+			metalness: 0.25,
+		});
+		const cityBlocksCount = lowPowerDevice ? 34 : 58;
+		for (let index = 0; index < cityBlocksCount; index++) {
+			const t = Math.random();
+			routePath.getPointAt(t, tempPoint);
+			routePath.getTangentAt(t, tempTangent).normalize();
+			tempSide.crossVectors(UP, tempTangent).normalize();
+
+			const heightScale = 0.8 + Math.random() * 3.9;
+			const widthScale = 0.42 + Math.random() * 1.15;
+			const depthScale = 0.45 + Math.random() * 1.25;
+			const sideDirection = Math.random() > 0.5 ? 1 : -1;
+			const sideOffset = 2 + Math.random() * 4.5;
+
+			const block = new THREE.Mesh(cityBlockGeometry, cityBlockMaterial);
+			block.scale.set(widthScale, heightScale, depthScale);
+			block.position.copy(tempPoint);
+			block.position.addScaledVector(tempSide, sideOffset * sideDirection);
+			block.position.y = heightScale * 0.5 - 0.45;
+			block.position.z += (Math.random() - 0.5) * 1.4;
+			scene.add(block);
+		}
+
+		const neonGates: NeonGate[] = [];
+		const gateProgress = [0.04, 0.26, 0.5, 0.74, 0.93];
+		const gatePostGeometry = new THREE.BoxGeometry(0.07, 0.72, 0.07);
+		const gateTopGeometry = new THREE.BoxGeometry(1.04, 0.08, 0.07);
+		for (const [index, value] of gateProgress.entries()) {
+			routePath.getPointAt(value, tempPoint);
+			routePath.getTangentAt(value, tempTangent).normalize();
+			const gateMaterial = new THREE.MeshStandardMaterial({
+				color: 0xfdf5da,
+				emissive: 0xff4faf,
+				emissiveIntensity: 0.7,
+				roughness: 0.25,
+				metalness: 0.55,
+			});
+			const gate = new THREE.Group();
+			const leftPost = new THREE.Mesh(gatePostGeometry, gateMaterial);
+			leftPost.position.set(-0.48, 0, 0);
+			const rightPost = new THREE.Mesh(gatePostGeometry, gateMaterial);
+			rightPost.position.set(0.48, 0, 0);
+			const topBar = new THREE.Mesh(gateTopGeometry, gateMaterial);
+			topBar.position.set(0, 0.36, 0);
+			gate.add(leftPost, rightPost, topBar);
+			gate.position.copy(tempPoint);
+			gate.position.y += 0.28;
+			gate.quaternion.setFromUnitVectors(FORWARD, tempTangent);
+			scene.add(gate);
+			neonGates.push({ group: gate, material: gateMaterial, progress: value, index });
 		}
 
 		const car = new THREE.Group();
 		scene.add(car);
 
 		const carBody = new THREE.Mesh(
-			new THREE.BoxGeometry(0.82, 0.2, 1.7),
+			new THREE.BoxGeometry(1.04, 0.28, 1.86),
 			new THREE.MeshStandardMaterial({
-				color: 0x74d7ff,
-				emissive: 0x0a3855,
-				emissiveIntensity: 0.8,
-				roughness: 0.35,
-				metalness: 0.76,
+				color: 0xffd362,
+				emissive: 0x6f4b00,
+				emissiveIntensity: 0.48,
+				roughness: 0.38,
+				metalness: 0.54,
 			}),
 		);
-		carBody.position.y = 0.12;
+		carBody.position.y = 0.15;
 		car.add(carBody);
 
 		const carCabin = new THREE.Mesh(
-			new THREE.BoxGeometry(0.5, 0.22, 0.84),
+			new THREE.BoxGeometry(0.64, 0.25, 0.72),
 			new THREE.MeshStandardMaterial({
-				color: 0xd7f6ff,
-				emissive: 0x2f8dbd,
+				color: 0x131419,
+				emissive: 0x332640,
 				emissiveIntensity: 0.2,
 				roughness: 0.2,
-				metalness: 0.3,
-				opacity: 0.92,
-				transparent: true,
+				metalness: 0.4,
 			}),
 		);
-		carCabin.position.set(0, 0.31, 0.08);
+		carCabin.position.set(0, 0.36, 0.08);
 		car.add(carCabin);
 
-		const wheelGeometry = new THREE.CylinderGeometry(0.14, 0.14, 0.12, 20);
+		const carRoof = new THREE.Mesh(
+			new THREE.BoxGeometry(0.46, 0.12, 0.5),
+			new THREE.MeshStandardMaterial({
+				color: 0x1a171f,
+				emissive: 0x2a2034,
+				emissiveIntensity: 0.2,
+				roughness: 0.25,
+				metalness: 0.36,
+			}),
+		);
+		carRoof.position.set(0, 0.5, 0.1);
+		car.add(carRoof);
+
+		const spoiler = new THREE.Mesh(
+			new THREE.BoxGeometry(0.56, 0.07, 0.13),
+			new THREE.MeshStandardMaterial({
+				color: 0x0f0d14,
+				roughness: 0.5,
+				metalness: 0.5,
+			}),
+		);
+		spoiler.position.set(0, 0.34, 0.92);
+		car.add(spoiler);
+
+		const wheelGeometry = new THREE.BoxGeometry(0.2, 0.2, 0.14);
 		const wheelMaterial = new THREE.MeshStandardMaterial({
-			color: 0x0f1b2b,
-			roughness: 0.68,
-			metalness: 0.2,
+			color: 0x0a090d,
+			roughness: 0.78,
+			metalness: 0.1,
 		});
 		const wheelOffsets = [
-			[-0.34, -0.01, -0.56],
-			[0.34, -0.01, -0.56],
-			[-0.34, -0.01, 0.56],
-			[0.34, -0.01, 0.56],
+			[-0.43, 0.02, -0.62],
+			[0.43, 0.02, -0.62],
+			[-0.43, 0.02, 0.62],
+			[0.43, 0.02, 0.62],
 		] as const;
 		const wheels: THREE.Mesh[] = [];
 		for (const [x, y, z] of wheelOffsets) {
 			const wheel = new THREE.Mesh(wheelGeometry, wheelMaterial);
-			wheel.rotation.z = Math.PI / 2;
 			wheel.position.set(x, y, z);
 			car.add(wheel);
 			wheels.push(wheel);
 		}
 
-		const frontLightMaterial = new THREE.MeshBasicMaterial({
-			color: 0xa4ecff,
-			transparent: true,
-			opacity: 0.9,
-		});
-		const frontLights = new THREE.Mesh(
+		const frontPixels = new THREE.Mesh(
+			new THREE.BoxGeometry(0.5, 0.06, 0.03),
+			new THREE.MeshBasicMaterial({
+				color: 0xfff8d5,
+			}),
+		);
+		frontPixels.position.set(0, 0.15, -0.95);
+		car.add(frontPixels);
+
+		const rearPixels = new THREE.Mesh(
 			new THREE.BoxGeometry(0.5, 0.05, 0.03),
-			frontLightMaterial,
+			new THREE.MeshBasicMaterial({
+				color: 0xff4f9d,
+			}),
 		);
-		frontLights.position.set(0, 0.14, -0.86);
-		car.add(frontLights);
+		rearPixels.position.set(0, 0.15, 0.95);
+		car.add(rearPixels);
 
-		const rearLightMaterial = new THREE.MeshBasicMaterial({
-			color: 0x50a8ff,
-			transparent: true,
-			opacity: 0.5,
-		});
-		const rearLights = new THREE.Mesh(
-			new THREE.BoxGeometry(0.5, 0.04, 0.03),
-			rearLightMaterial,
+		const starsCount = lowPowerDevice ? 180 : 280;
+		const starPositions = new Float32Array(starsCount * 3);
+		for (let index = 0; index < starsCount; index++) {
+			const spread = 30;
+			starPositions[index * 3] = (Math.random() - 0.5) * spread;
+			starPositions[index * 3 + 1] = Math.random() * 8 - 1.8;
+			starPositions[index * 3 + 2] = (Math.random() - 0.5) * spread - 10;
+		}
+		const stars = new THREE.Points(
+			new THREE.BufferGeometry().setAttribute(
+				"position",
+				new THREE.BufferAttribute(starPositions, 3),
+			),
+			new THREE.PointsMaterial({
+				color: 0xf7f5ef,
+				size: lowPowerDevice ? 0.05 : 0.04,
+				transparent: true,
+				opacity: 0.72,
+				sizeAttenuation: true,
+			}),
 		);
-		rearLights.position.set(0, 0.14, 0.86);
-		car.add(rearLights);
+		scene.add(stars);
 
-		const cameraOffset = new THREE.Vector3(0, 1.2, 3.4);
+		const cameraOffset = new THREE.Vector3(0, 1.42, 3.8);
 		const targetQuat = new THREE.Quaternion();
 		const lookAhead = new THREE.Vector3();
 		const cameraTarget = new THREE.Vector3();
 		const point = new THREE.Vector3();
 		const tangent = new THREE.Vector3();
-		const rimTarget = new THREE.Vector3();
-		const carBaseY = 0.2;
+		const neonTarget = new THREE.Vector3();
 		const clock = new THREE.Clock();
 
 		const renderScene = (elapsed: number) => {
-			const t = smoothstep(progressRef.current);
-			routePath.getPointAt(t, point);
-			routePath.getTangentAt(t, tangent).normalize();
+			const progressValue = smoothstep(progressRef.current);
+			const steppedProgress = allowMotion
+				? Math.round(progressValue * 260) / 260
+				: progressValue;
+
+			routePath.getPointAt(steppedProgress, point);
+			routePath.getTangentAt(steppedProgress, tangent).normalize();
 
 			targetQuat.setFromUnitVectors(FORWARD, tangent);
-			car.quaternion.slerp(targetQuat, allowMotion ? 0.2 : 1);
+			car.quaternion.slerp(targetQuat, allowMotion ? 0.28 : 1);
 
 			const bodyLift = allowMotion
-				? Math.sin(elapsed * 3.8 + t * 7) * 0.025
+				? Math.sin(elapsed * 6.2 + steppedProgress * 9) * 0.013
 				: 0;
-			car.position.set(point.x, point.y + carBaseY + bodyLift, point.z);
-			underGlowLight.position.set(point.x, point.y + 0.05, point.z + 0.1);
+			car.position.set(point.x, point.y + 0.18 + bodyLift, point.z);
 
-			const wheelSpeed = allowMotion ? 0.14 : 0.08;
+			const wheelSpin = allowMotion ? elapsed * 8 : 0;
 			for (const wheel of wheels) {
-				wheel.rotation.x = elapsed * -30 * wheelSpeed - t * 60;
+				wheel.rotation.x = wheelSpin - steppedProgress * 44;
 			}
 
 			cameraTarget
 				.copy(cameraOffset)
 				.applyQuaternion(car.quaternion)
 				.add(car.position);
-			camera.position.lerp(cameraTarget, allowMotion ? 0.08 : 1);
+			camera.position.lerp(cameraTarget, allowMotion ? 0.09 : 1);
 
-			const lookAheadProgress = clamp(t + 0.02);
+			const lookAheadProgress = clamp(steppedProgress + 0.03);
 			routePath.getPointAt(lookAheadProgress, lookAhead);
-			lookAhead.y += 0.2;
-			camera.up.lerp(WORLD_UP, 0.1);
+			lookAhead.y += 0.15;
 			camera.lookAt(lookAhead);
 
-			roadMaterial.emissiveIntensity =
-				0.42 + (allowMotion ? 0.2 * Math.sin(elapsed * 1.9 + t * 8) : 0.1);
-			laneMaterial.emissiveIntensity =
-				1.1 + (allowMotion ? 0.55 * Math.sin(elapsed * 4.1 + t * 11) : 0.2);
+			laneMaterial.opacity =
+				0.48 + (allowMotion ? 0.28 * Math.sin(elapsed * 10 - steppedProgress * 15) : 0);
+			leftRailMaterial.opacity =
+				0.45 + (allowMotion ? 0.22 * Math.sin(elapsed * 3.8) : 0.08);
+			rightRailMaterial.opacity =
+				0.45 + (allowMotion ? 0.22 * Math.cos(elapsed * 3.2) : 0.08);
 
-			particles.rotation.y = elapsed * 0.04;
-			particles.rotation.x = Math.sin(elapsed * 0.07) * 0.04;
-
-			for (const ring of tunnelRings) {
-				const depthDistance = Math.abs(ring.position.z - point.z);
-				const glow = clamp(1 - depthDistance / 9, 0.12, 0.9);
-				ring.scale.setScalar(1 + glow * 0.08);
-			}
-
-			for (const checkpoint of checkpoints) {
-				const distance = Math.abs(t - checkpoint.progress);
+			for (const gate of neonGates) {
+				const distance = Math.abs(steppedProgress - gate.progress);
 				const influence = clamp(1 - distance / 0.16);
 				const pulse = allowMotion
-					? 1 + Math.sin(elapsed * 3 + checkpoint.index) * 0.04
-					: 1;
-				checkpoint.mesh.scale.setScalar(0.95 + influence * 0.3 * pulse);
-				checkpoint.material.opacity = 0.15 + influence * 0.78;
+					? 0.5 + 0.5 * Math.sin(elapsed * 4 + gate.index)
+					: 0.5;
+				gate.material.emissiveIntensity = 0.45 + influence * (0.5 + pulse * 0.9);
+				gate.group.scale.setScalar(0.92 + influence * 0.2);
 			}
 
-			rimTarget.set(point.x - 2.4, point.y + 1.6, point.z - 2.8);
-			rimLight.position.lerp(rimTarget, 0.05);
+			stars.rotation.y = elapsed * 0.03;
+
+			neonTarget.set(point.x + 1.6, point.y + 1.5, point.z - 1.4);
+			neonPink.position.lerp(neonTarget, 0.06);
+			neonBlue.position.lerp(
+				new THREE.Vector3(point.x - 1.2, point.y + 0.8, point.z + 2.4),
+				0.06,
+			);
 
 			renderer.render(scene, camera);
 		};
@@ -433,7 +516,7 @@ export default function ScrollJourneyScene({
 			camera.updateProjectionMatrix();
 			renderer.setSize(width, height);
 			renderer.setPixelRatio(
-				Math.min(window.devicePixelRatio || 1, lowPowerDevice ? 1.2 : 1.8),
+				Math.min(window.devicePixelRatio || 1, lowPowerDevice ? 0.9 : 1),
 			);
 			renderOnce();
 		};

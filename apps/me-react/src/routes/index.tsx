@@ -3,9 +3,6 @@ import {
 	Button,
 	Card,
 	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
 	Progress,
 	Separator,
 } from "@r6/ui";
@@ -26,11 +23,11 @@ const ScrollJourneyScene = lazy(
 );
 
 const stageRevealWidth: Record<JourneyStage["id"], number> = {
-	hero: 0.22,
-	about: 0.18,
-	work: 0.2,
-	skills: 0.2,
-	contact: 0.17,
+	hero: 0.24,
+	about: 0.2,
+	work: 0.22,
+	skills: 0.22,
+	contact: 0.2,
 };
 
 function clamp(value: number, min = 0, max = 1) {
@@ -67,6 +64,9 @@ export const Route = createFileRoute("/")({
 
 function PortfolioJourneyPage() {
 	const trackRef = useRef<HTMLDivElement | null>(null);
+	const stageRefs = useRef<
+		Partial<Record<JourneyStage["id"], HTMLElement | null>>
+	>({});
 	const [progress, setProgress] = useState(0);
 
 	useEffect(() => {
@@ -118,6 +118,18 @@ function PortfolioJourneyPage() {
 
 	const activeStage = useMemo(() => nearestStage(progress), [progress]);
 
+	const goToStage = (stageId: JourneyStage["id"]) => {
+		const stageElement = stageRefs.current[stageId];
+		if (!stageElement) {
+			return;
+		}
+
+		stageElement.scrollIntoView({
+			behavior: "smooth",
+			block: "start",
+		});
+	};
+
 	return (
 		<main id="main-content" className="journey-main">
 			<h1 className="sr-only">
@@ -134,9 +146,6 @@ function PortfolioJourneyPage() {
 
 					<div className="journey-overlay">
 						<div className="journey-hud">
-							<Badge variant="outline" className="journey-hud-badge">
-								Scroll-driven portfolio
-							</Badge>
 							<p className="journey-hud-meta">
 								<MapPin className="size-3.5" aria-hidden="true" />
 								<span>{profile.location}</span>
@@ -149,7 +158,7 @@ function PortfolioJourneyPage() {
 									progress,
 									stage.progress,
 									stageRevealWidth[stage.id],
-									1.4,
+									1.35,
 								);
 
 								return (
@@ -160,8 +169,8 @@ function PortfolioJourneyPage() {
 										style={{
 											opacity: strength,
 											transform: `translate3d(0, ${Math.round(
-												(1 - strength) * 36,
-											)}px, 0) scale(${(0.96 + strength * 0.04).toFixed(3)})`,
+												(1 - strength) * 30,
+											)}px, 0) scale(${(0.975 + strength * 0.025).toFixed(3)})`,
 											pointerEvents: strength > 0.5 ? "auto" : "none",
 										}}
 									>
@@ -192,6 +201,10 @@ function PortfolioJourneyPage() {
 												className="journey-stop-link"
 												data-active={isActive}
 												aria-current={isActive ? "step" : undefined}
+												onClick={(event) => {
+													event.preventDefault();
+													goToStage(stage.id);
+												}}
 											>
 												{stage.kicker}
 											</a>
@@ -214,6 +227,9 @@ function PortfolioJourneyPage() {
 							key={stage.id}
 							id={stage.id}
 							className="journey-scroll-step"
+							ref={(node) => {
+								stageRefs.current[stage.id] = node;
+							}}
 						>
 							<h2 className="sr-only">{stage.title}</h2>
 							<p className="sr-only">{stage.summary}</p>
@@ -230,51 +246,36 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 		case "hero":
 			return (
 				<Card className="journey-card">
-					<CardHeader>
-						<p className="journey-kicker">{stage.kicker}</p>
-						<CardTitle className="journey-title">{stage.title}</CardTitle>
-						<CardDescription className="journey-description">
-							{profile.support}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="journey-actions">
-						<Button asChild size="lg">
-							<a href="#contact">Start a build conversation</a>
-						</Button>
-						<Button asChild variant="outline" size="lg">
-							<a href={profile.github} target="_blank" rel="noreferrer">
-								GitHub <ArrowUpRight className="size-3.5" />
-							</a>
-						</Button>
-						<Button asChild variant="outline" size="lg">
-							<a href={profile.linkedin} target="_blank" rel="noreferrer">
-								LinkedIn <ArrowUpRight className="size-3.5" />
-							</a>
-						</Button>
+					<CardContent className="journey-card-content">
+						<p className="journey-copy-primary">{profile.headline}</p>
+						<p className="journey-description">{profile.support}</p>
+						<div className="journey-actions">
+							<Button asChild size="lg">
+								<a href="#contact">Start a build conversation</a>
+							</Button>
+							<Button asChild variant="outline" size="lg">
+								<a href={profile.github} target="_blank" rel="noreferrer">
+									GitHub <ArrowUpRight className="size-3.5" />
+								</a>
+							</Button>
+							<Button asChild variant="outline" size="lg">
+								<a href={profile.linkedin} target="_blank" rel="noreferrer">
+									LinkedIn <ArrowUpRight className="size-3.5" />
+								</a>
+							</Button>
+						</div>
 					</CardContent>
 				</Card>
 			);
 		case "about":
 			return (
 				<Card className="journey-card">
-					<CardHeader>
-						<p className="journey-kicker">{stage.kicker}</p>
-						<CardTitle className="journey-title">{stage.title}</CardTitle>
-						<CardDescription className="journey-description">
-							{stage.summary}
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
+					<CardContent className="journey-card-content">
+						<p className="journey-description">{stage.summary}</p>
 						<ul className="journey-list">
-							<li>
-								Find process gaps quickly and validate the actual bottleneck.
-							</li>
-							<li>
-								Design maintainable flows across UI, API, and data boundaries.
-							</li>
-							<li>
-								Streamline operations so teams move faster with less friction.
-							</li>
+							<li>Find process gaps quickly and validate the actual bottleneck.</li>
+							<li>Design maintainable flows across UI, API, and data boundaries.</li>
+							<li>Streamline operations so teams move faster with less friction.</li>
 						</ul>
 					</CardContent>
 				</Card>
@@ -282,17 +283,10 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 		case "work":
 			return (
 				<Card className="journey-card">
-					<CardHeader>
-						<p className="journey-kicker">{stage.kicker}</p>
-						<CardTitle className="journey-title">{stage.title}</CardTitle>
-						<CardDescription className="journey-description">
-							{stage.summary}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="journey-work-grid">
+					<CardContent className="journey-card-content journey-work-grid">
+						<p className="journey-description">{stage.summary}</p>
 						{selectedWork.map((project) => (
 							<article key={project.title} className="journey-work-item">
-								<h3>{project.title}</h3>
 								<p>{project.summary}</p>
 								<div className="journey-tag-row">
 									{project.tags.map((tag) => (
@@ -309,17 +303,11 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 		case "skills":
 			return (
 				<Card className="journey-card">
-					<CardHeader>
-						<p className="journey-kicker">{stage.kicker}</p>
-						<CardTitle className="journey-title">{stage.title}</CardTitle>
-						<CardDescription className="journey-description">
-							{stage.summary}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="journey-skills-grid">
+					<CardContent className="journey-card-content journey-skills-grid">
+						<p className="journey-description">{stage.summary}</p>
 						{skillGroups.map((group) => (
 							<section key={group.group} className="journey-skill-group">
-								<h3>{group.group}</h3>
+								<p className="journey-skill-group-label">{group.group}</p>
 								<div className="journey-skill-row">
 									{group.items.map((item) => (
 										<SkillPill key={item.name} skill={item} />
@@ -333,14 +321,8 @@ function PanelContent({ stage }: { stage: JourneyStage }) {
 		case "contact":
 			return (
 				<Card className="journey-card">
-					<CardHeader>
-						<p className="journey-kicker">{stage.kicker}</p>
-						<CardTitle className="journey-title">{stage.title}</CardTitle>
-						<CardDescription className="journey-description">
-							{stage.summary}
-						</CardDescription>
-					</CardHeader>
-					<CardContent className="journey-contact-actions">
+					<CardContent className="journey-card-content journey-contact-actions">
+						<p className="journey-description">{stage.summary}</p>
 						<Button asChild size="lg">
 							<a href={profile.emailLink}>
 								<Mail className="size-4" />

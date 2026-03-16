@@ -10,55 +10,55 @@
 :root,
 :root.dark {
   --radius: 1rem;
-  --background: oklch(0.145 0.03 250);
-  --foreground: oklch(0.96 0.01 252);
-  --card: oklch(0.205 0.03 250 / 0.82);
-  --card-foreground: oklch(0.96 0.01 252);
-  --popover: oklch(0.2 0.03 250);
-  --popover-foreground: oklch(0.96 0.01 252);
-  --primary: oklch(0.75 0.12 205);
-  --primary-foreground: oklch(0.16 0.03 250);
-  --secondary: oklch(0.26 0.028 250);
-  --secondary-foreground: oklch(0.93 0.01 252);
-  --muted: oklch(0.235 0.02 250);
-  --muted-foreground: oklch(0.77 0.02 250);
-  --accent: oklch(0.31 0.06 205);
-  --accent-foreground: oklch(0.89 0.05 203);
+  --background: oklch(0.12 0.01 92);
+  --foreground: oklch(0.97 0.01 95);
+  --card: oklch(0.18 0.01 92 / 0.9);
+  --card-foreground: oklch(0.97 0.01 95);
+  --popover: oklch(0.16 0.01 92);
+  --popover-foreground: oklch(0.97 0.01 95);
+  --primary: oklch(0.82 0.15 90);
+  --primary-foreground: oklch(0.16 0.01 92);
+  --secondary: oklch(0.24 0.01 92);
+  --secondary-foreground: oklch(0.92 0.01 95);
+  --muted: oklch(0.22 0.01 92);
+  --muted-foreground: oklch(0.74 0.02 92);
+  --accent: oklch(0.34 0.08 90);
+  --accent-foreground: oklch(0.9 0.1 90);
   --destructive: oklch(0.68 0.22 27);
-  --border: oklch(0.56 0.048 248 / 0.3);
-  --input: oklch(0.36 0.03 248 / 0.34);
-  --ring: oklch(0.75 0.12 205);
+  --border: oklch(0.7 0.05 90 / 0.24);
+  --input: oklch(0.34 0.02 92 / 0.45);
+  --ring: oklch(0.82 0.15 90);
 
-  --hero-glow-a: rgba(122, 246, 255, 0.2);
-  --hero-glow-b: rgba(91, 138, 255, 0.14);
-  --panel-1: rgba(10, 20, 34, 0.78);
-  --panel-2: rgba(8, 15, 27, 0.9);
+  --hero-glow-a: rgba(255, 214, 112, 0.2);
+  --hero-glow-b: rgba(255, 255, 255, 0.1);
+  --panel-1: rgba(18, 15, 10, 0.85);
+  --panel-2: rgba(10, 9, 8, 0.94);
 }
 
 :root.light {
-  --background: oklch(0.985 0.008 250);
-  --foreground: oklch(0.23 0.02 247);
-  --card: oklch(0.995 0.005 246 / 0.92);
-  --card-foreground: oklch(0.23 0.02 247);
+  --background: oklch(0.985 0.008 95);
+  --foreground: oklch(0.23 0.01 90);
+  --card: oklch(0.995 0.004 94 / 0.96);
+  --card-foreground: oklch(0.23 0.01 90);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.02 247);
-  --primary: oklch(0.44 0.11 208);
-  --primary-foreground: oklch(0.98 0.01 247);
-  --secondary: oklch(0.92 0.015 248);
-  --secondary-foreground: oklch(0.32 0.03 248);
-  --muted: oklch(0.95 0.01 248);
-  --muted-foreground: oklch(0.48 0.03 248);
-  --accent: oklch(0.89 0.05 206);
-  --accent-foreground: oklch(0.34 0.06 213);
+  --popover-foreground: oklch(0.22 0.01 90);
+  --primary: oklch(0.7 0.13 90);
+  --primary-foreground: oklch(0.98 0.01 95);
+  --secondary: oklch(0.92 0.01 95);
+  --secondary-foreground: oklch(0.3 0.01 90);
+  --muted: oklch(0.95 0.006 95);
+  --muted-foreground: oklch(0.45 0.01 90);
+  --accent: oklch(0.89 0.05 88);
+  --accent-foreground: oklch(0.33 0.08 90);
   --destructive: oklch(0.57 0.2 27);
-  --border: oklch(0.66 0.035 246 / 0.32);
-  --input: oklch(0.81 0.02 246 / 0.4);
-  --ring: oklch(0.52 0.11 205);
+  --border: oklch(0.72 0.03 90 / 0.35);
+  --input: oklch(0.83 0.01 95 / 0.5);
+  --ring: oklch(0.7 0.13 90);
 
-  --hero-glow-a: rgba(98, 188, 255, 0.16);
-  --hero-glow-b: rgba(108, 126, 255, 0.12);
-  --panel-1: rgba(255, 255, 255, 0.85);
-  --panel-2: rgba(245, 249, 255, 0.92);
+  --hero-glow-a: rgba(255, 196, 72, 0.17);
+  --hero-glow-b: rgba(255, 255, 255, 0.12);
+  --panel-1: rgba(255, 255, 255, 0.9);
+  --panel-2: rgba(248, 246, 240, 0.95);
 }
 
 @theme inline {
@@ -124,7 +124,7 @@
     background-image:
       radial-gradient(1250px 760px at -10% -12%, var(--hero-glow-a), transparent 58%),
       radial-gradient(980px 620px at 115% -10%, var(--hero-glow-b), transparent 60%),
-      linear-gradient(180deg, color-mix(in oklab, var(--background), black 3%) 0%, var(--background) 45%, color-mix(in oklab, var(--background), black 7%) 100%);
+      linear-gradient(180deg, color-mix(in oklab, var(--background), black 4%) 0%, var(--background) 45%, color-mix(in oklab, var(--background), black 10%) 100%);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -135,10 +135,10 @@
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.16;
+    opacity: 0.14;
     background-image:
-      linear-gradient(rgba(124, 179, 255, 0.12) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(124, 179, 255, 0.1) 1px, transparent 1px);
+      linear-gradient(rgba(255, 214, 110, 0.12) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.09) 1px, transparent 1px);
     background-size: 34px 34px;
     mask-image: radial-gradient(circle at 50% 12%, black, transparent 80%);
   }
@@ -525,6 +525,7 @@ section[id] {
 
 .journey-main {
   width: 100%;
+  min-height: 100%;
 }
 
 .journey-shell {
@@ -534,7 +535,8 @@ section[id] {
 .journey-sticky {
   position: sticky;
   top: 0;
-  height: 100svh;
+  height: 100dvh;
+  min-height: 100svh;
   overflow: hidden;
 }
 
@@ -546,8 +548,8 @@ section[id] {
 
 .journey-scene-loading {
   background:
-    radial-gradient(50% 36% at 50% 45%, rgba(90, 195, 255, 0.25), transparent 74%),
-    linear-gradient(180deg, rgba(8, 15, 30, 0.95), rgba(6, 11, 22, 0.98));
+    radial-gradient(50% 38% at 50% 45%, rgba(255, 214, 98, 0.28), transparent 74%),
+    linear-gradient(180deg, rgba(11, 9, 7, 0.95), rgba(6, 5, 4, 0.98));
 }
 
 .journey-scene-shell::before {
@@ -557,8 +559,8 @@ section[id] {
   pointer-events: none;
   z-index: 2;
   background:
-    radial-gradient(70% 48% at 50% 90%, rgba(120, 238, 255, 0.1), transparent 70%),
-    radial-gradient(44% 34% at 10% 18%, rgba(96, 142, 255, 0.2), transparent 72%);
+    radial-gradient(70% 48% at 50% 90%, rgba(255, 214, 94, 0.12), transparent 70%),
+    radial-gradient(44% 34% at 10% 18%, rgba(255, 255, 255, 0.12), transparent 72%);
 }
 
 .journey-scene-canvas {
@@ -578,8 +580,8 @@ section[id] {
   display: grid;
   place-items: center;
   background:
-    radial-gradient(40% 30% at 50% 45%, rgba(123, 220, 255, 0.25), transparent 68%),
-    linear-gradient(180deg, rgba(8, 15, 30, 0.96), rgba(6, 11, 22, 1));
+    radial-gradient(40% 30% at 50% 45%, rgba(255, 214, 94, 0.22), transparent 68%),
+    linear-gradient(180deg, rgba(10, 8, 7, 0.96), rgba(5, 5, 4, 1));
   z-index: 4;
 }
 
@@ -595,16 +597,17 @@ section[id] {
   position: relative;
   z-index: 5;
   min-height: 100%;
-  padding: clamp(1rem, 1.5vw, 1.6rem);
+  padding: clamp(0.9rem, 1.5vw, 1.6rem);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  pointer-events: none;
+  gap: clamp(0.7rem, 1vw, 1rem);
+  pointer-events: auto;
 }
 
 .journey-hud {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 0.85rem;
 }
@@ -623,9 +626,9 @@ section[id] {
   gap: 0.36rem;
   padding: 0.38rem 0.66rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in oklab, var(--accent-foreground) 40%, var(--border));
-  background: color-mix(in oklab, var(--background) 24%, transparent);
-  color: var(--muted-foreground);
+  border: 1px solid color-mix(in oklab, var(--primary) 45%, var(--border));
+  background: color-mix(in oklab, var(--background) 40%, transparent);
+  color: color-mix(in oklab, var(--foreground) 84%, var(--primary));
   font-size: 0.76rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -634,7 +637,7 @@ section[id] {
 .journey-panel-stack {
   position: relative;
   display: grid;
-  width: min(900px, 100%);
+  width: min(860px, 100%);
   align-self: center;
 }
 
@@ -646,39 +649,39 @@ section[id] {
 
 .journey-card {
   pointer-events: auto;
-  max-height: min(62svh, 760px);
+  max-height: min(68dvh, 760px);
+  min-width: 0;
   overflow: auto;
   border-radius: calc(var(--radius) * 1.25);
-  border: 1px solid color-mix(in oklab, var(--accent-foreground) 32%, var(--border));
+  border: 1px solid color-mix(in oklab, var(--primary) 40%, var(--border));
   background:
-    radial-gradient(120% 130% at 0% 0%, rgba(120, 226, 255, 0.12), transparent 65%),
+    radial-gradient(120% 130% at 0% 0%, rgba(255, 214, 98, 0.16), transparent 65%),
     linear-gradient(165deg, color-mix(in oklab, var(--panel-1) 94%, transparent), color-mix(in oklab, var(--panel-2) 97%, transparent));
   box-shadow:
-    0 1px 0 color-mix(in oklab, white 22%, transparent) inset,
-    0 18px 40px rgba(2, 8, 18, 0.38);
+    0 1px 0 color-mix(in oklab, white 18%, transparent) inset,
+    0 20px 48px rgba(0, 0, 0, 0.46);
   backdrop-filter: blur(8px);
 }
 
-.journey-kicker {
-  margin: 0;
-  font-size: 0.67rem;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-  color: color-mix(in oklab, var(--accent-foreground) 90%, white);
-  font-weight: 700;
+.journey-card-content {
+  display: grid;
+  gap: 0.85rem;
 }
 
-.journey-title {
-  margin: 0.2rem 0 0;
-  font-size: clamp(1.2rem, 0.95rem + 1.05vw, 2rem);
-  line-height: 1.18;
+.journey-copy-primary {
+  margin: 0;
+  font-size: clamp(1rem, 0.86rem + 0.72vw, 1.45rem);
+  line-height: 1.3;
+  color: color-mix(in oklab, var(--foreground) 92%, var(--primary));
+  font-weight: 620;
 }
 
 .journey-description {
-  margin-top: 0.65rem;
+  margin: 0;
   max-width: 64ch;
   line-height: 1.6;
   color: var(--muted-foreground);
+  font-size: 0.92rem;
 }
 
 .journey-actions {
@@ -714,7 +717,7 @@ section[id] {
 }
 
 .journey-work-item p {
-  margin: 0.4rem 0 0;
+  margin: 0;
   font-size: 0.82rem;
   line-height: 1.5;
   color: var(--muted-foreground);
@@ -738,11 +741,15 @@ section[id] {
 }
 
 .journey-skill-group h3 {
+  display: none;
+}
+
+.journey-skill-group-label {
   margin: 0;
-  font-size: 0.73rem;
-  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: color-mix(in oklab, var(--muted-foreground) 84%, var(--foreground));
+  color: color-mix(in oklab, var(--primary) 80%, var(--foreground));
 }
 
 .journey-skill-row {
@@ -753,9 +760,9 @@ section[id] {
 
 .journey-skill-pill {
   gap: 0.34rem;
-  border-color: color-mix(in oklab, var(--accent-foreground) 33%, var(--border));
+  border-color: color-mix(in oklab, var(--primary) 35%, var(--border));
   background: color-mix(in oklab, var(--background) 38%, transparent);
-  color: color-mix(in oklab, var(--foreground) 94%, white);
+  color: color-mix(in oklab, var(--foreground) 93%, var(--primary));
 }
 
 .journey-skill-icon {
@@ -803,10 +810,11 @@ section[id] {
   align-self: center;
   padding: 0.7rem 0.8rem;
   border-radius: calc(var(--radius) * 1.08);
-  border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
+  border: 1px solid color-mix(in oklab, var(--primary) 30%, var(--border));
   background:
     linear-gradient(150deg, color-mix(in oklab, var(--panel-1) 85%, transparent), color-mix(in oklab, var(--panel-2) 92%, transparent));
   backdrop-filter: blur(8px);
+  z-index: 20;
 }
 
 .journey-progress-head {
@@ -821,7 +829,7 @@ section[id] {
   font-size: 0.66rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: color-mix(in oklab, var(--accent-foreground) 90%, var(--foreground));
+  color: color-mix(in oklab, var(--primary) 85%, var(--foreground));
 }
 
 .journey-progress-value {
@@ -857,19 +865,20 @@ section[id] {
   font-size: 0.68rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  cursor: pointer;
   transition: color 180ms ease, border-color 180ms ease, background-color 180ms ease;
 }
 
 .journey-stop-link[data-active="true"] {
-  color: color-mix(in oklab, var(--foreground) 96%, white);
-  border-color: color-mix(in oklab, var(--accent-foreground) 55%, var(--border));
-  background: color-mix(in oklab, var(--accent) 48%, transparent);
+  color: color-mix(in oklab, var(--foreground) 94%, var(--primary));
+  border-color: color-mix(in oklab, var(--primary) 55%, var(--border));
+  background: color-mix(in oklab, var(--primary) 30%, transparent);
 }
 
 .journey-stop-link:hover,
 .journey-stop-link:focus-visible {
   color: var(--foreground);
-  border-color: color-mix(in oklab, var(--accent-foreground) 45%, var(--border));
+  border-color: color-mix(in oklab, var(--primary) 45%, var(--border));
 }
 
 .journey-scroll-hint {
@@ -890,13 +899,14 @@ section[id] {
 }
 
 .journey-scroll-step {
+  min-height: 100dvh;
   min-height: 100svh;
 }
 
 @media (min-width: 1100px) {
   .journey-panel-stack {
     align-self: flex-start;
-    margin-left: min(4vw, 2.8rem);
+    margin-left: min(4vw, 2.4rem);
     width: min(760px, 100%);
   }
 
@@ -909,7 +919,11 @@ section[id] {
 
 @media (max-width: 900px) {
   .journey-card {
-    max-height: min(56svh, 640px);
+    max-height: min(60dvh, 640px);
+  }
+
+  .journey-progress-stops {
+    gap: 0.3rem;
   }
 
   .journey-contact-actions .inline-flex {
@@ -920,11 +934,12 @@ section[id] {
 @media (max-width: 720px) {
   .journey-overlay {
     padding: 0.8rem;
-    gap: 0.7rem;
+    gap: 0.64rem;
   }
 
   .journey-hud {
     flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .journey-hud-meta {
@@ -932,7 +947,7 @@ section[id] {
   }
 
   .journey-card {
-    max-height: min(60svh, 620px);
+    max-height: min(65dvh, 620px);
   }
 
   .journey-actions .inline-flex,
@@ -944,8 +959,34 @@ section[id] {
     padding: 0.58rem 0.62rem;
   }
 
+  .journey-progress-value {
+    font-size: 0.69rem;
+  }
+
   .journey-scroll-hint {
     display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .journey-overlay {
+    padding: 0.65rem;
+  }
+
+  .journey-card {
+    max-height: min(67dvh, 620px);
+  }
+
+  .journey-copy-primary {
+    font-size: 1rem;
+  }
+
+  .journey-description {
+    font-size: 0.86rem;
+  }
+
+  .journey-stop-link {
+    font-size: 0.61rem;
   }
 }
 

@@ -1,7 +1,7 @@
 export const profile = {
 	name: "Joshua Dave E. Oropilla",
 	title: "Full Stack Software Engineer",
-	location: "Baguio City, Benguet, Philippines",
+	location: "Philippines",
 	email: "joshdave0915@gmail.com",
 	emailLink: "mailto:joshdave0915@gmail.com",
 	github: "https://github.com/yippieehaayaa",
