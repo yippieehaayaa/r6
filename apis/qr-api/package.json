@@ -8,11 +8,11 @@
   },
   "dependencies": {
     "@hono/node-server": "1.19.10",
-    "hono": "4.12.4"
+    "hono": "4.12.8"
   },
   "devDependencies": {
-    "@r6/typescript-config": "0.0.0",
-    "@types/node": "^25.3.5",
+    "@r6/typescript-config": "*",
+    "@types/node": "^25.4.0",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
   }
