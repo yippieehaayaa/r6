@@ -1,11 +1,18 @@
-import { StrictMode } from "react";
+import { RouterProvider } from "@tanstack/react-router";
+import React from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.tsx";
+import { getRouter } from "./router";
+import "./styles.css";
 
-// biome-ignore lint/style/noNonNullAssertion: root element is guaranteed to exist in index.html
-createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<App />
-	</StrictMode>,
+const router = getRouter();
+const rootElement = document.getElementById("app");
+
+if (!rootElement) {
+	throw new Error('Missing root element with id "app"');
+}
+
+createRoot(rootElement).render(
+	<React.StrictMode>
+		<RouterProvider router={router} />
+	</React.StrictMode>,
 );

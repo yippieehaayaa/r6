@@ -1,35 +1,47 @@
 {
 	"name": "@r6/me-react",
-	"private": true,
-	"author": "Joshua Dave Oropilla",
+	"author": "Joshua Dave E. Oropilla",
 	"version": "1.0.0",
+	"license": "MIT",
+	"private": true,
 	"type": "module",
+	"imports": {
+		"#/*": "./src/*"
+	},
 	"scripts": {
-		"dev": "vite",
-		"build": "tsc -b && vite build",
-		"check": "biome check --write .",
+		"dev": "vite dev --port 3000",
+		"build": "vite build",
+		"preview": "vite preview",
+		"test": "vitest run",
 		"format": "biome format --write .",
 		"lint": "biome lint --write .",
-		"preview": "vite preview"
+		"check": "biome check --write ."
 	},
 	"dependencies": {
-		"react": "^19.2.4",
-		"react-dom": "^19.2.4"
+		"@r6/ui": "0.0.0",
+		"@tailwindcss/vite": "^4.1.18",
+		"@tanstack/react-router": "latest",
+		"@tanstack/react-router-devtools": "latest",
+		"@tanstack/router-plugin": "^1.132.0",
+		"lucide-react": "^0.545.0",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"tailwindcss": "^4.1.18"
 	},
 	"devDependencies": {
-		"@r6/typescript-config": "*",
-		"@babel/core": "^7.29.0",
-		"@biomejs/biome": "2.4.4",
-		"@rolldown/plugin-babel": "^0.2.0",
-		"@types/babel__core": "^7.20.5",
-		"@types/node": "^24.12.0",
-		"@types/react": "^19.2.14",
-		"@types/react-dom": "^19.2.3",
-		"@vitejs/plugin-react": "^6.0.0",
+		"@biomejs/biome": "2.4.5",
+		"@tailwindcss/typography": "^0.5.16",
+		"@testing-library/dom": "^10.4.1",
+		"@testing-library/react": "^16.3.0",
+		"@types/node": "^22.10.2",
+		"@types/react": "^19.2.0",
+		"@types/react-dom": "^19.2.0",
+		"@vitejs/plugin-react": "^5.1.4",
 		"babel-plugin-react-compiler": "^1.0.0",
-		"globals": "^17.4.0",
-		"typescript": "~5.9.3",
-		"typescript-eslint": "^8.56.1",
-		"vite": "^8.0.0"
+		"jsdom": "^28.1.0",
+		"typescript": "^5.7.2",
+		"vite": "^7.3.1",
+		"vite-tsconfig-paths": "^5.1.4",
+		"vitest": "^3.0.5"
 	}
 }
