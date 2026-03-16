@@ -1,7 +1,5 @@
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import Footer from "../components/Footer";
-import Header from "../components/Header";
 
 export const Route = createRootRoute({
 	component: RootComponent,
@@ -10,10 +8,13 @@ export const Route = createRootRoute({
 function RootComponent() {
 	return (
 		<>
-			<Header />
+			<a href="#main-content" className="skip-link">
+				Skip to main content
+			</a>
 			<Outlet />
-			<Footer />
-			<TanStackRouterDevtools position="bottom-right" />
+			{import.meta.env.DEV ? (
+				<TanStackRouterDevtools position="bottom-right" />
+			) : null}
 		</>
 	);
 }
