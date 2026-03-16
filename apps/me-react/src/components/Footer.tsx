@@ -10,24 +10,26 @@ export default function Footer() {
 					&copy; {year} {profile.name}
 				</p>
 				<div className="footer-links">
+					<a href="/#hero" className="footer-link">
+						Hero
+					</a>
+					<a href="/#profile" className="footer-link">
+						Profile
+					</a>
+					<a href="/#work" className="footer-link">
+						Work
+					</a>
+					<a href="/#skills" className="footer-link">
+						Skills
+					</a>
+					<a href="/#contact" className="footer-link">
+						Contact
+					</a>
+					<a href="/#project" className="footer-link">
+						Project
+					</a>
 					<a href={profile.emailLink} className="footer-link">
 						Email
-					</a>
-					<a
-						href={profile.github}
-						target="_blank"
-						rel="noreferrer"
-						className="footer-link"
-					>
-						GitHub
-					</a>
-					<a
-						href={profile.linkedin}
-						target="_blank"
-						rel="noreferrer"
-						className="footer-link"
-					>
-						LinkedIn
 					</a>
 				</div>
 			</div>

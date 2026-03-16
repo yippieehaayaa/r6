@@ -1,19 +1,19 @@
 export const profile = {
-	name: "Joshua Dave E. Oropilla",
-	title: "Full Stack Software Engineer",
-	location: "Philippines",
+	name: "Joshua Dave Oropilla",
+	title: "Software Engineer",
+	location: "Baguio City, Benguet, Philippines",
 	email: "joshdave0915@gmail.com",
 	emailLink: "mailto:joshdave0915@gmail.com",
 	github: "https://github.com/yippieehaayaa",
 	linkedin: "https://linkedin.com/in/joshua-dave-oropilla-07575123b",
 	headline:
-		"Full Stack Engineer building practical systems around real problems.",
+		"Full Stack Engineer building practical systems that make complex processes easier.",
 	support:
-		"I map friction, simplify workflows, and deliver maintainable software across frontend, backend, APIs, infrastructure, and deployment.",
+		"I enjoy solving problems, discovering inefficiencies, and building maintainable software that streamlines workflows and reduces friction.",
 };
 
 export type JourneyStage = {
-	id: "hero" | "about" | "work" | "skills" | "contact";
+	id: "hero" | "profile" | "work" | "skills" | "contact" | "project";
 	kicker: string;
 	title: string;
 	summary: string;
@@ -26,32 +26,32 @@ export const journeyStages: JourneyStage[] = [
 		kicker: "Hero",
 		title: profile.headline,
 		summary:
-			"Use the up and down arrow keys to drive the scene. This portfolio is a guided engineering journey, not a static resume.",
-		progress: 0.04,
+			"A focused snapshot of how I build software that simplifies complex processes.",
+		progress: 0.08,
 	},
 	{
-		id: "about",
-		kicker: "About",
-		title: "I enjoy turning process friction into clear, maintainable systems.",
+		id: "profile",
+		kicker: "Profile",
+		title: "Open to Software Engineer and Full Stack Developer opportunities",
 		summary:
-			"I look for gaps, remove repetitive steps, and shape solutions teams can keep operating with confidence.",
-		progress: 0.26,
+			"I am looking for opportunities where I can solve problems, identify inefficiencies, and build maintainable systems that make work easier.",
+		progress: 0.24,
 	},
 	{
 		id: "work",
 		kicker: "Work",
-		title: "Selected builds focused on practical impact",
+		title: "Work Experience",
 		summary:
-			"Internal platforms, workflow automation, and API engineering where reliability and speed both matter.",
-		progress: 0.5,
+			"Projects where I solved practical software problems for academic operations.",
+		progress: 0.4,
 	},
 	{
 		id: "skills",
 		kicker: "Skills",
-		title: "Comfortable across product and platform layers",
+		title: "Hands-on across product and platform layers",
 		summary:
 			"Frontend, backend, APIs, data, and deployment tooling used to keep systems fast, stable, and easy to evolve.",
-		progress: 0.74,
+		progress: 0.58,
 	},
 	{
 		id: "contact",
@@ -59,28 +59,39 @@ export const journeyStages: JourneyStage[] = [
 		title: "Let's build software that makes work easier.",
 		summary:
 			"If you're solving operational complexity, I can help design and ship practical systems around it.",
-		progress: 0.93,
+		progress: 0.76,
+	},
+	{
+		id: "project",
+		kicker: "Project",
+		title: "Projects (Soon to Deploy)",
+		summary:
+			"Active projects are in progress. You can track updates and deployment progress through my GitHub and LinkedIn.",
+		progress: 0.94,
 	},
 ];
 
 export const selectedWork = [
 	{
-		title: "Internal and Admin Systems",
+		title: "University of Baguio",
+		period: "Mar 2024 – Feb 2026",
 		summary:
-			"Built full-stack operational platforms that replaced scattered manual steps with clear workflows and maintainable tooling.",
-		tags: ["React", "TypeScript", "Node.js", "PostgreSQL"],
+			"Built and improved internal systems to solve day-to-day operational issues for staff and administration.",
+		tags: ["Full Stack Development", "Internal Systems", "Automation"],
 	},
 	{
-		title: "Workflow Automation and Integrations",
+		title: "Mapúa University",
+		period: "Aug 2022 – Oct 2022",
 		summary:
-			"Automated repetitive lifecycle tasks through integration pipelines, reducing friction for teams handling high-volume processes.",
-		tags: ["Automation", "Integrations", "REST APIs", "Node.js"],
+			"Worked on API and platform integrations that addressed academic workflow problems and reduced manual steps.",
+		tags: ["API Development", "Integrations", "Academic Systems"],
 	},
 	{
-		title: "API and Platform Engineering",
+		title: "RIA Advisory",
+		period: "Aug 2023 – Nov 2023",
 		summary:
-			"Designed backend services and API layers that keep data flow predictable, observable, and easier to scale.",
-		tags: ["Hono", "Express", "Microservices", "Observability"],
+			"Supported utility platform work and helped resolve configuration and data workflow issues in Oracle Utilities C2M projects.",
+		tags: ["Oracle Utilities C2M", "Enterprise Systems", "Consulting"],
 	},
 ] as const;
 
@@ -110,7 +121,7 @@ export const skillGroups = [
 			{ name: "React", logoSlug: "react", logoColor: "61DAFB" },
 			{ name: "TypeScript", logoSlug: "typescript", logoColor: "3178C6" },
 			{ name: "JavaScript", logoSlug: "javascript", logoColor: "F7DF1E" },
-			{ name: "Vue", logoSlug: "vuedotjs", logoColor: "4FC08D" },
+			{ name: "Angular", logoSlug: "angular", logoColor: "DD0031" },
 		],
 	},
 	{
@@ -149,6 +160,7 @@ export const skillGroups = [
 		group: "Tools",
 		items: [
 			{ name: "Git", logoSlug: "git", logoColor: "F05032" },
+			{ name: "Turborepo", logoSlug: "turborepo", logoColor: "EF4444" },
 			{ name: "Bruno", logoSlug: "bruno", logoColor: "F5A524", icon: "tool" },
 		],
 	},

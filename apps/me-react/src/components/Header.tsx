@@ -5,10 +5,12 @@ import { profile } from "../content/portfolio";
 import ThemeToggle from "./ThemeToggle";
 
 const navLinks = [
-	{ label: "About", href: "/#about" },
+	{ label: "Hero", href: "/#hero" },
+	{ label: "Profile", href: "/#profile" },
 	{ label: "Work", href: "/#work" },
 	{ label: "Skills", href: "/#skills" },
 	{ label: "Contact", href: "/#contact" },
+	{ label: "Project", href: "/#project" },
 ];
 
 export default function Header() {

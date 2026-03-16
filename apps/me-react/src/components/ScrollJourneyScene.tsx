@@ -748,7 +748,7 @@ export default function ScrollJourneyScene({
 			{showFallback ? (
 				<div className="journey-scene-fallback">
 					<p className="journey-scene-fallback-text">
-						WebGL is unavailable. Use up/down arrow keys to continue.
+						WebGL is unavailable. Scroll to continue exploring the portfolio.
 					</p>
 				</div>
 			) : null}

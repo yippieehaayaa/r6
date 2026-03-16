@@ -1,4 +1,3 @@
-import { Badge } from "@r6/ui";
 import { Braces, GitBranch, Network, Wrench } from "lucide-react";
 import type { ComponentType } from "react";
 import { useMemo, useState } from "react";
@@ -42,7 +41,7 @@ export default function SkillPill({ skill }: { skill: SkillItem }) {
 	}, [skill.icon]);
 
 	return (
-		<Badge variant="outline" className="journey-skill-pill">
+		<span className="journey-skill-pill">
 			<span className="journey-skill-icon" aria-hidden="true">
 				{skill.logoSlug && !imageFailed ? (
 					<img
@@ -60,6 +59,6 @@ export default function SkillPill({ skill }: { skill: SkillItem }) {
 				)}
 			</span>
 			<span>{skill.name}</span>
-		</Badge>
+		</span>
 	);
 }
