@@ -89,10 +89,10 @@ async function fetchRemoteLogo(
   }
 }
 
-async function normalizeImageToPngDataUrl(
+async function normalizeImageToPngBuffer(
   buffer: Buffer,
   options: LoadLogoOptions,
-): Promise<string> {
+): Promise<Buffer> {
   if (buffer.byteLength > options.maxBytes) {
     throw new BadRequestError(
       `Logo is too large. Maximum is ${options.maxBytes} bytes`,
@@ -100,34 +100,40 @@ async function normalizeImageToPngDataUrl(
   }
 
   try {
-    const pngBuffer = await sharp(buffer, {
+    return await sharp(buffer, {
       limitInputPixels: 4_096 * 4_096,
     })
       .resize(1_024, 1_024, { fit: "inside", withoutEnlargement: true })
       .png({ compressionLevel: 9, quality: 100 })
       .toBuffer();
-
-    return toDataUrl(pngBuffer, "image/png");
   } catch {
     throw new BadRequestError("Invalid logo image provided");
   }
 }
 
-export async function normalizeLogoSourceToPngDataUrl(
+export async function normalizeLogoSourceToPngBuffer(
   source: LogoSource,
   options: LoadLogoOptions,
-): Promise<string> {
+): Promise<Buffer> {
   if (source.kind === "DATA_URL") {
     const parsed = parseDataUrl(source.dataUrl);
     if (!parsed.mimeType.startsWith("image/")) {
       throw new BadRequestError("Data URL logo must be an image");
     }
 
-    return normalizeImageToPngDataUrl(parsed.buffer, options);
+    return normalizeImageToPngBuffer(parsed.buffer, options);
   }
 
   const remoteBuffer = await fetchRemoteLogo(source.url, options);
-  return normalizeImageToPngDataUrl(remoteBuffer, options);
+  return normalizeImageToPngBuffer(remoteBuffer, options);
+}
+
+export async function normalizeLogoSourceToPngDataUrl(
+  source: LogoSource,
+  options: LoadLogoOptions,
+): Promise<string> {
+  const buffer = await normalizeLogoSourceToPngBuffer(source, options);
+  return toDataUrl(buffer, "image/png");
 }
 
 export function dataUrlToBuffer(dataUrl: string): Buffer {

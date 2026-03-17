@@ -13,7 +13,7 @@ export interface DynamicQrRecord {
   issuedDate: string;
   createdAt: string;
   updatedAt: string;
-  logoPngDataUrl?: string;
+  logoPngBuffer?: Buffer;
   metadata?: Record<string, unknown>;
   outputDefaults: QrOutputOptions;
 }

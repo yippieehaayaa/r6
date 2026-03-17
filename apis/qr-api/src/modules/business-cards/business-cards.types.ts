@@ -14,7 +14,7 @@ export interface BusinessCardRecord {
   imageFormat: CardImageFormat;
   printSpec: CardPrintSpec;
   theme: BusinessCardTheme;
-  companyLogoPngDataUrl?: string;
+  companyLogoPngBuffer?: Buffer;
   metadata?: Record<string, unknown>;
 }
 

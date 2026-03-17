@@ -13,13 +13,16 @@ import sharp from "sharp";
 import { env } from "../../config";
 import { BadRequestError, NotFoundError } from "../../shared/errors";
 import {
-  normalizeLogoSourceToPngDataUrl,
+  normalizeLogoSourceToPngBuffer,
   toDataUrl,
 } from "../../utils/image-source";
 import { createPngPdf } from "../../utils/pdf";
 import { escapeXml, slugify } from "../../utils/text";
-import { qrCodesService } from "../qr-codes";
-import { BusinessCardsStore } from "./business-cards.store";
+import { type QrCodesService, qrCodesService } from "../qr-codes";
+import {
+  type BusinessCardsRepository,
+  businessCardsRepository,
+} from "./business-cards.repository";
 import { resolveBusinessCardTheme } from "./business-cards.theme";
 import type {
   BusinessCardImageResult,
@@ -117,9 +120,12 @@ function buildLuxuryCardSvg(params: BuildCardSvgParams): string {
   const mintedLabel = `Created ${formatIssuedDate(record.createdAt)}`;
   const urlLabel = shortUrlLabel(qrPayloadUrl);
   const monogram = monogramFromCompanyName(record.companyName);
+  const companyLogoDataUrl = record.companyLogoPngBuffer
+    ? toDataUrl(record.companyLogoPngBuffer, "image/png")
+    : undefined;
 
-  const logoMarkup = record.companyLogoPngDataUrl
-    ? `<image href="${record.companyLogoPngDataUrl}" x="${dimensions.safeMarginPx + 18}" y="${dimensions.safeMarginPx + 18}" width="${logoPanelSize - 36}" height="${logoPanelSize - 36}" preserveAspectRatio="xMidYMid meet" />`
+  const logoMarkup = companyLogoDataUrl
+    ? `<image href="${companyLogoDataUrl}" x="${dimensions.safeMarginPx + 18}" y="${dimensions.safeMarginPx + 18}" width="${logoPanelSize - 36}" height="${logoPanelSize - 36}" preserveAspectRatio="xMidYMid meet" />`
     : `<text x="${dimensions.safeMarginPx + logoPanelSize / 2}" y="${dimensions.safeMarginPx + logoPanelSize / 2 + 8}" text-anchor="middle" fill="${theme.palette.textPrimary}" style="font: 700 ${Math.round(logoPanelSize * 0.28)}px 'Avenir Next', 'Segoe UI', sans-serif; letter-spacing: 1px;">${escapeXml(monogram)}</text>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -210,11 +216,13 @@ interface CardRasterResult {
   buffer: Buffer;
   widthPx: number;
   heightPx: number;
-  bleedColor: string;
 }
 
 export class BusinessCardsService {
-  private readonly store = new BusinessCardsStore(env.STORE_MAX_RECORDS);
+  constructor(
+    private readonly repository: BusinessCardsRepository = businessCardsRepository,
+    private readonly qrService: QrCodesService = qrCodesService,
+  ) {}
 
   async create(input: CreateBusinessCard): Promise<BusinessCardResponse> {
     const createdAt = nowIsoString();
@@ -227,7 +235,7 @@ export class BusinessCardsService {
         throw new BadRequestError("Either qrCodeId or qrTargetUrl is required");
       }
 
-      const qrResponse = await qrCodesService.create({
+      const qrResponse = await this.qrService.create({
         companyName: input.companyName,
         qrTargetUrl: input.qrTargetUrl,
         logo: input.qrLogo ?? input.companyLogo,
@@ -242,39 +250,36 @@ export class BusinessCardsService {
       qrCodeId = qrResponse.data.id;
     }
 
-    if (!qrCodesService.has(qrCodeId)) {
-      throw new NotFoundError(`QR code "${qrCodeId}" was not found`);
-    }
+    await this.qrService.getRecordContext(qrCodeId);
 
-    const recordId = randomUUID();
-    const companyLogoPngDataUrl = input.companyLogo
-      ? await normalizeLogoSourceToPngDataUrl(input.companyLogo, {
+    const companyLogoPngBuffer = input.companyLogo
+      ? await normalizeLogoSourceToPngBuffer(input.companyLogo, {
           maxBytes: env.LOGO_MAX_BYTES,
           timeoutMs: env.REMOTE_LOGO_TIMEOUT_MS,
         })
       : undefined;
+    const cardPublicId = randomUUID();
 
-    const record: BusinessCardRecord = {
-      id: recordId,
+    const record = await this.repository.create({
+      publicId: cardPublicId,
       companyName: input.companyName.trim(),
-      issuedDate: input.issuedDate ?? createdAt,
-      createdAt,
+      issuedDate: new Date(input.issuedDate ?? createdAt),
       qrCodeId,
       editionLabel:
-        input.editionLabel ?? `Edition ${recordId.slice(0, 8).toUpperCase()}`,
+        input.editionLabel ??
+        `Edition ${cardPublicId.slice(0, 8).toUpperCase()}`,
       imageFormat: input.imageFormat,
       printSpec,
       theme,
-      companyLogoPngDataUrl,
+      companyLogoPngBuffer,
       metadata: input.metadata,
-    };
+    });
 
-    this.store.save(record);
     return this.toResponse(record);
   }
 
-  getMetadata(id: string): BusinessCardResponse {
-    const record = this.requireRecord(id);
+  async getMetadata(id: string): Promise<BusinessCardResponse> {
+    const record = await this.requireRecord(id);
     return this.toResponse(record);
   }
 
@@ -282,7 +287,7 @@ export class BusinessCardsService {
     id: string,
     query: BusinessCardImageQuery,
   ): Promise<BusinessCardImageResult> {
-    const record = this.requireRecord(id);
+    const record = await this.requireRecord(id);
     const imageFormat = query.format ?? record.imageFormat;
     const raster = await this.renderCardRaster(record, imageFormat, false);
 
@@ -317,7 +322,7 @@ export class BusinessCardsService {
     id: string,
     query: BusinessCardPdfQuery,
   ): Promise<BusinessCardPdfResult> {
-    const record = this.requireRecord(id);
+    const record = await this.requireRecord(id);
     const raster = await this.renderCardRaster(
       record,
       "PNG",
@@ -341,8 +346,8 @@ export class BusinessCardsService {
     };
   }
 
-  private requireRecord(id: string): BusinessCardRecord {
-    const record = this.store.get(id);
+  private async requireRecord(id: string): Promise<BusinessCardRecord> {
+    const record = await this.repository.findById(id);
     if (!record) {
       throw new NotFoundError(`Business card "${id}" was not found`);
     }
@@ -350,8 +355,10 @@ export class BusinessCardsService {
     return record;
   }
 
-  private toResponse(record: BusinessCardRecord): BusinessCardResponse {
-    const qrContext = qrCodesService.getRecordContext(record.qrCodeId);
+  private async toResponse(
+    record: BusinessCardRecord,
+  ): Promise<BusinessCardResponse> {
+    const qrContext = await this.qrService.getRecordContext(record.qrCodeId);
 
     return BusinessCardResponseSchema.parse({
       data: {
@@ -365,7 +372,7 @@ export class BusinessCardsService {
         imageFormat: record.imageFormat,
         printSpec: record.printSpec,
         theme: record.theme,
-        logoIncluded: Boolean(record.companyLogoPngDataUrl),
+        logoIncluded: Boolean(record.companyLogoPngBuffer),
         metadata: record.metadata,
       },
       links: {
@@ -388,19 +395,21 @@ export class BusinessCardsService {
       ),
       220,
     );
-    const qrBuffer = await qrCodesService.getPngBuffer(record.qrCodeId, {
-      sizePx: qrSizePx,
-      margin: 1,
-    });
 
-    const qrPayloadUrl = qrCodesService.getRecordContext(record.qrCodeId)
-      .metadata.qrPayloadUrl;
+    const [qrBuffer, qrContext] = await Promise.all([
+      this.qrService.getPngBuffer(record.qrCodeId, {
+        sizePx: qrSizePx,
+        margin: 1,
+      }),
+      this.qrService.getRecordContext(record.qrCodeId),
+    ]);
+
     const qrDataUrl = toDataUrl(qrBuffer, "image/png");
     const cardSvg = buildLuxuryCardSvg({
       record,
       dimensions,
       qrDataUrl,
-      qrPayloadUrl,
+      qrPayloadUrl: qrContext.metadata.qrPayloadUrl,
     });
 
     const theme = resolveBusinessCardTheme(
@@ -443,7 +452,6 @@ export class BusinessCardsService {
       buffer: rasterBuffer,
       widthPx,
       heightPx,
-      bleedColor: theme.palette.bleed,
     };
   }
 }

@@ -26,7 +26,7 @@ export async function getBusinessCardMetadata(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const responseBody = businessCardsService.getMetadata(
+  const responseBody = await businessCardsService.getMetadata(
     req.params.id as string,
   );
   res.status(200).json(responseBody);

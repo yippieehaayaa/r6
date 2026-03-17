@@ -23,7 +23,9 @@ export async function getQrCodeMetadata(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const responseBody = qrCodesService.getMetadata(req.params.id as string);
+  const responseBody = await qrCodesService.getMetadata(
+    req.params.id as string,
+  );
   res.status(200).json(responseBody);
 }
 
@@ -31,7 +33,7 @@ export async function updateQrCodeTarget(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const responseBody = qrCodesService.updateTarget(
+  const responseBody = await qrCodesService.updateTarget(
     req.params.id as string,
     req.body,
   );
@@ -60,6 +62,8 @@ export async function resolveQrCode(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const target = qrCodesService.getRedirectTarget(req.params.id as string);
+  const target = await qrCodesService.getRedirectTarget(
+    req.params.id as string,
+  );
   res.redirect(302, target);
 }

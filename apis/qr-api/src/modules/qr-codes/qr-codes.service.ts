@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import {
   type CreateDynamicQr,
   type DynamicQrMetadata,
@@ -13,12 +12,15 @@ import sharp from "sharp";
 import { env } from "../../config";
 import { BadRequestError, NotFoundError } from "../../shared/errors";
 import {
-  dataUrlToBuffer,
-  normalizeLogoSourceToPngDataUrl,
+  normalizeLogoSourceToPngBuffer,
+  toDataUrl,
 } from "../../utils/image-source";
 import { createPngPdf } from "../../utils/pdf";
 import { slugify } from "../../utils/text";
-import { QrCodesStore } from "./qr-codes.store";
+import {
+  type QrCodesRepository,
+  qrCodesRepository,
+} from "./qr-codes.repository";
 import type {
   DynamicQrRecord,
   QrAssetResult,
@@ -54,7 +56,7 @@ function injectLogoIntoSvg(
 
 async function embedLogoIntoPng(
   qrBuffer: Buffer,
-  logoPngDataUrl: string,
+  logoPngBuffer: Buffer,
   sizePx: number,
 ): Promise<Buffer> {
   const logoSize = Math.max(64, Math.round(sizePx * 0.24));
@@ -68,7 +70,7 @@ async function embedLogoIntoPng(
     </svg>`,
   );
 
-  const logoBuffer = await sharp(dataUrlToBuffer(logoPngDataUrl))
+  const logoBuffer = await sharp(logoPngBuffer)
     .resize(logoSize, logoSize, { fit: "contain" })
     .png()
     .toBuffer();
@@ -83,65 +85,66 @@ async function embedLogoIntoPng(
 }
 
 export class QrCodesService {
-  private readonly store = new QrCodesStore(env.STORE_MAX_RECORDS);
+  constructor(
+    private readonly repository: QrCodesRepository = qrCodesRepository,
+  ) {}
 
   async create(input: CreateDynamicQr): Promise<DynamicQrResponse> {
     const createdAt = nowIsoString();
     const outputDefaults = QrOutputOptionsSchema.parse(input.output ?? {});
 
-    const logoPngDataUrl = input.logo
-      ? await normalizeLogoSourceToPngDataUrl(input.logo, {
+    const logoPngBuffer = input.logo
+      ? await normalizeLogoSourceToPngBuffer(input.logo, {
           maxBytes: env.LOGO_MAX_BYTES,
           timeoutMs: env.REMOTE_LOGO_TIMEOUT_MS,
         })
       : undefined;
 
-    const record: DynamicQrRecord = {
-      id: randomUUID(),
+    const record = await this.repository.create({
       companyName: input.companyName.trim(),
       qrTargetUrl: input.qrTargetUrl,
       profileLabel: input.profileLabel,
-      issuedDate: input.issuedDate ?? createdAt,
-      createdAt,
-      updatedAt: createdAt,
-      logoPngDataUrl,
+      issuedDate: new Date(input.issuedDate ?? createdAt),
+      logoPngBuffer,
       metadata: input.metadata,
       outputDefaults,
-    };
+    });
 
-    this.store.save(record);
     return this.toResponse(record);
   }
 
-  getMetadata(id: string): DynamicQrResponse {
-    const record = this.requireRecord(id);
+  async getMetadata(id: string): Promise<DynamicQrResponse> {
+    const record = await this.requireRecord(id);
     return this.toResponse(record);
   }
 
-  updateTarget(id: string, input: UpdateDynamicQrTarget): DynamicQrResponse {
-    const record = this.requireRecord(id);
+  async updateTarget(
+    id: string,
+    input: UpdateDynamicQrTarget,
+  ): Promise<DynamicQrResponse> {
+    const updatedRecord = await this.repository.updateTarget(
+      id,
+      input.qrTargetUrl,
+    );
 
-    const updatedRecord: DynamicQrRecord = {
-      ...record,
-      qrTargetUrl: input.qrTargetUrl,
-      updatedAt: nowIsoString(),
-    };
+    if (!updatedRecord) {
+      throw new NotFoundError(`QR code "${id}" was not found`);
+    }
 
-    this.store.save(updatedRecord);
     return this.toResponse(updatedRecord);
   }
 
-  getRedirectTarget(id: string): string {
-    const record = this.requireRecord(id);
+  async getRedirectTarget(id: string): Promise<string> {
+    const record = await this.requireRecord(id);
     return record.qrTargetUrl;
   }
 
-  has(id: string): boolean {
-    return this.store.has(id);
+  async has(id: string): Promise<boolean> {
+    return this.repository.exists(id);
   }
 
-  getRecordContext(id: string): QrRecordContext {
-    const record = this.requireRecord(id);
+  async getRecordContext(id: string): Promise<QrRecordContext> {
+    const record = await this.requireRecord(id);
     return {
       record,
       metadata: this.toMetadata(record),
@@ -152,14 +155,14 @@ export class QrCodesService {
     id: string,
     options: Pick<QrAssetQuery, "sizePx" | "margin">,
   ): Promise<Buffer> {
-    const record = this.requireRecord(id);
+    const record = await this.requireRecord(id);
     const sizePx = options.sizePx ?? record.outputDefaults.sizePx;
     const margin = options.margin ?? record.outputDefaults.margin;
     return this.renderPng(record, sizePx, margin);
   }
 
   async getAsset(id: string, query: QrAssetQuery): Promise<QrAssetResult> {
-    const record = this.requireRecord(id);
+    const record = await this.requireRecord(id);
     const format = query.format ?? record.outputDefaults.format;
     const sizePx = query.sizePx ?? record.outputDefaults.sizePx;
     const margin = query.margin ?? record.outputDefaults.margin;
@@ -213,8 +216,8 @@ export class QrCodesService {
     return `${env.PUBLIC_BASE_URL}/r/${id}`;
   }
 
-  private requireRecord(id: string): DynamicQrRecord {
-    const record = this.store.get(id);
+  private async requireRecord(id: string): Promise<DynamicQrRecord> {
+    const record = await this.repository.findById(id);
     if (!record) {
       throw new NotFoundError(`QR code "${id}" was not found`);
     }
@@ -232,7 +235,7 @@ export class QrCodesService {
       issuedDate: record.issuedDate,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
-      logoIncluded: Boolean(record.logoPngDataUrl),
+      logoIncluded: Boolean(record.logoPngBuffer),
       outputDefaults: record.outputDefaults,
       metadata: record.metadata,
     };
@@ -265,11 +268,11 @@ export class QrCodesService {
       },
     });
 
-    if (!record.logoPngDataUrl) {
+    if (!record.logoPngBuffer) {
       return qrBuffer;
     }
 
-    return embedLogoIntoPng(qrBuffer, record.logoPngDataUrl, sizePx);
+    return embedLogoIntoPng(qrBuffer, record.logoPngBuffer, sizePx);
   }
 
   private async renderSvg(
@@ -288,11 +291,15 @@ export class QrCodesService {
       },
     });
 
-    if (!record.logoPngDataUrl) {
+    if (!record.logoPngBuffer) {
       return svg;
     }
 
-    return injectLogoIntoSvg(svg, record.logoPngDataUrl, sizePx);
+    return injectLogoIntoSvg(
+      svg,
+      toDataUrl(record.logoPngBuffer, "image/png"),
+      sizePx,
+    );
   }
 }
 

@@ -4,14 +4,18 @@
   "author": "Joshua Dave E. Oropilla",
   "license": "MIT",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run db:generate && tsc",
     "check": "biome check --write .",
     "dev": "tsx watch src/index.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
     "format": "biome format --write .",
     "lint": "biome lint --write .",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@prisma/client": "6.19.0",
     "@r6/schemas": "*",
     "dotenv": "^17.3.1",
     "express": "5.2.1",
@@ -20,6 +24,7 @@
     "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.4",
+    "prisma": "6.19.0",
     "zod": "4.3.6"
   },
   "devDependencies": {
@@ -31,5 +36,8 @@
     "@types/node": "^25.4.0",
     "tsx": "^4.21.0",
     "typescript": "5.9.3"
+  },
+  "prisma": {
+    "schema": "prisma/schema"
   }
 }
