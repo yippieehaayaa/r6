@@ -558,7 +558,7 @@ section[id] {
   display: block;
   width: 100%;
   height: 100%;
-  transform: scale(1.14);
+  transform: scale(1.9);
   transform-origin: center;
 }
 
@@ -1015,6 +1015,10 @@ section[id] {
 }
 
 @media (max-width: 860px) {
+  .journey-scene-canvas canvas {
+    transform: scale(1.26);
+  }
+
   .journey-step-left,
   .journey-step-right {
     justify-content: center;
@@ -1032,6 +1036,10 @@ section[id] {
 }
 
 @media (max-width: 640px) {
+  .journey-scene-canvas canvas {
+    transform: scale(1.2);
+  }
+
   .journey-scroll-step {
     padding:
       4.2rem
