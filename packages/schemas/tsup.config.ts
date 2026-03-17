@@ -1,7 +1,11 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: ["src/index.ts", "src/inventory-and-catalog/index.ts"],
+  entry: [
+    "src/index.ts",
+    "src/inventory-and-catalog/index.ts",
+    "src/dynamic-qr/index.ts",
+  ],
   format: ["esm", "cjs"],
   dts: true,
   splitting: true,

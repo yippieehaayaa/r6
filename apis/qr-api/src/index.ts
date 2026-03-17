@@ -1,15 +1,9 @@
-import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
+import http from "node:http";
+import app from "./app";
+import { env } from "./config";
 
-const app = new Hono()
+const server = http.createServer(app);
 
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
-
-serve({
-  fetch: app.fetch,
-  port: 3000
-}, (info) => {
-  console.log(`Server is running on http://localhost:${info.port}`)
-})
+server.listen(env.PORT, () => {
+  console.log(`QR API server is running on port ${env.PORT}`);
+});
