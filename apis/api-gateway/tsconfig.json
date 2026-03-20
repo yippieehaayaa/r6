@@ -1,0 +1,12 @@
+{
+  "extends": "@r6/typescript-config/base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "typeRoots": ["./src/typings", "./node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "__tests__", "src/**/*.test.ts"]
+}
