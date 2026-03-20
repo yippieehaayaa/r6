@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { toast } from "sonner";
 import { env } from "@/config";
 
 const api = axios.create({
@@ -10,3 +9,5 @@ const api = axios.create({
 	},
 	withCredentials: true,
 });
+
+export default api;
