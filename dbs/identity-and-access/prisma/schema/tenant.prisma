@@ -16,15 +16,6 @@
 //    Enterprise tier: ["inventory", "procurement", "pos",
 //                      "financial", "request", "rma"]
 //
-//  costingMethod:
-//    The inventory costing method selected by this tenant.
-//    Stored here so all microservices can read it from IAM
-//    without each service needing its own config table.
-//    "FIFO" | "AVCO"
-//
-//  defaultCurrency:
-//    ISO 4217 currency code. Default for all financial records
-//    in this tenant. e.g. "PHP", "USD", "SGD"
 // ============================================================
 
 model Tenant {
