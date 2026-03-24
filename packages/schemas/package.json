@@ -1,8 +1,14 @@
 {
 	"name": "@r6/schemas",
-	"description": "",
 	"version": "0.0.0",
-	"author": "Joshua Dave Oropilla",
+	"private": true,
+	"scripts": {
+		"build": "NODE_OPTIONS='--max-old-space-size=4096' tsup src",
+		"check": "biome check --write .",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
+		"watch": "tsup src --watch"
+	},
 	"dependencies": {
 		"lodash": "^4.17.23",
 		"zod": "4.3.6"
@@ -11,10 +17,12 @@
 		"@biomejs/biome": "2.4.4",
 		"@r6/typescript-config": "*",
 		"@types/lodash": "^4.17.24",
-		"@types/node": "^25.4.0",
+		"@types/node": "^25.5.0",
 		"tsup": "8.5.1",
 		"typescript": "5.9.3"
 	},
+	"author": "Joshua Dave Oropilla",
+	"description": "",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
@@ -32,14 +40,6 @@
 	"license": "MIT",
 	"main": "./dist/index.js",
 	"module": "/dist/index.mjs",
-	"private": true,
-	"scripts": {
-		"build": "NODE_OPTIONS='--max-old-space-size=4096' tsup src",
-		"check": "biome check --write .",
-		"format": "biome format --write .",
-		"lint": "biome lint --write .",
-		"watch": "tsup src --watch"
-	},
 	"sideEffects": false,
 	"types": "./dist/index.d.ts"
 }

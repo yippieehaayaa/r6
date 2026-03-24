@@ -1,7 +1,7 @@
 // Embedded image document used in ProductVariant.images[]
 type ImageEmbed {
-    url      String
-    altText  String?
+    url       String
+    altText   String?
     isPrimary Boolean @default(false)
     sortOrder Int     @default(0)
 }

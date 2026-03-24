@@ -1,29 +1,29 @@
 {
-    "name": "@r6/api-gateway",
-    "version": "1.0.0",
-    "description": "API Gateway for R6 API",
-    "author": "Joshua Dave E. Oropilla",
-    "license": "MIT",
-    "scripts": {
-        "build": "tsc",
-        "check": "biome check --write .",
-        "dev": "tsx watch ./src/index.ts",
-        "format": "biome format --write .",
-        "lint": "biome lint --write .",
-        "start": "node ./dist/index.js"
-    },
-    "devDependencies": {
-        "@biomejs/biome": "2.4.4",
-        "@r6/typescript-config": "*",
-        "@types/cors": "^2.8.19",
-        "typescript": "^5.9.3"
-    },
-    "dependencies": {
-        "cors": "^2.8.6",
-        "dotenv": "^17.3.1",
-        "express": "^5.2.1",
-        "helmet": "^8.1.0",
-        "http-proxy-middleware": "^3.0.5",
-        "zod": "^4.3.6"
-    }
+	"name": "@r6/api-gateway",
+	"version": "1.0.0",
+	"scripts": {
+		"build": "tsc",
+		"check": "biome check --write .",
+		"dev": "tsx watch ./src/index.ts",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
+		"start": "node ./dist/index.js"
+	},
+	"dependencies": {
+		"cors": "^2.8.6",
+		"dotenv": "^17.3.1",
+		"express": "5.2.1",
+		"helmet": "^8.1.0",
+		"http-proxy-middleware": "^3.0.5",
+		"zod": "4.3.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@r6/typescript-config": "*",
+		"@types/cors": "^2.8.19",
+		"typescript": "5.9.3"
+	},
+	"author": "Joshua Dave E. Oropilla",
+	"description": "API Gateway for R6 API",
+	"license": "MIT"
 }

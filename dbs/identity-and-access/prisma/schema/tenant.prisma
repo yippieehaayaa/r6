@@ -1,0 +1,49 @@
+// ============================================================
+//  TENANT
+//  Represents a company (client) using the ERP SaaS platform.
+//  This is the record that owns the tenantId used across ALL
+//  microservices (Inventory, Procurement, Transaction, etc.).
+//
+//  The Tenant model lives here in IAM because tenant lifecycle
+//  (onboarding, suspension, offboarding) is an identity concern.
+//
+//  moduleAccess:
+//    JSON list of enabled microservices for this tenant.
+//    Enforced at the API Gateway via policy audience checks.
+//    e.g. ["inventory", "procurement", "pos", "financial"]
+//    Starter tier:    ["inventory", "pos"]
+//    Growth tier:     ["inventory", "procurement", "pos", "financial"]
+//    Enterprise tier: ["inventory", "procurement", "pos",
+//                      "financial", "request", "rma"]
+//
+//  costingMethod:
+//    The inventory costing method selected by this tenant.
+//    Stored here so all microservices can read it from IAM
+//    without each service needing its own config table.
+//    "FIFO" | "AVCO"
+//
+//  defaultCurrency:
+//    ISO 4217 currency code. Default for all financial records
+//    in this tenant. e.g. "PHP", "USD", "SGD"
+// ============================================================
+
+model Tenant {
+    id              String  @id @default(uuid()) @db.Uuid
+    name            String  @unique              // company name
+    slug            String  @unique              // url-safe identifier e.g. "acme-corp"
+    isActive        Boolean @default(true)
+    moduleAccess    String[]                     // enabled microservice names
+    costingMethod   String  @default("FIFO")     // "FIFO" | "AVCO"
+    defaultCurrency String  @default("PHP")      // ISO 4217
+    vatRegistered   Boolean @default(false)      // affects tax calculations in Financial Service
+    vatNumber       String?                      // BIR TIN or equivalent
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@index([isActive])
+    @@index([deletedAt])
+    @@map("tenants")
+}

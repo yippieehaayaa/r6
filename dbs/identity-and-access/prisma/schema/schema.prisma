@@ -1,11 +1,34 @@
+// ============================================================
+//  IAM SERVICE — schema.prisma
+//  Prisma v7 · PostgreSQL
+//
+//  In Prisma v7 the database URL moves to prisma.config.ts.
+//  The datasource block stays but without the url field.
+//  See prisma.config.ts at the project root for connection setup.
+//
+//  prisma.config.ts (place at project root):
+//  ─────────────────────────────────────────
+//  import "dotenv/config";
+//  import { defineConfig, env } from "prisma/config";
+//  export default defineConfig({
+//    schema: "prisma/schema.prisma",
+//    migrations: { path: "prisma/migrations" },
+//    datasource: { url: env("DATABASE_URL") },
+//  });
+//
+//  PrismaClient usage (v7 requires a driver adapter):
+//  ─────────────────────────────────────────────────
+//  import { PrismaClient } from "./generated/prisma/client";
+//  import { PrismaPg } from "@prisma/adapter-pg";
+//  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+//  export const prisma = new PrismaClient({ adapter });
+// ============================================================
+
 generator client {
-    provider = "prisma-client-js"
-    output   = "../../generated/client"
-    binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x", "linux-arm64-openssl-3.0.x"]
-    engineType    = "library"
+    provider = "prisma-client"
+    output   = "../../generated/prisma"
 }
 
 datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
 }

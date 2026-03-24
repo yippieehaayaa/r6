@@ -1,0 +1,155 @@
+// ============================================================
+//  ENUMS
+//  Scoped to Inventory + Catalog Service concerns only.
+//  Procurement, Transaction, Financial, Pricing, and Request
+//  System enums are defined in their own service schemas.
+// ============================================================
+
+// ─── Catalog ─────────────────────────────────────────────────
+
+// Product lifecycle. Controls visibility across all services.
+// DRAFT        — being set up, not visible to POS or storefront
+// ACTIVE       — live, available for sale and procurement
+// DISCONTINUED — no longer ordered but existing stock may still be sold
+// ARCHIVED     — fully retired, hidden from all views
+enum ProductStatus {
+    DRAFT
+    ACTIVE
+    DISCONTINUED
+    ARCHIVED
+}
+
+// Tracks whether a variant requires serial-number-level tracking.
+// Set on ProductVariant.trackingType.
+// NONE         — standard bulk stock (quantity only)
+// SERIAL       — each unit has a unique serial number (e.g. electronics)
+// BATCH        — units grouped by lot/batch (e.g. food, pharma)
+enum TrackingType {
+    NONE
+    SERIAL
+    BATCH
+}
+
+// Physical dimension units for ProductVariant shipping/storage info.
+enum DimensionUnit {
+    CM
+    MM
+    IN
+    FT
+    M
+}
+
+// Weight units for ProductVariant.
+enum WeightUnit {
+    G
+    KG
+    LB
+    OZ
+}
+
+// ─── Inventory ───────────────────────────────────────────────
+
+// Direction and business reason for every stock change.
+// Positive quantity = stock in. Negative quantity = stock out.
+//
+// RECEIPT             ← Procurement Service (GRN accepted units)
+// SALE                ← Transaction Service (confirmed sale)
+// RETURN              ← Transaction Service or Procurement (RMA / supplier return)
+// ADJUSTMENT          ← Inventory internal (cycle count variance)
+// TRANSFER_IN         ← Inventory internal (arrived from another warehouse)
+// TRANSFER_OUT        ← Inventory internal (dispatched to another warehouse)
+// DAMAGE              ← Inventory internal (write-off: damage, expiry, shrinkage)
+// RESERVATION         ← Transaction Service (cart hold) or Request System (approved request)
+// RESERVATION_RELEASE ← Transaction Service (cart expired/cancelled) or Request System (cancelled)
+enum MovementType {
+    RECEIPT
+    SALE
+    RETURN
+    ADJUSTMENT
+    TRANSFER_IN
+    TRANSFER_OUT
+    DAMAGE
+    RESERVATION
+    RESERVATION_RELEASE
+}
+
+// Lifecycle of a warehouse-to-warehouse stock transfer document.
+enum TransferStatus {
+    DRAFT
+    IN_TRANSIT
+    PARTIALLY_RECEIVED
+    COMPLETED
+    CANCELLED
+}
+
+// Lifecycle of a physical stock count.
+enum StockCountStatus {
+    DRAFT
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+// Disposition decision for a returned item (used by RMA process).
+// RESTOCK             — item is resaleable, returns to available stock
+// DAMAGE              — item is written off
+// RETURN_TO_SUPPLIER  — item is sent back to the supplier
+enum ReturnDisposition {
+    RESTOCK
+    DAMAGE
+    RETURN_TO_SUPPLIER
+}
+
+// Type of stock alert.
+enum AlertType {
+    LOW_STOCK           // quantityAvailable ≤ reorderPoint
+    OUT_OF_STOCK        // quantityAvailable = 0
+    OVERSTOCK           // quantityOnHand ≥ overstockThreshold
+    LOT_EXPIRING        // lot.expiresAt within alert window
+    LOT_EXPIRED         // lot.expiresAt has passed
+    COUNT_VARIANCE      // cycle count variance exceeds threshold
+}
+
+// Alert lifecycle.
+enum AlertStatus {
+    OPEN
+    ACKNOWLEDGED
+    RESOLVED
+}
+
+// UOM conversion direction anchor.
+// BASE  — quantityInBase = quantity × conversionFactor
+// e.g. 1 case (FROM) = 24 pieces (BASE) → conversionFactor = 24
+enum UomType {
+    BASE    // the unit stock is tracked in internally (e.g. PCS)
+    PURCHASE // how suppliers ship (e.g. CASE, CARTON)
+    SALE    // how customers buy (e.g. PACK, BOTTLE)
+}
+
+// Status of an individual serialized unit (SERIAL tracking only).
+enum SerializedUnitStatus {
+    AVAILABLE       // in stock, ready to sell
+    SOLD            // sold to a customer
+    RETURNED        // returned by a customer, pending disposition
+    DAMAGED         // written off
+    QUARANTINED     // held pending inspection
+    TRANSFERRED     // moved to another warehouse (resolved once received)
+}
+
+// Lifecycle of a return request.
+enum ReturnRequestStatus {
+    REQUESTED       // submitted, pending approval
+    APPROVED        // approved, awaiting physical return
+    RECEIVED        // item physically received at warehouse
+    COMPLETED       // disposition applied, movements written
+    REJECTED        // return denied
+    CANCELLED       // cancelled before receipt
+}
+
+// Type of master data change recorded in AuditLog.
+enum AuditAction {
+    CREATE
+    UPDATE
+    DELETE
+    RESTORE         // soft-delete reversal
+}

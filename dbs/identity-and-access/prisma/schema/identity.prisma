@@ -1,85 +1,56 @@
+// ============================================================
+//  IDENTITY
+//  Represents a human user, service account, or platform admin.
+//
+//  Multi-tenancy:
+//    tenantId is null for ADMIN identities (platform-level).
+//    All USER and SERVICE identities must have a tenantId.
+//    This is the same tenantId stamped on every record across
+//    all other microservices (Inventory, Procurement, etc.).
+//
+//  Removed from original:
+//    • Session       — handled externally (JWT / refresh tokens
+//                      managed at the API Gateway layer)
+//    • PasswordHistory, EmailHistory, IpAddress — audit detail
+//                      not needed for a demo; can be added later
+//
+//  Cross-service usage:
+//    Identity.id (identityId) is the value stored as
+//    performedBy on StockMovement, AuditLog, StockCount, etc.
+//    across all services. No cross-DB FK — services store the
+//    UUID string and call IAM to resolve display names if needed.
+// ============================================================
+
 model Identity {
-    id                  String         @id @default(uuid())
-    username            String         @unique
-    email               String?        @unique
-    hash                String
-    salt                String
+    id                  String         @id @default(uuid()) @db.Uuid
+    // tenantId: null = platform ADMIN, required for USER and SERVICE
+    tenantId            String?        @db.Uuid
+    username            String
+    email               String?
+    hash                String // bcrypt hash of password
+    salt                String // per-identity salt
     failedLoginAttempts Int            @default(0)
-    lockedUntil         DateTime?
-    changePassword      Boolean        @default(true)
-    active              Boolean        @default(true)
+    lockedUntil         DateTime? // set when SUSPENDED due to failed logins
+    mustChangePassword  Boolean        @default(true) // force reset on first login
     kind                IdentityKind   @default(USER)
     status              IdentityStatus @default(PENDING_VERIFICATION)
+
+    // Relations
+    roles Role[] // many-to-many via implicit join table
 
     // Timestamps
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
-    // Relations (many-to-many)
-    roles  Role[]
-
-    // Relations
-    sessions          Session[]
-    passwordHistories PasswordHistory[]
-    emailHistories    EmailHistory[]
-    ipAddresses       IpAddress[]
-
     // Indexes
-    @@index([status])
+    // username unique per tenant (two tenants can have the same username)
+    @@unique([tenantId, username])
+    // email unique per tenant
+    @@unique([tenantId, email])
+    @@index([tenantId])
+    @@index([tenantId, status])
+    @@index([tenantId, kind])
     @@index([deletedAt])
     @@map("identities")
-}
-
-model PasswordHistory {
-    id        String  @id @default(uuid())
-    password  String
-    ipAddress String?
-
-    // Timestamps
-    changedAt DateTime @default(now())
-
-    // References
-    identityId String
-    identity   Identity @relation(fields: [identityId], references: [id])
-
-    // Indexes
-    @@index([identityId])
-    @@map("password_histories")
-}
-
-model EmailHistory {
-    id        String  @id @default(uuid())
-    oldEmail  String?
-    newEmail  String
-    ipAddress String?
-
-    // Timestamps
-    changedAt DateTime @default(now())
-
-    // References
-    identityId String
-    identity   Identity @relation(fields: [identityId], references: [id])
-
-    // Indexes
-    @@index([identityId])
-    @@map("email_histories")
-}
-
-model IpAddress {
-    id        String  @id @default(uuid())
-    address   String
-    userAgent String?
-
-    // Timestamps
-    loggedAt DateTime @default(now())
-
-    // References
-    identityId String
-    identity   Identity @relation(fields: [identityId], references: [id])
-
-    // Indexes
-    @@index([identityId])
-    @@index([address])
-    @@map("ip_addresses")
 }

@@ -1,43 +1,43 @@
 {
-  "name": "r6",
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "check": "turbo check",
-    "check-types": "turbo run check-types",
-    "deps:audit": "syncpack lint --dependency-types prod,dev,peer",
-    "deps:fix": "syncpack fix",
-    "deps:format": "syncpack format",
-    "deps:update": "syncpack update",
-    "dev": "turbo run dev",
-    "format": "turbo format",
-    "lint": "turbo lint",
-    "preview": "turbo preview"
-  },
-  "devDependencies": {
-    "syncpack": "^14.0.1",
-    "turbo": "^2.8.13",
-    "typescript": "5.9.3"
-  },
-  "packageManager": "npm@11.3.0",
-  "engines": {
-    "node": ">=18"
-  },
-  "workspaces": [
-    "apis/*",
-    "apps/*",
-    "dbs/*",
-    "packages/*"
-  ],
-  "author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
-  "license": "MIT",
-  "overrides": {
-    "prisma": {
-      "hono": "4.12.4",
-      "@hono/node-server": "1.19.10"
-    },
-    "chevrotain": {
-      "lodash": ">=4.17.21"
-    }
-  }
+	"name": "r6",
+	"private": true,
+	"scripts": {
+		"build": "turbo run build",
+		"check": "turbo check",
+		"check-types": "turbo run check-types",
+		"deps:audit": "syncpack lint --dependency-types prod,dev,peer",
+		"deps:fix": "syncpack fix",
+		"deps:format": "syncpack format",
+		"deps:update": "syncpack update",
+		"dev": "turbo run dev",
+		"format": "turbo format",
+		"lint": "turbo lint",
+		"preview": "turbo preview"
+	},
+	"devDependencies": {
+		"syncpack": "^14.2.1",
+		"turbo": "^2.8.20",
+		"typescript": "5.9.3"
+	},
+	"packageManager": "npm@11.3.0",
+	"engines": {
+		"node": ">=18"
+	},
+	"workspaces": [
+		"apis/*",
+		"apps/*",
+		"dbs/*",
+		"packages/*"
+	],
+	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
+	"license": "MIT",
+	"overrides": {
+		"prisma": {
+			"hono": "4.12.4",
+			"@hono/node-server": "1.19.10"
+		},
+		"chevrotain": {
+			"lodash": ">=4.17.21"
+		}
+	}
 }
