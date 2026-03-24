@@ -28,15 +28,11 @@
 // ============================================================
 
 model Tenant {
-    id              String  @id @default(uuid()) @db.Uuid
-    name            String  @unique              // company name
-    slug            String  @unique              // url-safe identifier e.g. "acme-corp"
-    isActive        Boolean @default(true)
-    moduleAccess    String[]                     // enabled microservice names
-    costingMethod   String  @default("FIFO")     // "FIFO" | "AVCO"
-    defaultCurrency String  @default("PHP")      // ISO 4217
-    vatRegistered   Boolean @default(false)      // affects tax calculations in Financial Service
-    vatNumber       String?                      // BIR TIN or equivalent
+    id           String   @id @default(uuid()) @db.Uuid
+    name         String   @unique // company name
+    slug         String   @unique // url-safe identifier e.g. "acme-corp"
+    isActive     Boolean  @default(true)
+    moduleAccess String[] // enabled microservice names
 
     // Timestamps
     createdAt DateTime  @default(now())

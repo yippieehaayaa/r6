@@ -14,11 +14,18 @@
 //    deletedAt soft-delete
 // ============================================================
 
-import type { Identity, Policy, Role } from "../../generated/prisma/client";
+import type {
+  Identity,
+  Policy,
+  Prisma,
+  Role,
+} from "../../generated/prisma/client";
 import { prisma } from "../client";
 import type {
   AttachPolicyInput,
   CreateRoleInput,
+  ListRolesInput,
+  PaginatedResult,
   UpdateRoleInput,
 } from "./types";
 
@@ -77,33 +84,58 @@ export async function getRoleWithIdentities(
   });
 }
 
-// Lists all non-deleted roles for a given tenant.
-// Uses @@index([tenantId]).
-export async function listRolesByTenant(tenantId: string): Promise<Role[]> {
-  return prisma.role.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { name: "asc" },
-  });
+// ─── Paginated list ──────────────────────────────────────────
+
+const buildWhere = (
+  input: Omit<ListRolesInput, "page" | "limit">,
+): Prisma.RoleWhereInput => ({
+  tenantId: input.tenantId,
+  deletedAt: null,
+  ...(input.isActive !== undefined && { isActive: input.isActive }),
+});
+
+// Returns a paginated list of roles for a tenant.
+// isActive filter uses @@index([tenantId, isActive]).
+// Runs findMany + count in parallel — same pattern as listMovements.
+export async function listRoles(
+  input: ListRolesInput,
+): Promise<PaginatedResult<Role>> {
+  const where = buildWhere(input);
+  const skip = (input.page - 1) * input.limit;
+
+  const [data, total] = await Promise.all([
+    prisma.role.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { name: "asc" },
+    }),
+    prisma.role.count({ where }),
+  ]);
+
+  return { data, total, page: input.page, limit: input.limit };
 }
 
-// Lists all active non-deleted roles for a tenant.
-// Uses @@index([tenantId, isActive]).
-export async function listActiveRolesByTenant(
-  tenantId: string,
-): Promise<Role[]> {
-  return prisma.role.findMany({
-    where: { tenantId, isActive: true, deletedAt: null },
-    orderBy: { name: "asc" },
-  });
-}
-
-// Lists platform-level roles (tenantId = null).
+// Lists platform-level roles (tenantId = null) — paginated.
 // Used only by ADMIN identities.
-export async function listPlatformRoles(): Promise<Role[]> {
-  return prisma.role.findMany({
-    where: { tenantId: null, deletedAt: null },
-    orderBy: { name: "asc" },
-  });
+export async function listPlatformRoles(input: {
+  page: number;
+  limit: number;
+}): Promise<PaginatedResult<Role>> {
+  const where: Prisma.RoleWhereInput = { tenantId: null, deletedAt: null };
+  const skip = (input.page - 1) * input.limit;
+
+  const [data, total] = await Promise.all([
+    prisma.role.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { name: "asc" },
+    }),
+    prisma.role.count({ where }),
+  ]);
+
+  return { data, total, page: input.page, limit: input.limit };
 }
 
 // ─── Update ──────────────────────────────────────────────────

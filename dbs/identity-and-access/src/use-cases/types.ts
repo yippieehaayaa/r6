@@ -26,16 +26,13 @@ export type { IdentityKind, IdentityStatus, PolicyEffect };
 // ─── Tenant ───────────────────────────────────────────────────
 
 // @@unique([name]), @@unique([slug])
-// All fields except isActive, moduleAccess, costingMethod,
-// defaultCurrency, vatRegistered are required on create.
+// moduleAccess is required — must contain at least one module name.
+// Financial config (costingMethod, currency, VAT) belongs to the
+// Financial Service, not the tenant record.
 export type CreateTenantInput = {
   name: string; // @@unique
   slug: string; // @@unique — url-safe e.g. "acme-corp"
-  moduleAccess: string[]; // required — at least one module
-  costingMethod?: string; // default "FIFO"
-  defaultCurrency?: string; // default "PHP"
-  vatRegistered?: boolean; // default false
-  vatNumber?: string;
+  moduleAccess: string[]; // required — enabled microservice names
 };
 
 // Only mutable fields. name/slug uniqueness still enforced on write.
@@ -44,10 +41,64 @@ export type UpdateTenantInput = {
   slug?: string;
   isActive?: boolean;
   moduleAccess?: string[];
-  costingMethod?: string;
-  defaultCurrency?: string;
-  vatRegistered?: boolean;
-  vatNumber?: string | null;
+};
+
+// ─── Pagination ───────────────────────────────────────────────
+
+// Shared paginated result wrapper — same shape as the listMovements pattern.
+// data: the page of records, total: total matching rows,
+// page: current page (1-based), limit: page size.
+export type PaginatedResult<T> = {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+};
+
+// Input for any paginated list query.
+// page is 1-based. skip = (page - 1) * limit is computed internally.
+export type PaginationInput = {
+  page: number;
+  limit: number;
+};
+
+// ─── Tenant list ──────────────────────────────────────────────
+
+// Filters for listTenants. All optional — omitting all returns every
+// non-deleted tenant. @@index([isActive]) and @@index([deletedAt])
+// back these filters.
+export type ListTenantsInput = PaginationInput & {
+  isActive?: boolean; // filter by active/inactive
+  includeDeleted?: boolean; // when true, includes soft-deleted rows
+};
+
+// ─── Identity list ────────────────────────────────────────────
+
+// Filters for listIdentities. tenantId is required — identities are
+// always scoped to a tenant. @@index([tenantId, status]) and
+// @@index([tenantId, kind]) back the optional filters.
+export type ListIdentitiesInput = PaginationInput & {
+  tenantId: string; // required — identities are tenant-scoped
+  status?: IdentityStatus; // @@index([tenantId, status])
+  kind?: IdentityKind; // @@index([tenantId, kind])
+};
+
+// ─── Role list ────────────────────────────────────────────────
+
+// Filters for listRoles. tenantId required.
+// @@index([tenantId, isActive]) backs the isActive filter.
+export type ListRolesInput = PaginationInput & {
+  tenantId: string;
+  isActive?: boolean;
+};
+
+// ─── Policy list ──────────────────────────────────────────────
+
+// Filters for listPolicies. tenantId required.
+// audience filter uses Postgres array containment: { has: service }.
+export type ListPoliciesInput = PaginationInput & {
+  tenantId: string;
+  audience?: string; // match policies whose audience array contains this value
 };
 
 // ─── Identity ─────────────────────────────────────────────────

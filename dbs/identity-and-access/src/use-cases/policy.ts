@@ -18,7 +18,12 @@
 import type { Policy, Role } from "../../generated/prisma/client";
 import { Prisma } from "../../generated/prisma/client";
 import { prisma } from "../client";
-import type { CreatePolicyInput, UpdatePolicyInput } from "./types";
+import type {
+  CreatePolicyInput,
+  ListPoliciesInput,
+  PaginatedResult,
+  UpdatePolicyInput,
+} from "./types";
 
 // Converts a caller-supplied conditions value to what Prisma's
 // NullableJsonNullValueInput actually accepts.
@@ -85,42 +90,61 @@ export async function getPolicyWithRoles(
   });
 }
 
-// Lists all non-deleted policies for a given tenant.
-// Uses @@index([tenantId]).
-export async function listPoliciesByTenant(
-  tenantId: string,
-): Promise<Policy[]> {
-  return prisma.policy.findMany({
-    where: { tenantId, deletedAt: null },
-    orderBy: { name: "asc" },
-  });
+// ─── Paginated list ──────────────────────────────────────────
+
+const buildWhere = (
+  input: Omit<ListPoliciesInput, "page" | "limit">,
+): Prisma.PolicyWhereInput => ({
+  tenantId: input.tenantId,
+  deletedAt: null,
+  // audience filter uses Postgres array containment: { has: value }
+  ...(input.audience !== undefined && {
+    audience: { has: input.audience },
+  }),
+});
+
+// Returns a paginated list of policies for a tenant.
+// audience filter uses Postgres array containment (has).
+// Runs findMany + count in parallel — same pattern as listMovements.
+export async function listPolicies(
+  input: ListPoliciesInput,
+): Promise<PaginatedResult<Policy>> {
+  const where = buildWhere(input);
+  const skip = (input.page - 1) * input.limit;
+
+  const [data, total] = await Promise.all([
+    prisma.policy.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { name: "asc" },
+    }),
+    prisma.policy.count({ where }),
+  ]);
+
+  return { data, total, page: input.page, limit: input.limit };
 }
 
-// Lists platform-level policies (tenantId = null).
+// Lists platform-level policies (tenantId = null) — paginated.
 // Used only by ADMIN identities.
-export async function listPlatformPolicies(): Promise<Policy[]> {
-  return prisma.policy.findMany({
-    where: { tenantId: null, deletedAt: null },
-    orderBy: { name: "asc" },
-  });
-}
+export async function listPlatformPolicies(input: {
+  page: number;
+  limit: number;
+}): Promise<PaginatedResult<Policy>> {
+  const where: Prisma.PolicyWhereInput = { tenantId: null, deletedAt: null };
+  const skip = (input.page - 1) * input.limit;
 
-// Finds all non-deleted policies whose audience array contains
-// a specific service name. Uses Postgres array containment.
-// e.g. findPoliciesByAudience("inventory") returns all policies
-// that include "inventory" in their audience field.
-export async function listPoliciesByAudience(
-  tenantId: string,
-  service: string,
-): Promise<Policy[]> {
-  return prisma.policy.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-      audience: { has: service },
-    },
-    orderBy: { name: "asc" },
-  });
+  const [data, total] = await Promise.all([
+    prisma.policy.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { name: "asc" },
+    }),
+    prisma.policy.count({ where }),
+  ]);
+
+  return { data, total, page: input.page, limit: input.limit };
 }
 
 // ─── Update ──────────────────────────────────────────────────
