@@ -1,0 +1,36 @@
+// ============================================================
+//  TENANT
+//  Represents a company (client) using the ERP SaaS platform.
+//  This is the record that owns the tenantId used across ALL
+//  microservices (Inventory, Procurement, Transaction, etc.).
+//
+//  The Tenant model lives here in IAM because tenant lifecycle
+//  (onboarding, suspension, offboarding) is an identity concern.
+//
+//  moduleAccess:
+//    JSON list of enabled microservices for this tenant.
+//    Enforced at the API Gateway via policy audience checks.
+//    e.g. ["inventory", "procurement", "pos", "financial"]
+//    Starter tier:    ["inventory", "pos"]
+//    Growth tier:     ["inventory", "procurement", "pos", "financial"]
+//    Enterprise tier: ["inventory", "procurement", "pos",
+//                      "financial", "request", "rma"]
+//
+// ============================================================
+
+model Tenant {
+    id           String   @id @default(uuid()) @db.Uuid
+    name         String   @unique // company name
+    slug         String   @unique // url-safe identifier e.g. "acme-corp"
+    isActive     Boolean  @default(true)
+    moduleAccess String[] // enabled microservice names
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@index([isActive])
+    @@index([deletedAt])
+    @@map("tenants")
+}

@@ -54,7 +54,12 @@
 		{
 			"label": "Pin prisma to exact version",
 			"dependencies": ["prisma", "@prisma/client"],
-			"pinVersion": "6.19.0"
+			"pinVersion": "7.5.0"
+		},
+		{
+			"label": "Pin pg to exact version",
+			"dependencies": ["pg", "@types/pg"],
+			"pinVersion": "8.20.0"
 		},
 		{
 			"label": "Pin tsup to exact version",

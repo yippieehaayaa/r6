@@ -1,5 +1,12 @@
-// Identity
+// ============================================================
+//  IAM ENUMS
+// ============================================================
 
+// Lifecycle state of an Identity.
+// ACTIVE               — can log in and perform actions
+// INACTIVE             — disabled by an admin, cannot log in
+// SUSPENDED            — locked due to policy (e.g. too many failed logins)
+// PENDING_VERIFICATION — registered but email not yet verified
 enum IdentityStatus {
     ACTIVE
     INACTIVE
@@ -7,22 +14,19 @@ enum IdentityStatus {
     PENDING_VERIFICATION
 }
 
+// Type of identity.
+// USER    — human user belonging to a tenant
+// SERVICE — machine/service account for inter-service API calls
+// ADMIN   — platform-level super admin (cross-tenant, SaaS operator only)
 enum IdentityKind {
     USER
     SERVICE
     ADMIN
 }
 
-// Policy
-
+// Whether a policy grants or explicitly denies access.
+// DENY takes precedence over ALLOW when both match.
 enum PolicyEffect {
     ALLOW
     DENY
-}
-
-// Token
-
-enum TokenKind {
-    REFRESH
-    API_KEY
 }

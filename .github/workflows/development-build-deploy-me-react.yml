@@ -2,23 +2,6 @@ name: Build and Deploy me-react Container
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "apps/me-react/**"
-      - "packages/ui/**"
-      - "package.json"
-      - "package-lock.json"
-      - "turbo.json"
-      - ".github/workflows/development-build-deploy-me-react.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "apps/me-react/**"
-      - "packages/ui/**"
-      - "package.json"
-      - "package-lock.json"
-      - "turbo.json"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

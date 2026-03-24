@@ -1,21 +1,64 @@
+// ============================================================
+//  POLICY
+//  Defines what actions are allowed or denied on which resources.
+//  Attached to Roles. Evaluated by the API Gateway on every request.
+//
+//  Fields:
+//    permissions — list of action strings the policy covers.
+//                  Convention: "service:resource:action"
+//                  e.g. "inventory:stock:read"
+//                       "inventory:stock:write"
+//                       "procurement:purchase-order:approve"
+//                       "pos:sale:create"
+//                       "financial:report:read"
+//    audience    — which services this policy applies to.
+//                  e.g. ["inventory", "procurement", "pos"]
+//                  Used by the API Gateway to scope enforcement.
+//    conditions  — optional JSON for attribute-based conditions.
+//                  e.g. { "warehouseId": "uuid-of-warehouse" }
+//                  Evaluated at the application layer per service.
+//    effect      — ALLOW or DENY. DENY always wins over ALLOW.
+//
+//  Policies are tenant-scoped. tenantId = null is reserved
+//  for platform-level policies attached to ADMIN roles.
+//
+//  Example policies:
+//    name: "inventory-full-access"
+//      effect: ALLOW
+//      permissions: ["inventory:*:*"]
+//      audience: ["inventory"]
+//
+//    name: "pos-cashier"
+//      effect: ALLOW
+//      permissions: ["inventory:stock:read", "pos:sale:create"]
+//      audience: ["inventory", "pos"]
+//
+//    name: "deny-warehouse-delete"
+//      effect: DENY
+//      permissions: ["inventory:warehouse:delete"]
+//      audience: ["inventory"]
+// ============================================================
+
 model Policy {
-    id          String       @id @default(uuid())
-    name        String       @unique
+    id          String       @id @default(uuid()) @db.Uuid
+    tenantId    String?      @db.Uuid // null = platform-level policy
+    name        String
     description String?
     effect      PolicyEffect
-    permissions String[]
-    audience    String[]
-    conditions  Json?
+    permissions String[] // e.g. ["inventory:stock:read", "inventory:stock:write"]
+    audience    String[] // e.g. ["inventory", "procurement"]
+    conditions  Json? // optional attribute-based conditions
+
+    // Relations
+    roles Role[] // many-to-many via implicit join table
 
     // Timestamps
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
-    // Relations (many-to-many)
-    roles Role[]
-
-    // Indexes
+    @@unique([tenantId, name])
+    @@index([tenantId])
     @@index([deletedAt])
     @@map("policies")
 }

@@ -10,8 +10,8 @@
 		"watch": "tsup src --watch"
 	},
 	"dependencies": {
-		"express-oauth2-jwt-bearer": "^1.7.1",
-		"express-openid-connect": "^2.19.3"
+		"express-oauth2-jwt-bearer": "^1.7.4",
+		"express-openid-connect": "^2.19.4"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
