@@ -27,8 +27,7 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           app_location: "."
-          api_location: ""
-          output_location: "dist"
+          output_location: "apps/me-react/dist"
           app_build_command: "npm install && npm run build --workspace @r6/ui && npm run build --workspace @r6/me-react"
 
   close_pull_request_job:
