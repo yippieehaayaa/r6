@@ -6,7 +6,9 @@ import { checkPermission } from "../../lib/jwt";
 export const requireAdmin =
   () => (req: Request, res: Response, next: NextFunction) => {
     if (req.jwtPayload?.kind !== "ADMIN") {
-      return res.status(403).json({ error: "forbidden", message: "Admin access required" });
+      return res
+        .status(403)
+        .json({ error: "forbidden", message: "Admin access required" });
     }
     return next();
   };
@@ -19,11 +21,16 @@ export const requireAdminOrTenantOwner =
   (req: Request, res: Response, next: NextFunction) => {
     const payload = req.jwtPayload;
     if (!payload) {
-      return res.status(403).json({ error: "forbidden", message: "Access denied" });
+      return res
+        .status(403)
+        .json({ error: "forbidden", message: "Access denied" });
     }
     if (payload.kind === "ADMIN") return next();
-    if (payload.tenantId && payload.tenantId === req.params[param]) return next();
-    return res.status(403).json({ error: "forbidden", message: "Access denied" });
+    if (payload.tenantId && payload.tenantId === req.params[param])
+      return next();
+    return res
+      .status(403)
+      .json({ error: "forbidden", message: "Access denied" });
   };
 
 // ─── requireTenantScope ───────────────────────────────────────
@@ -34,22 +41,29 @@ export const requireTenantScope =
   (req: Request, res: Response, next: NextFunction) => {
     const payload = req.jwtPayload;
     if (!payload) {
-      return res.status(403).json({ error: "forbidden", message: "Access denied" });
+      return res
+        .status(403)
+        .json({ error: "forbidden", message: "Access denied" });
     }
     if (payload.kind === "ADMIN") return next();
-    if (payload.tenantId && payload.tenantId === req.params[param]) return next();
-    return res.status(403).json({ error: "forbidden", message: "Tenant scope required" });
+    if (payload.tenantId && payload.tenantId === req.params[param])
+      return next();
+    return res
+      .status(403)
+      .json({ error: "forbidden", message: "Tenant scope required" });
   };
 
 // ─── requirePermission ────────────────────────────────────────
 // Checks that the JWT permissions array satisfies a required permission
 // string using wildcard `*` segment matching (service:resource:action).
 export const requirePermission =
-  (permission: string) =>
-  (req: Request, res: Response, next: NextFunction) => {
+  (permission: string) => (req: Request, res: Response, next: NextFunction) => {
     const granted = (req.jwtPayload?.permissions as string[] | undefined) ?? [];
     if (!checkPermission(permission, granted)) {
-      return res.status(403).json({ error: "forbidden", message: `Missing permission: ${permission}` });
+      return res.status(403).json({
+        error: "forbidden",
+        message: `Missing permission: ${permission}`,
+      });
     }
     return next();
   };

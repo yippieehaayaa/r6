@@ -13,10 +13,13 @@ import {
 import { type Request, type Response, Router } from "express";
 import { AppError } from "../../lib/errors";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin, requireAdminOrTenantOwner } from "../../middleware/guards";
+import {
+  requireAdmin,
+  requireAdminOrTenantOwner,
+} from "../../middleware/guards";
 import identitiesRouter from "../identities";
-import rolesRouter from "../roles";
 import policiesRouter from "../policies";
+import rolesRouter from "../roles";
 
 const router: Router = Router();
 
@@ -47,40 +50,56 @@ router.get("/", requireAdmin(), async (req: Request, res: Response) => {
 
 // ─── GET /:tenantId ───────────────────────────────────────────
 
-router.get("/:tenantId", requireAdminOrTenantOwner(), async (req: Request, res: Response) => {
-  const tenantId = req.params.tenantId as string;
-  const tenant = await getTenantById(tenantId);
-  if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
-  return res.status(200).json(tenant);
-});
+router.get(
+  "/:tenantId",
+  requireAdminOrTenantOwner(),
+  async (req: Request, res: Response) => {
+    const tenantId = req.params.tenantId as string;
+    const tenant = await getTenantById(tenantId);
+    if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
+    return res.status(200).json(tenant);
+  },
+);
 
 // ─── PATCH /:tenantId ─────────────────────────────────────────
 
-router.patch("/:tenantId", requireAdminOrTenantOwner(), async (req: Request, res: Response) => {
-  const tenantId = req.params.tenantId as string;
-  const tenant = await getTenantById(tenantId);
-  if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
-  const body = UpdateTenantSchema.parse(req.body);
-  const updated = await updateTenant(tenantId, body);
-  return res.status(200).json(updated);
-});
+router.patch(
+  "/:tenantId",
+  requireAdminOrTenantOwner(),
+  async (req: Request, res: Response) => {
+    const tenantId = req.params.tenantId as string;
+    const tenant = await getTenantById(tenantId);
+    if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
+    const body = UpdateTenantSchema.parse(req.body);
+    const updated = await updateTenant(tenantId, body);
+    return res.status(200).json(updated);
+  },
+);
 
 // ─── DELETE /:tenantId — soft delete (admin only) ────────────
 
-router.delete("/:tenantId", requireAdmin(), async (req: Request, res: Response) => {
-  const tenantId = req.params.tenantId as string;
-  const tenant = await getTenantById(tenantId);
-  if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
-  await softDeleteTenant(tenantId);
-  return res.status(204).send();
-});
+router.delete(
+  "/:tenantId",
+  requireAdmin(),
+  async (req: Request, res: Response) => {
+    const tenantId = req.params.tenantId as string;
+    const tenant = await getTenantById(tenantId);
+    if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
+    await softDeleteTenant(tenantId);
+    return res.status(204).send();
+  },
+);
 
 // ─── POST /:tenantId/restore — restore (admin only) ──────────
 
-router.post("/:tenantId/restore", requireAdmin(), async (req: Request, res: Response) => {
-  const restored = await restoreTenant(req.params.tenantId as string);
-  return res.status(200).json(restored);
-});
+router.post(
+  "/:tenantId/restore",
+  requireAdmin(),
+  async (req: Request, res: Response) => {
+    const restored = await restoreTenant(req.params.tenantId as string);
+    return res.status(200).json(restored);
+  },
+);
 
 // ─── Sub-routers: identities, roles, policies ────────────────
 

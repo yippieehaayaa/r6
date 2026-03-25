@@ -24,25 +24,25 @@ import type { AuthJwtPayload } from "../auth";
 // Allows only ADMIN identities (kind === "ADMIN").
 // All platform-level management routes (cross-tenant) use this guard.
 export const requireAdmin =
-	() => (req: Request, res: Response, next: NextFunction) => {
-		const payload = req.jwtPayload as AuthJwtPayload | undefined;
+  () => (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
-		if (!payload) {
-			return res.status(401).json({
-				error: "unauthorized",
-				message: "Authentication required",
-			});
-		}
+    if (!payload) {
+      return res.status(401).json({
+        error: "unauthorized",
+        message: "Authentication required",
+      });
+    }
 
-		if (payload.kind !== "ADMIN") {
-			return res.status(403).json({
-				error: "forbidden",
-				message: "This action requires ADMIN privileges",
-			});
-		}
+    if (payload.kind !== "ADMIN") {
+      return res.status(403).json({
+        error: "forbidden",
+        message: "This action requires ADMIN privileges",
+      });
+    }
 
-		return next();
-	};
+    return next();
+  };
 
 // ─── requireAdminOrTenantOwner ───────────────────────────────
 
@@ -57,37 +57,37 @@ export const requireAdmin =
 //
 // Used for Tenant read/update routes.
 export const requireAdminOrTenantOwner =
-	() => (req: Request, res: Response, next: NextFunction) => {
-		const payload = req.jwtPayload as AuthJwtPayload | undefined;
+  () => (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
-		if (!payload) {
-			return res.status(401).json({
-				error: "unauthorized",
-				message: "Authentication required",
-			});
-		}
+    if (!payload) {
+      return res.status(401).json({
+        error: "unauthorized",
+        message: "Authentication required",
+      });
+    }
 
-		if (payload.kind === "ADMIN") return next();
+    if (payload.kind === "ADMIN") return next();
 
-		const targetTenantId: string | undefined =
-			req.params.tenantId ?? req.params.id ?? req.body?.tenantId;
+    const targetTenantId: string | undefined =
+      req.params.tenantId ?? req.params.id ?? req.body?.tenantId;
 
-		if (!targetTenantId) {
-			return res.status(400).json({
-				error: "bad_request",
-				message: "Unable to determine target tenant",
-			});
-		}
+    if (!targetTenantId) {
+      return res.status(400).json({
+        error: "bad_request",
+        message: "Unable to determine target tenant",
+      });
+    }
 
-		if (payload.tenantId !== targetTenantId) {
-			return res.status(403).json({
-				error: "forbidden",
-				message: "You do not have access to this tenant",
-			});
-		}
+    if (payload.tenantId !== targetTenantId) {
+      return res.status(403).json({
+        error: "forbidden",
+        message: "You do not have access to this tenant",
+      });
+    }
 
-		return next();
-	};
+    return next();
+  };
 
 // ─── requireTenantScope ──────────────────────────────────────
 
@@ -98,36 +98,36 @@ export const requireAdminOrTenantOwner =
 //
 // ADMIN bypasses this check (cross-tenant access allowed).
 export const requireTenantScope =
-	() => (req: Request, res: Response, next: NextFunction) => {
-		const payload = req.jwtPayload as AuthJwtPayload | undefined;
+  () => (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
-		if (!payload) {
-			return res.status(401).json({
-				error: "unauthorized",
-				message: "Authentication required",
-			});
-		}
+    if (!payload) {
+      return res.status(401).json({
+        error: "unauthorized",
+        message: "Authentication required",
+      });
+    }
 
-		if (payload.kind === "ADMIN") return next();
+    if (payload.kind === "ADMIN") return next();
 
-		const routeTenantId = req.params.tenantId;
+    const routeTenantId = req.params.tenantId;
 
-		if (!routeTenantId) {
-			return res.status(400).json({
-				error: "bad_request",
-				message: "Route is missing tenantId parameter",
-			});
-		}
+    if (!routeTenantId) {
+      return res.status(400).json({
+        error: "bad_request",
+        message: "Route is missing tenantId parameter",
+      });
+    }
 
-		if (payload.tenantId !== routeTenantId) {
-			return res.status(403).json({
-				error: "forbidden",
-				message: "You do not have access to this tenant's resources",
-			});
-		}
+    if (payload.tenantId !== routeTenantId) {
+      return res.status(403).json({
+        error: "forbidden",
+        message: "You do not have access to this tenant's resources",
+      });
+    }
 
-		return next();
-	};
+    return next();
+  };
 
 // ─── requirePermission ───────────────────────────────────────
 
@@ -144,26 +144,26 @@ export const requireTenantScope =
 import { checkPermission } from "../../lib/jwt";
 
 export const requirePermission =
-	(required: string) => (req: Request, res: Response, next: NextFunction) => {
-		const payload = req.jwtPayload as AuthJwtPayload | undefined;
+  (required: string) => (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
-		if (!payload) {
-			return res.status(401).json({
-				error: "unauthorized",
-				message: "Authentication required",
-			});
-		}
+    if (!payload) {
+      return res.status(401).json({
+        error: "unauthorized",
+        message: "Authentication required",
+      });
+    }
 
-		const granted: string[] = Array.isArray(payload.permissions)
-			? (payload.permissions as string[])
-			: [];
+    const granted: string[] = Array.isArray(payload.permissions)
+      ? (payload.permissions as string[])
+      : [];
 
-		if (!checkPermission(required, granted)) {
-			return res.status(403).json({
-				error: "forbidden",
-				message: `Missing required permission: ${required}`,
-			});
-		}
+    if (!checkPermission(required, granted)) {
+      return res.status(403).json({
+        error: "forbidden",
+        message: `Missing required permission: ${required}`,
+      });
+    }
 
-		return next();
-	};
+    return next();
+  };

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import main from "./main";
 import auth from "./auth";
-import wellKnown from "./well-known";
+import main from "./main";
 import me from "./me";
 import tenants from "./tenants";
+import wellKnown from "./well-known";
 
 const router: Router = Router();
 

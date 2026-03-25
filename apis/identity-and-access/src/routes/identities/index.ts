@@ -13,8 +13,8 @@ import {
   CreateIdentitySchema,
   UpdateIdentitySchema,
 } from "@r6/schemas/identity-and-access";
-import { z } from "zod";
 import { type Request, type Response, Router } from "express";
+import { z } from "zod";
 import { AppError } from "../../lib/errors";
 import { authMiddleware } from "../../middleware/auth";
 import { requireAdmin, requireTenantScope } from "../../middleware/guards";
@@ -23,7 +23,9 @@ const UuidSchema = z.string().uuid();
 
 const router: Router = Router({ mergeParams: true });
 
-const toSafeIdentity = <T extends { hash: string; salt: string }>(identity: T) => {
+const toSafeIdentity = <T extends { hash: string; salt: string }>(
+  identity: T,
+) => {
   const { hash, salt, ...safe } = identity;
   return safe;
 };
@@ -32,7 +34,11 @@ const ensureIdentityBelongsToTenant = async (id: string, tenantId: string) => {
   const identity = await getIdentityById(id);
   if (!identity) throw new AppError(404, "not_found", "Identity not found");
   if (identity.tenantId !== tenantId) {
-    throw new AppError(403, "forbidden", "Identity does not belong to this tenant");
+    throw new AppError(
+      403,
+      "forbidden",
+      "Identity does not belong to this tenant",
+    );
   }
   return identity;
 };
@@ -56,7 +62,8 @@ router.post("/", async (req: Request, res: Response) => {
 
   await updateIdentity(identity.id, { status: "ACTIVE" });
   const fresh = await getIdentityById(identity.id);
-  if (!fresh) throw new AppError(500, "internal", "Failed to retrieve created identity");
+  if (!fresh)
+    throw new AppError(500, "internal", "Failed to retrieve created identity");
   return res.status(201).json(toSafeIdentity(fresh));
 });
 
@@ -106,11 +113,15 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 // ─── POST /:id/restore — admin only ──────────────────────────
 
-router.post("/:id/restore", requireAdmin(), async (req: Request, res: Response) => {
-  const id = req.params.id as string;
-  const restored = await restoreIdentity(id);
-  return res.status(200).json(toSafeIdentity(restored));
-});
+router.post(
+  "/:id/restore",
+  requireAdmin(),
+  async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const restored = await restoreIdentity(id);
+    return res.status(200).json(toSafeIdentity(restored));
+  },
+);
 
 // ─── POST /:id/roles — assign single role ────────────────────
 
@@ -140,7 +151,9 @@ router.put("/:id/roles", async (req: Request, res: Response) => {
   const tenantId = req.params.tenantId as string;
   const id = req.params.id as string;
   await ensureIdentityBelongsToTenant(id, tenantId);
-  const { roleIds } = z.object({ roleIds: z.array(UuidSchema) }).parse(req.body);
+  const { roleIds } = z
+    .object({ roleIds: z.array(UuidSchema) })
+    .parse(req.body);
   const result = await setRolesForIdentity(id, roleIds);
   return res.status(200).json(toSafeIdentity(result));
 });

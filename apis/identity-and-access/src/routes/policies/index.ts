@@ -21,7 +21,11 @@ const ensurePolicyBelongsToTenant = async (id: string, tenantId: string) => {
   const policy = await getPolicyById(id);
   if (!policy) throw new AppError(404, "not_found", "Policy not found");
   if (policy.tenantId !== tenantId) {
-    throw new AppError(403, "forbidden", "Policy does not belong to this tenant");
+    throw new AppError(
+      403,
+      "forbidden",
+      "Policy does not belong to this tenant",
+    );
   }
   return policy;
 };
@@ -79,10 +83,14 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 // ─── POST /:id/restore — admin only ──────────────────────────
 
-router.post("/:id/restore", requireAdmin(), async (req: Request, res: Response) => {
-  const id = req.params.id as string;
-  const restored = await restorePolicy(id);
-  return res.status(200).json(restored);
-});
+router.post(
+  "/:id/restore",
+  requireAdmin(),
+  async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const restored = await restorePolicy(id);
+    return res.status(200).json(restored);
+  },
+);
 
 export default router;

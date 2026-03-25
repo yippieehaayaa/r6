@@ -15,8 +15,8 @@ import {
   CreateRoleSchema,
   UpdateRoleSchema,
 } from "@r6/schemas/identity-and-access";
-import { z } from "zod";
 import { type Request, type Response, Router } from "express";
+import { z } from "zod";
 import { AppError } from "../../lib/errors";
 import { authMiddleware } from "../../middleware/auth";
 import { requireAdmin, requireTenantScope } from "../../middleware/guards";
@@ -41,7 +41,11 @@ router.use(authMiddleware(), requireTenantScope());
 router.post("/", async (req: Request, res: Response) => {
   const tenantId = req.params.tenantId as string;
   const body = CreateRoleSchema.parse(req.body);
-  const role = await createRole({ tenantId, name: body.name, description: body.description ?? null });
+  const role = await createRole({
+    tenantId,
+    name: body.name,
+    description: body.description ?? null,
+  });
   return res.status(201).json(role);
 });
 
@@ -88,11 +92,15 @@ router.delete("/:id", async (req: Request, res: Response) => {
 
 // ─── POST /:id/restore — admin only ──────────────────────────
 
-router.post("/:id/restore", requireAdmin(), async (req: Request, res: Response) => {
-  const id = req.params.id as string;
-  const restored = await restoreRole(id);
-  return res.status(200).json(restored);
-});
+router.post(
+  "/:id/restore",
+  requireAdmin(),
+  async (req: Request, res: Response) => {
+    const id = req.params.id as string;
+    const restored = await restoreRole(id);
+    return res.status(200).json(restored);
+  },
+);
 
 // ─── POST /:id/policies — attach single policy ───────────────
 
@@ -107,14 +115,17 @@ router.post("/:id/policies", async (req: Request, res: Response) => {
 
 // ─── DELETE /:id/policies/:policyId — detach single policy ───
 
-router.delete("/:id/policies/:policyId", async (req: Request, res: Response) => {
-  const tenantId = req.params.tenantId as string;
-  const id = req.params.id as string;
-  const policyId = req.params.policyId as string;
-  await ensureRoleBelongsToTenant(id, tenantId);
-  const result = await detachPolicyFromRole({ roleId: id, policyId });
-  return res.status(200).json(result);
-});
+router.delete(
+  "/:id/policies/:policyId",
+  async (req: Request, res: Response) => {
+    const tenantId = req.params.tenantId as string;
+    const id = req.params.id as string;
+    const policyId = req.params.policyId as string;
+    await ensureRoleBelongsToTenant(id, tenantId);
+    const result = await detachPolicyFromRole({ roleId: id, policyId });
+    return res.status(200).json(result);
+  },
+);
 
 // ─── PUT /:id/policies — replace entire policy set ───────────
 
