@@ -13,6 +13,7 @@
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
 		"@r6/bcrypt": "*",
+		"@r6/crypto": "*",
 		"@r6/db-identity-and-access": "*",
 		"@r6/schemas": "*",
 		"@r6/typescript-config": "*",

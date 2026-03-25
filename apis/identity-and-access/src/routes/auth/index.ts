@@ -1,4 +1,5 @@
 import { verifyPassword } from "@r6/bcrypt";
+import { hmac } from "@r6/crypto";
 import {
   createIdentity,
   getIdentityByEmail,
@@ -165,7 +166,7 @@ router.post("/login", async (req: Request, res: Response) => {
     );
   }
 
-  const valid = await verifyPassword(password, identity.hash);
+  const valid = await verifyPassword(hmac(password), identity.hash);
 
   if (!valid) {
     const newAttempts = identity.failedLoginAttempts + 1;

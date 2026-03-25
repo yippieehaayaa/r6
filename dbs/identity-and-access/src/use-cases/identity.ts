@@ -19,6 +19,7 @@
 // ============================================================
 
 import { encryptPassword, verifyPassword } from "@r6/bcrypt";
+import { hmac } from "@r6/crypto";
 import type { Identity, Policy, Prisma, Role } from "../../generated/prisma/client";
 import { prisma } from "../client";
 import type {
@@ -38,7 +39,7 @@ import type {
 const createIdentity = async (
 	input: CreateIdentityInput,
 ): Promise<Identity> => {
-	const { hash, salt } = await encryptPassword(input.password);
+	const { hash, salt } = await encryptPassword(hmac(input.password));
 
 	return prisma.identity.create({
 		data: {
@@ -149,10 +150,10 @@ const changePassword = async (
 	const identity = await getIdentityById(id);
 	if (!identity) throw new Error("Identity not found");
 
-	const valid = await verifyPassword(input.currentPassword, identity.hash);
+	const valid = await verifyPassword(hmac(input.currentPassword), identity.hash);
 	if (!valid) throw new Error("Current password is incorrect");
 
-	const { hash, salt } = await encryptPassword(input.newPassword);
+	const { hash, salt } = await encryptPassword(hmac(input.newPassword));
 
 	return prisma.identity.update({
 		where: { id },
