@@ -19,7 +19,7 @@ import { AppError } from "../../lib/errors";
 import { authMiddleware } from "../../middleware/auth";
 import { requireAdmin, requireTenantScope } from "../../middleware/guard";
 
-const UuidSchema = z.string().uuid();
+const UuidSchema = z.uuid();
 
 const router: Router = Router({ mergeParams: true });
 

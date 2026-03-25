@@ -16,7 +16,7 @@ import { authMiddleware } from "../../middleware/auth";
 import {
   requireAdmin,
   requireAdminOrTenantOwner,
-} from "../../middleware/guards";
+} from "../../middleware/guard";
 import identitiesRouter from "../identities";
 import policiesRouter from "../policies";
 import rolesRouter from "../roles";

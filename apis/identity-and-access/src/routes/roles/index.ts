@@ -19,7 +19,7 @@ import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 import { AppError } from "../../lib/errors";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin, requireTenantScope } from "../../middleware/guards";
+import { requireAdmin, requireTenantScope } from "../../middleware/guard";
 
 const UuidSchema = z.string().uuid();
 
