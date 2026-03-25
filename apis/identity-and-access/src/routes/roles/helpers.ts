@@ -8,11 +8,7 @@ export const ensureRoleBelongsToTenant = async (
   const role = await getRoleById(id);
   if (!role) throw new AppError(404, "not_found", "Role not found");
   if (role.tenantId !== tenantId) {
-    throw new AppError(
-      403,
-      "forbidden",
-      "Role does not belong to this tenant",
-    );
+    throw new AppError(403, "forbidden", "Role does not belong to this tenant");
   }
   return role;
 };

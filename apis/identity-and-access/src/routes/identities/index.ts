@@ -25,4 +25,3 @@ router.delete("/:id/roles/:roleId", removeRole);
 router.put("/:id/roles", setRoles);
 
 export default router;
-
