@@ -14,20 +14,20 @@
 //  live here — that belongs to the Financial Service.
 // ============================================================
 
-import type { Tenant } from "../../generated/prisma/client";
-import { prisma } from "../client";
+import type { Tenant } from "../../generated/prisma/client.js";
+import { prisma } from "../client.js";
 import type {
 	CreateTenantInput,
 	ListTenantsInput,
 	PaginatedResult,
 	UpdateTenantInput,
-} from "./types";
+} from "./types.js";
 
 // ─── Helpers ─────────────────────────────────────────────────
 
 const buildWhere = (
 	input: Omit<ListTenantsInput, "page" | "limit">,
-): import("../../generated/prisma/client").Prisma.TenantWhereInput => ({
+): import("../../generated/prisma/client.js").Prisma.TenantWhereInput => ({
 	...(input.isActive !== undefined && { isActive: input.isActive }),
 	...(!input.includeDeleted && { deletedAt: null }),
 });

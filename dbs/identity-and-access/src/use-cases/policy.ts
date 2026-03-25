@@ -15,15 +15,15 @@
 //    deletedAt soft-delete
 // ============================================================
 
-import type { Policy, Role } from "../../generated/prisma/client";
-import { Prisma } from "../../generated/prisma/client";
-import { prisma } from "../client";
+import type { Policy, Role } from "../../generated/prisma/client.js";
+import { Prisma } from "../../generated/prisma/client.js";
+import { prisma } from "../client.js";
 import type {
 	CreatePolicyInput,
 	ListPoliciesInput,
 	PaginatedResult,
 	UpdatePolicyInput,
-} from "./types";
+} from "./types.js";
 
 // Converts a caller-supplied conditions value to what Prisma's
 // NullableJsonNullValueInput actually accepts.
@@ -32,10 +32,10 @@ import type {
 // index signature. Casting through unknown is the correct bridge.
 // null/undefined → Prisma.JsonNull (the sentinel for a DB NULL column).
 function toConditions(
-	value: Prisma.InputJsonObject | null | undefined,
+  value: Record<string, unknown> | null | undefined,  // was: Prisma.InputJsonObject | null | undefined
 ): Prisma.NullableJsonNullValueInput | Prisma.InputJsonValue {
-	if (value == null) return Prisma.JsonNull;
-	return value as unknown as Prisma.InputJsonValue;
+  if (value == null) return Prisma.JsonNull;
+  return value as unknown as Prisma.InputJsonValue;
 }
 
 // ─── Create ──────────────────────────────────────────────────

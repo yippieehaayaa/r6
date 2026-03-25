@@ -19,15 +19,15 @@ import type {
   Policy,
   Prisma,
   Role,
-} from "../../generated/prisma/client";
-import { prisma } from "../client";
+} from "../../generated/prisma/client.js";
+import { prisma } from "../client.js";
 import type {
   AttachPolicyInput,
   CreateRoleInput,
   ListRolesInput,
   PaginatedResult,
   UpdateRoleInput,
-} from "./types";
+} from "./types.js";
 
 // ─── Create ──────────────────────────────────────────────────
 

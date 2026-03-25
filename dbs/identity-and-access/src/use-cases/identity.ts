@@ -20,8 +20,8 @@
 
 import { encryptPassword, verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
-import type { Identity, Policy, Prisma, Role } from "../../generated/prisma/client";
-import { prisma } from "../client";
+import type { Identity, Policy, Prisma, Role } from "../../generated/prisma/client.js";
+import { prisma } from "../client.js";
 import type {
 	AssignRoleInput,
 	ChangePasswordInput,
@@ -29,7 +29,7 @@ import type {
 	ListIdentitiesInput,
 	PaginatedResult,
 	UpdateIdentityInput,
-} from "./types";
+} from "./types.js";
 
 // ─── Create ──────────────────────────────────────────────────
 
