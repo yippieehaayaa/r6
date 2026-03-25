@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import { errorHandler } from "./middleware/error-handler";
 import routes from "./routes";
 
 const app: Express = express();
@@ -12,5 +13,6 @@ app.use(morgan("dev"));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(routes);
+app.use(errorHandler);
 
 export default app;

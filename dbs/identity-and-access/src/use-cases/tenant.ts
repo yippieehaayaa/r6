@@ -36,7 +36,7 @@ const buildWhere = (
 
 // Inserts a new Tenant row.
 // Throws P2002 if name or slug already exists (@@unique on both).
-export async function createTenant(input: CreateTenantInput): Promise<Tenant> {
+const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 	return prisma.tenant.create({
 		data: {
 			name: input.name,
@@ -50,7 +50,7 @@ export async function createTenant(input: CreateTenantInput): Promise<Tenant> {
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted tenant by primary key.
-export async function getTenantById(id: string): Promise<Tenant | null> {
+const getTenantById = async (id: string): Promise<Tenant | null> => {
 	return prisma.tenant.findFirst({
 		where: { id, deletedAt: null },
 	});
@@ -58,7 +58,7 @@ export async function getTenantById(id: string): Promise<Tenant | null> {
 
 // Finds a non-deleted tenant by unique slug.
 // Uses @@unique([slug]).
-export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
+const getTenantBySlug = async (slug: string): Promise<Tenant | null> => {
 	return prisma.tenant.findFirst({
 		where: { slug, deletedAt: null },
 	});
@@ -66,7 +66,7 @@ export async function getTenantBySlug(slug: string): Promise<Tenant | null> {
 
 // Finds a non-deleted tenant by unique name.
 // Uses @@unique([name]).
-export async function getTenantByName(name: string): Promise<Tenant | null> {
+const getTenantByName = async (name: string): Promise<Tenant | null> => {
 	return prisma.tenant.findFirst({
 		where: { name, deletedAt: null },
 	});
@@ -78,9 +78,9 @@ export async function getTenantByName(name: string): Promise<Tenant | null> {
 // isActive filter uses @@index([isActive]).
 // includeDeleted = false (default) filters via @@index([deletedAt]).
 // Runs findMany + count in parallel — same pattern as listMovements.
-export async function listTenants(
+const listTenants = async (
 	input: ListTenantsInput,
-): Promise<PaginatedResult<Tenant>> {
+): Promise<PaginatedResult<Tenant>> => {
 	const where = buildWhere(input);
 	const skip = (input.page - 1) * input.limit;
 
@@ -102,10 +102,10 @@ export async function listTenants(
 // Updates mutable fields.
 // Throws P2002 if updated name or slug collides.
 // Throws P2025 if the tenant does not exist.
-export async function updateTenant(
+const updateTenant = async (
 	id: string,
 	input: UpdateTenantInput,
-): Promise<Tenant> {
+): Promise<Tenant> => {
 	return prisma.tenant.update({
 		where: { id },
 		data: {
@@ -123,7 +123,7 @@ export async function updateTenant(
 
 // Soft-deletes a tenant. Sets deletedAt + isActive = false atomically.
 // Does NOT cascade — dependent Identity rows are left intact.
-export async function softDeleteTenant(id: string): Promise<Tenant> {
+const softDeleteTenant = async (id: string): Promise<Tenant> => {
 	return prisma.tenant.update({
 		where: { id },
 		data: { deletedAt: new Date(), isActive: false },
@@ -131,9 +131,20 @@ export async function softDeleteTenant(id: string): Promise<Tenant> {
 }
 
 // Restores a soft-deleted tenant.
-export async function restoreTenant(id: string): Promise<Tenant> {
+const restoreTenant = async (id: string): Promise<Tenant> => {
 	return prisma.tenant.update({
 		where: { id },
 		data: { deletedAt: null, isActive: true },
 	});
-}
+};
+
+export {
+	createTenant,
+	getTenantById,
+	getTenantBySlug,
+	getTenantByName,
+	listTenants,
+	updateTenant,
+	softDeleteTenant,
+	restoreTenant,
+};

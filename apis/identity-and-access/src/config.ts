@@ -10,6 +10,7 @@ const envSchema = z.object({
   JWT_ISSUER: z.string(),
   JWT_AUDIENCE: z.string(),
   JWT_ACCESS_TTL_MS: z.string().optional().default("900000"),
+  JWT_REFRESH_TTL_MS: z.string().optional().default("604800000"),
   HASH_SECRET: z.string(),
 });
 
@@ -20,6 +21,7 @@ const env = envSchema.parse({
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
   JWT_ACCESS_TTL_MS: process.env.JWT_ACCESS_TTL_MS,
+  JWT_REFRESH_TTL_MS: process.env.JWT_REFRESH_TTL_MS,
   HASH_SECRET: process.env.HASH_SECRET,
 });
 

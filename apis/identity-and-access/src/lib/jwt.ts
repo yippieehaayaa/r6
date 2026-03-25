@@ -81,6 +81,35 @@ export const verifyAccessToken = async (token: string): Promise<JWTPayload> => {
 	return payload;
 };
 
+export const signRefreshToken = async (sub: string): Promise<string> => {
+	await loadKeys();
+
+	const expiresAt = new Date(Date.now() + Number(env.JWT_REFRESH_TTL_MS));
+
+	return new SignJWT({ tokenType: "refresh" })
+		.setProtectedHeader({ alg: "RS256" })
+		.setSubject(sub)
+		.setIssuer(env.JWT_ISSUER)
+		.setAudience(env.JWT_AUDIENCE)
+		.setIssuedAt()
+		.setExpirationTime(expiresAt)
+		.sign(privateKey as CryptoKey);
+};
+
+export const verifyRefreshToken = async (
+	token: string,
+): Promise<JWTPayload> => {
+	await loadKeys();
+
+	const { payload } = await jwtVerify(token, publicKey as CryptoKey, {
+		issuer: env.JWT_ISSUER,
+		audience: env.JWT_AUDIENCE,
+		algorithms: ["RS256"],
+	});
+
+	return payload;
+};
+
 export const getPublicJwk = async () => {
 	await loadKeys();
 

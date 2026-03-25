@@ -44,7 +44,7 @@ function toConditions(
 // Throws P2002 if [tenantId, name] already exists.
 // permissions and audience are stored as Postgres text[] arrays —
 // Prisma requires { set: [] } on create for array fields.
-export async function createPolicy(input: CreatePolicyInput): Promise<Policy> {
+const createPolicy = async (input: CreatePolicyInput): Promise<Policy> => {
 	return prisma.policy.create({
 		data: {
 			tenantId: input.tenantId,
@@ -63,7 +63,7 @@ export async function createPolicy(input: CreatePolicyInput): Promise<Policy> {
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted policy by primary key.
-export async function getPolicyById(id: string): Promise<Policy | null> {
+const getPolicyById = async (id: string): Promise<Policy | null> => {
 	return prisma.policy.findFirst({
 		where: { id, deletedAt: null },
 	});
@@ -71,19 +71,19 @@ export async function getPolicyById(id: string): Promise<Policy | null> {
 
 // Finds a non-deleted policy by [tenantId, name].
 // Uses @@unique([tenantId, name]).
-export async function getPolicyByName(
+const getPolicyByName = async (
 	tenantId: string | null,
 	name: string,
-): Promise<Policy | null> {
+): Promise<Policy | null> => {
 	return prisma.policy.findFirst({
 		where: { tenantId, name, deletedAt: null },
 	});
 }
 
 // Returns a policy with its attached roles included.
-export async function getPolicyWithRoles(
+const getPolicyWithRoles = async (
 	id: string,
-): Promise<(Policy & { roles: Role[] }) | null> {
+): Promise<(Policy & { roles: Role[] }) | null> => {
 	return prisma.policy.findFirst({
 		where: { id, deletedAt: null },
 		include: { roles: true },
@@ -106,9 +106,9 @@ const buildWhere = (
 // Returns a paginated list of policies for a tenant.
 // audience filter uses Postgres array containment (has).
 // Runs findMany + count in parallel — same pattern as listMovements.
-export async function listPolicies(
+const listPolicies = async (
 	input: ListPoliciesInput,
-): Promise<PaginatedResult<Policy>> {
+): Promise<PaginatedResult<Policy>> => {
 	const where = buildWhere(input);
 	const skip = (input.page - 1) * input.limit;
 
@@ -127,10 +127,10 @@ export async function listPolicies(
 
 // Lists platform-level policies (tenantId = null) — paginated.
 // Used only by ADMIN identities.
-export async function listPlatformPolicies(input: {
+const listPlatformPolicies = async (input: {
 	page: number;
 	limit: number;
-}): Promise<PaginatedResult<Policy>> {
+}): Promise<PaginatedResult<Policy>> => {
 	const where: Prisma.PolicyWhereInput = { tenantId: null, deletedAt: null };
 	const skip = (input.page - 1) * input.limit;
 
@@ -153,10 +153,10 @@ export async function listPlatformPolicies(input: {
 // Throws P2002 if updated name collides within the same tenant.
 // Throws P2025 if the policy does not exist.
 // Array fields use { set: [] } to replace the full array atomically.
-export async function updatePolicy(
+const updatePolicy = async (
 	id: string,
 	input: UpdatePolicyInput,
-): Promise<Policy> {
+): Promise<Policy> => {
 	return prisma.policy.update({
 		where: { id },
 		data: {
@@ -188,7 +188,7 @@ export async function updatePolicy(
 // Prisma's implicit many-to-many does not cascade soft-deletes.
 // Roles that reference this policy will stop seeing it in queries
 // filtered by deletedAt: null.
-export async function softDeletePolicy(id: string): Promise<Policy> {
+const softDeletePolicy = async (id: string): Promise<Policy> => {
 	return prisma.policy.update({
 		where: { id },
 		data: { deletedAt: new Date() },
@@ -196,9 +196,21 @@ export async function softDeletePolicy(id: string): Promise<Policy> {
 }
 
 // Restores a soft-deleted policy.
-export async function restorePolicy(id: string): Promise<Policy> {
+const restorePolicy = async (id: string): Promise<Policy> => {
 	return prisma.policy.update({
 		where: { id },
 		data: { deletedAt: null },
 	});
-}
+};
+
+export {
+	createPolicy,
+	getPolicyById,
+	getPolicyByName,
+	getPolicyWithRoles,
+	listPolicies,
+	listPlatformPolicies,
+	updatePolicy,
+	softDeletePolicy,
+	restorePolicy,
+};

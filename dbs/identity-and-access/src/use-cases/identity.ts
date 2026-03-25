@@ -19,7 +19,7 @@
 // ============================================================
 
 import { encryptPassword, verifyPassword } from "@r6/bcrypt";
-import type { Identity, Prisma, Role } from "../../generated/prisma/client";
+import type { Identity, Policy, Prisma, Role } from "../../generated/prisma/client";
 import { prisma } from "../client";
 import type {
 	AssignRoleInput,
@@ -35,9 +35,9 @@ import type {
 // Inserts a new Identity row.
 // Throws P2002 if [tenantId, username] or [tenantId, email] already exists.
 // hash and salt must be pre-computed by the caller.
-export async function createIdentity(
+const createIdentity = async (
 	input: CreateIdentityInput,
-): Promise<Identity> {
+): Promise<Identity> => {
 	const { hash, salt } = await encryptPassword(input.password);
 
 	return prisma.identity.create({
@@ -56,7 +56,7 @@ export async function createIdentity(
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted identity by primary key.
-export async function getIdentityById(id: string): Promise<Identity | null> {
+const getIdentityById = async (id: string): Promise<Identity | null> => {
 	return prisma.identity.findFirst({
 		where: { id, deletedAt: null },
 	});
@@ -64,10 +64,10 @@ export async function getIdentityById(id: string): Promise<Identity | null> {
 
 // Finds a non-deleted identity by [tenantId, username].
 // Uses @@unique([tenantId, username]) index.
-export async function getIdentityByUsername(
+const getIdentityByUsername = async (
 	tenantId: string | null,
 	username: string,
-): Promise<Identity | null> {
+): Promise<Identity | null> => {
 	return prisma.identity.findFirst({
 		where: { tenantId, username, deletedAt: null },
 	});
@@ -75,10 +75,10 @@ export async function getIdentityByUsername(
 
 // Finds a non-deleted identity by [tenantId, email].
 // Uses @@unique([tenantId, email]) index.
-export async function getIdentityByEmail(
+const getIdentityByEmail = async (
 	tenantId: string | null,
 	email: string,
-): Promise<Identity | null> {
+): Promise<Identity | null> => {
 	return prisma.identity.findFirst({
 		where: { tenantId, email, deletedAt: null },
 	});
@@ -86,12 +86,23 @@ export async function getIdentityByEmail(
 
 // Returns a non-deleted identity with its assigned roles included.
 // Roles relation is many-to-many via implicit join table.
-export async function getIdentityWithRoles(
+const getIdentityWithRoles = async (
 	id: string,
-): Promise<(Identity & { roles: Role[] }) | null> {
+): Promise<(Identity & { roles: Role[] }) | null> => {
 	return prisma.identity.findFirst({
 		where: { id, deletedAt: null },
 		include: { roles: true },
+	});
+}
+
+// Returns a non-deleted identity with roles and their attached policies.
+// Used during auth flows to build token claims (role IDs + permission strings).
+const getIdentityWithRolesAndPolicies = async (
+	id: string,
+): Promise<(Identity & { roles: (Role & { policies: Policy[] })[] }) | null> => {
+	return prisma.identity.findFirst({
+		where: { id, deletedAt: null },
+		include: { roles: { include: { policies: true } } },
 	});
 }
 
@@ -110,9 +121,9 @@ const buildWhere = (
 // status filter uses @@index([tenantId, status]).
 // kind filter uses @@index([tenantId, kind]).
 // Runs findMany + count in parallel — same pattern as listMovements.
-export async function listIdentities(
+const listIdentities = async (
 	input: ListIdentitiesInput,
-): Promise<PaginatedResult<Identity>> {
+): Promise<PaginatedResult<Identity>> => {
 	const where = buildWhere(input);
 	const skip = (input.page - 1) * input.limit;
 
@@ -131,10 +142,10 @@ export async function listIdentities(
 
 // ─── Update ──────────────────────────────────────────────────
 
-export async function changePassword(
+const changePassword = async (
 	id: string,
 	input: ChangePasswordInput,
-): Promise<Identity> {
+): Promise<Identity> => {
 	const identity = await getIdentityById(id);
 	if (!identity) throw new Error("Identity not found");
 
@@ -152,10 +163,10 @@ export async function changePassword(
 // Updates mutable fields on an existing identity.
 // Throws P2002 if updated email collides within the same tenant.
 // Throws P2025 if identity does not exist.
-export async function updateIdentity(
+const updateIdentity = async (
 	id: string,
 	input: UpdateIdentityInput,
-): Promise<Identity> {
+): Promise<Identity> => {
 	return prisma.identity.update({
 		where: { id },
 		data: {
@@ -182,9 +193,9 @@ export async function updateIdentity(
 // Prisma manages the implicit join table.
 // Throws P2025 if either identity or role does not exist.
 // Connecting the same role twice is a no-op (Prisma deduplicates).
-export async function assignRoleToIdentity(
+const assignRoleToIdentity = async (
 	input: AssignRoleInput,
-): Promise<Identity & { roles: Role[] }> {
+): Promise<Identity & { roles: Role[] }> => {
 	return prisma.identity.update({
 		where: { id: input.identityId },
 		data: {
@@ -197,9 +208,9 @@ export async function assignRoleToIdentity(
 // Disconnects a Role from an Identity.
 // No-op if the role was not assigned.
 // Throws P2025 if the identity does not exist.
-export async function removeRoleFromIdentity(
+const removeRoleFromIdentity = async (
 	input: AssignRoleInput,
-): Promise<Identity & { roles: Role[] }> {
+): Promise<Identity & { roles: Role[] }> => {
 	return prisma.identity.update({
 		where: { id: input.identityId },
 		data: {
@@ -212,10 +223,10 @@ export async function removeRoleFromIdentity(
 // Replaces all assigned roles for an identity in one atomic write.
 // Uses Prisma's set: [] which disconnects all current roles first,
 // then connects the new set. Roles not in the new array are removed.
-export async function setRolesForIdentity(
+const setRolesForIdentity = async (
 	identityId: string,
 	roleIds: string[],
-): Promise<Identity & { roles: Role[] }> {
+): Promise<Identity & { roles: Role[] }> => {
 	return prisma.identity.update({
 		where: { id: identityId },
 		data: {
@@ -231,7 +242,7 @@ export async function setRolesForIdentity(
 // @@index([deletedAt]) supports filtering deleted records out.
 // Does NOT remove the implicit join table rows for roles —
 // Prisma's implicit many-to-many does not cascade soft deletes.
-export async function softDeleteIdentity(id: string): Promise<Identity> {
+const softDeleteIdentity = async (id: string): Promise<Identity> => {
 	return prisma.identity.update({
 		where: { id },
 		data: { deletedAt: new Date(), status: "INACTIVE" },
@@ -239,9 +250,26 @@ export async function softDeleteIdentity(id: string): Promise<Identity> {
 }
 
 // Restores a soft-deleted identity back to PENDING_VERIFICATION.
-export async function restoreIdentity(id: string): Promise<Identity> {
+const restoreIdentity = async (id: string): Promise<Identity> => {
 	return prisma.identity.update({
 		where: { id },
 		data: { deletedAt: null, status: "PENDING_VERIFICATION" },
 	});
-}
+};
+
+export {
+	createIdentity,
+	getIdentityById,
+	getIdentityByUsername,
+	getIdentityByEmail,
+	getIdentityWithRoles,
+	getIdentityWithRolesAndPolicies,
+	listIdentities,
+	changePassword,
+	updateIdentity,
+	assignRoleToIdentity,
+	removeRoleFromIdentity,
+	setRolesForIdentity,
+	softDeleteIdentity,
+	restoreIdentity,
+};
