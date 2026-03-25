@@ -15,18 +15,18 @@
 // ============================================================
 
 import type {
-  Identity,
-  Policy,
-  Prisma,
-  Role,
+	Identity,
+	Policy,
+	Prisma,
+	Role,
 } from "../../generated/prisma/client";
 import { prisma } from "../client";
 import type {
-  AttachPolicyInput,
-  CreateRoleInput,
-  ListRolesInput,
-  PaginatedResult,
-  UpdateRoleInput,
+	AttachPolicyInput,
+	CreateRoleInput,
+	ListRolesInput,
+	PaginatedResult,
+	UpdateRoleInput,
 } from "./types";
 
 // ─── Create ──────────────────────────────────────────────────
@@ -34,108 +34,108 @@ import type {
 // Inserts a new Role.
 // Throws P2002 if [tenantId, name] already exists.
 export async function createRole(input: CreateRoleInput): Promise<Role> {
-  return prisma.role.create({
-    data: {
-      tenantId: input.tenantId,
-      name: input.name,
-      description: input.description,
-      // isActive uses schema default true
-    },
-  });
+	return prisma.role.create({
+		data: {
+			tenantId: input.tenantId,
+			name: input.name,
+			description: input.description,
+			// isActive uses schema default true
+		},
+	});
 }
 
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted role by primary key.
 export async function getRoleById(id: string): Promise<Role | null> {
-  return prisma.role.findFirst({
-    where: { id, deletedAt: null },
-  });
+	return prisma.role.findFirst({
+		where: { id, deletedAt: null },
+	});
 }
 
 // Finds a non-deleted role by [tenantId, name].
 // Uses @@unique([tenantId, name]).
 export async function getRoleByName(
-  tenantId: string | null,
-  name: string,
+	tenantId: string | null,
+	name: string,
 ): Promise<Role | null> {
-  return prisma.role.findFirst({
-    where: { tenantId, name, deletedAt: null },
-  });
+	return prisma.role.findFirst({
+		where: { tenantId, name, deletedAt: null },
+	});
 }
 
 // Returns a role with its attached policies included.
 export async function getRoleWithPolicies(
-  id: string,
+	id: string,
 ): Promise<(Role & { policies: Policy[] }) | null> {
-  return prisma.role.findFirst({
-    where: { id, deletedAt: null },
-    include: { policies: true },
-  });
+	return prisma.role.findFirst({
+		where: { id, deletedAt: null },
+		include: { policies: true },
+	});
 }
 
 // Returns a role with its assigned identities included.
 export async function getRoleWithIdentities(
-  id: string,
+	id: string,
 ): Promise<(Role & { identities: Identity[] }) | null> {
-  return prisma.role.findFirst({
-    where: { id, deletedAt: null },
-    include: { identities: true },
-  });
+	return prisma.role.findFirst({
+		where: { id, deletedAt: null },
+		include: { identities: true },
+	});
 }
 
 // ─── Paginated list ──────────────────────────────────────────
 
 const buildWhere = (
-  input: Omit<ListRolesInput, "page" | "limit">,
+	input: Omit<ListRolesInput, "page" | "limit">,
 ): Prisma.RoleWhereInput => ({
-  tenantId: input.tenantId,
-  deletedAt: null,
-  ...(input.isActive !== undefined && { isActive: input.isActive }),
+	tenantId: input.tenantId,
+	deletedAt: null,
+	...(input.isActive !== undefined && { isActive: input.isActive }),
 });
 
 // Returns a paginated list of roles for a tenant.
 // isActive filter uses @@index([tenantId, isActive]).
 // Runs findMany + count in parallel — same pattern as listMovements.
 export async function listRoles(
-  input: ListRolesInput,
+	input: ListRolesInput,
 ): Promise<PaginatedResult<Role>> {
-  const where = buildWhere(input);
-  const skip = (input.page - 1) * input.limit;
+	const where = buildWhere(input);
+	const skip = (input.page - 1) * input.limit;
 
-  const [data, total] = await Promise.all([
-    prisma.role.findMany({
-      where,
-      skip,
-      take: input.limit,
-      orderBy: { name: "asc" },
-    }),
-    prisma.role.count({ where }),
-  ]);
+	const [data, total] = await Promise.all([
+		prisma.role.findMany({
+			where,
+			skip,
+			take: input.limit,
+			orderBy: { name: "asc" },
+		}),
+		prisma.role.count({ where }),
+	]);
 
-  return { data, total, page: input.page, limit: input.limit };
+	return { data, total, page: input.page, limit: input.limit };
 }
 
 // Lists platform-level roles (tenantId = null) — paginated.
 // Used only by ADMIN identities.
 export async function listPlatformRoles(input: {
-  page: number;
-  limit: number;
+	page: number;
+	limit: number;
 }): Promise<PaginatedResult<Role>> {
-  const where: Prisma.RoleWhereInput = { tenantId: null, deletedAt: null };
-  const skip = (input.page - 1) * input.limit;
+	const where: Prisma.RoleWhereInput = { tenantId: null, deletedAt: null };
+	const skip = (input.page - 1) * input.limit;
 
-  const [data, total] = await Promise.all([
-    prisma.role.findMany({
-      where,
-      skip,
-      take: input.limit,
-      orderBy: { name: "asc" },
-    }),
-    prisma.role.count({ where }),
-  ]);
+	const [data, total] = await Promise.all([
+		prisma.role.findMany({
+			where,
+			skip,
+			take: input.limit,
+			orderBy: { name: "asc" },
+		}),
+		prisma.role.count({ where }),
+	]);
 
-  return { data, total, page: input.page, limit: input.limit };
+	return { data, total, page: input.page, limit: input.limit };
 }
 
 // ─── Update ──────────────────────────────────────────────────
@@ -144,19 +144,19 @@ export async function listPlatformRoles(input: {
 // Throws P2002 if updated name collides within the same tenant.
 // Throws P2025 if the role does not exist.
 export async function updateRole(
-  id: string,
-  input: UpdateRoleInput,
+	id: string,
+	input: UpdateRoleInput,
 ): Promise<Role> {
-  return prisma.role.update({
-    where: { id },
-    data: {
-      ...(input.name !== undefined && { name: input.name }),
-      ...(input.description !== undefined && {
-        description: input.description,
-      }),
-      ...(input.isActive !== undefined && { isActive: input.isActive }),
-    },
-  });
+	return prisma.role.update({
+		where: { id },
+		data: {
+			...(input.name !== undefined && { name: input.name }),
+			...(input.description !== undefined && {
+				description: input.description,
+			}),
+			...(input.isActive !== undefined && { isActive: input.isActive }),
+		},
+	});
 }
 
 // ─── Policy assignment (many-to-many) ────────────────────────
@@ -166,45 +166,45 @@ export async function updateRole(
 // Throws P2025 if either role or policy does not exist.
 // Attaching the same policy twice is a no-op.
 export async function attachPolicyToRole(
-  input: AttachPolicyInput,
+	input: AttachPolicyInput,
 ): Promise<Role & { policies: Policy[] }> {
-  return prisma.role.update({
-    where: { id: input.roleId },
-    data: {
-      policies: { connect: { id: input.policyId } },
-    },
-    include: { policies: true },
-  });
+	return prisma.role.update({
+		where: { id: input.roleId },
+		data: {
+			policies: { connect: { id: input.policyId } },
+		},
+		include: { policies: true },
+	});
 }
 
 // Detaches a Policy from a Role.
 // No-op if the policy was not attached.
 // Throws P2025 if the role does not exist.
 export async function detachPolicyFromRole(
-  input: AttachPolicyInput,
+	input: AttachPolicyInput,
 ): Promise<Role & { policies: Policy[] }> {
-  return prisma.role.update({
-    where: { id: input.roleId },
-    data: {
-      policies: { disconnect: { id: input.policyId } },
-    },
-    include: { policies: true },
-  });
+	return prisma.role.update({
+		where: { id: input.roleId },
+		data: {
+			policies: { disconnect: { id: input.policyId } },
+		},
+		include: { policies: true },
+	});
 }
 
 // Replaces all policies attached to a role in one atomic write.
 // set: [] disconnects all current policies then connects the new set.
 export async function setPoliciesForRole(
-  roleId: string,
-  policyIds: string[],
+	roleId: string,
+	policyIds: string[],
 ): Promise<Role & { policies: Policy[] }> {
-  return prisma.role.update({
-    where: { id: roleId },
-    data: {
-      policies: { set: policyIds.map((id) => ({ id })) },
-    },
-    include: { policies: true },
-  });
+	return prisma.role.update({
+		where: { id: roleId },
+		data: {
+			policies: { set: policyIds.map((id) => ({ id })) },
+		},
+		include: { policies: true },
+	});
 }
 
 // ─── Soft delete ─────────────────────────────────────────────
@@ -215,16 +215,16 @@ export async function setPoliciesForRole(
 // soft-deletes. Active identities with this role will stop
 // seeing it in queries filtered by deletedAt: null.
 export async function softDeleteRole(id: string): Promise<Role> {
-  return prisma.role.update({
-    where: { id },
-    data: { deletedAt: new Date(), isActive: false },
-  });
+	return prisma.role.update({
+		where: { id },
+		data: { deletedAt: new Date(), isActive: false },
+	});
 }
 
 // Restores a soft-deleted role.
 export async function restoreRole(id: string): Promise<Role> {
-  return prisma.role.update({
-    where: { id },
-    data: { deletedAt: null, isActive: true },
-  });
+	return prisma.role.update({
+		where: { id },
+		data: { deletedAt: null, isActive: true },
+	});
 }
