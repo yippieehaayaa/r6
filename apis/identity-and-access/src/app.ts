@@ -9,7 +9,7 @@ app.disable("x-powered-by");
 app.set("trust proxy", true);
 app.use(helmet());
 app.use(morgan("dev"));
-app.use(express.json());
+app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(routes);
 

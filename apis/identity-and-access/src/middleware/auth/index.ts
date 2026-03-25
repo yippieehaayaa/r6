@@ -7,14 +7,6 @@ export type AuthJwtPayload = JWTPayload & {
 	permissions?: string[];
 };
 
-declare global {
-	namespace Express {
-		interface Request {
-			jwtPayload?: AuthJwtPayload;
-		}
-	}
-}
-
 export const authMiddleware =
 	() => async (req: Request, res: Response, next: NextFunction) => {
 		const authHeader = req.header("Authorization");
