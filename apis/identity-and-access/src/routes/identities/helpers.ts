@@ -29,8 +29,6 @@ export const ensureIdentityBelongsToTenantWithDetails = async (
 
   return {
     ...identity,
-    roles: identity.roles.filter(
-      (r) => r.isActive && r.deletedAt === null,
-    ),
+    roles: identity.roles.filter((r) => r.isActive && r.deletedAt === null),
   };
 };

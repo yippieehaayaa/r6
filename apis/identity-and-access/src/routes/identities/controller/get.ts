@@ -12,7 +12,10 @@ export async function getIdentity(
   try {
     const tenantId = req.params.tenantId as string;
     const id = req.params.id as string;
-    const identity = await ensureIdentityBelongsToTenantWithDetails(id, tenantId);
+    const identity = await ensureIdentityBelongsToTenantWithDetails(
+      id,
+      tenantId,
+    );
     res.status(200).json(toSafeIdentity(identity));
   } catch (error) {
     next(error);
