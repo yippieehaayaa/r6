@@ -20,15 +20,20 @@
 
 import { encryptPassword, verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
-import type { Identity, Policy, Prisma, Role } from "../../generated/prisma/client.js";
+import type {
+  Identity,
+  Policy,
+  Prisma,
+  Role,
+} from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
 import type {
-	AssignRoleInput,
-	ChangePasswordInput,
-	CreateIdentityInput,
-	ListIdentitiesInput,
-	PaginatedResult,
-	UpdateIdentityInput,
+  AssignRoleInput,
+  ChangePasswordInput,
+  CreateIdentityInput,
+  ListIdentitiesInput,
+  PaginatedResult,
+  UpdateIdentityInput,
 } from "./types.js";
 
 // ─── Create ──────────────────────────────────────────────────
@@ -37,85 +42,87 @@ import type {
 // Throws P2002 if [tenantId, username] or [tenantId, email] already exists.
 // hash and salt must be pre-computed by the caller.
 const createIdentity = async (
-	input: CreateIdentityInput,
+  input: CreateIdentityInput,
 ): Promise<Identity> => {
-	const { hash, salt } = await encryptPassword(hmac(input.password));
+  const { hash, salt } = await encryptPassword(hmac(input.password));
 
-	return prisma.identity.create({
-		data: {
-			tenantId: input.tenantId,
-			username: input.username,
-			email: input.email,
-			hash,
-			salt,
-			kind: input.kind ?? "USER",
-			mustChangePassword: input.mustChangePassword ?? true,
-		},
-	});
-}
+  return prisma.identity.create({
+    data: {
+      tenantId: input.tenantId,
+      username: input.username,
+      email: input.email,
+      hash,
+      salt,
+      kind: input.kind ?? "USER",
+      mustChangePassword: input.mustChangePassword ?? true,
+    },
+  });
+};
 
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted identity by primary key.
 const getIdentityById = async (id: string): Promise<Identity | null> => {
-	return prisma.identity.findFirst({
-		where: { id, deletedAt: null },
-	});
-}
+  return prisma.identity.findFirst({
+    where: { id, deletedAt: null },
+  });
+};
 
 // Finds a non-deleted identity by [tenantId, username].
 // Uses @@unique([tenantId, username]) index.
 const getIdentityByUsername = async (
-	tenantId: string | null,
-	username: string,
+  tenantId: string | null,
+  username: string,
 ): Promise<Identity | null> => {
-	return prisma.identity.findFirst({
-		where: { tenantId, username, deletedAt: null },
-	});
-}
+  return prisma.identity.findFirst({
+    where: { tenantId, username, deletedAt: null },
+  });
+};
 
 // Finds a non-deleted identity by [tenantId, email].
 // Uses @@unique([tenantId, email]) index.
 const getIdentityByEmail = async (
-	tenantId: string | null,
-	email: string,
+  tenantId: string | null,
+  email: string,
 ): Promise<Identity | null> => {
-	return prisma.identity.findFirst({
-		where: { tenantId, email, deletedAt: null },
-	});
-}
+  return prisma.identity.findFirst({
+    where: { tenantId, email, deletedAt: null },
+  });
+};
 
 // Returns a non-deleted identity with its assigned roles included.
 // Roles relation is many-to-many via implicit join table.
 const getIdentityWithRoles = async (
-	id: string,
+  id: string,
 ): Promise<(Identity & { roles: Role[] }) | null> => {
-	return prisma.identity.findFirst({
-		where: { id, deletedAt: null },
-		include: { roles: true },
-	});
-}
+  return prisma.identity.findFirst({
+    where: { id, deletedAt: null },
+    include: { roles: true },
+  });
+};
 
 // Returns a non-deleted identity with roles and their attached policies.
 // Used during auth flows to build token claims (role IDs + permission strings).
 const getIdentityWithRolesAndPolicies = async (
-	id: string,
-): Promise<(Identity & { roles: (Role & { policies: Policy[] })[] }) | null> => {
-	return prisma.identity.findFirst({
-		where: { id, deletedAt: null },
-		include: { roles: { include: { policies: true } } },
-	});
-}
+  id: string,
+): Promise<
+  (Identity & { roles: (Role & { policies: Policy[] })[] }) | null
+> => {
+  return prisma.identity.findFirst({
+    where: { id, deletedAt: null },
+    include: { roles: { include: { policies: true } } },
+  });
+};
 
 // ─── Paginated list ──────────────────────────────────────────
 
 const buildWhere = (
-	input: Omit<ListIdentitiesInput, "page" | "limit">,
+  input: Omit<ListIdentitiesInput, "page" | "limit">,
 ): Prisma.IdentityWhereInput => ({
-	tenantId: input.tenantId,
-	deletedAt: null,
-	...(input.status !== undefined && { status: input.status }),
-	...(input.kind !== undefined && { kind: input.kind }),
+  tenantId: input.tenantId,
+  deletedAt: null,
+  ...(input.status !== undefined && { status: input.status }),
+  ...(input.kind !== undefined && { kind: input.kind }),
 });
 
 // Returns a paginated list of identities for a tenant.
@@ -123,70 +130,73 @@ const buildWhere = (
 // kind filter uses @@index([tenantId, kind]).
 // Runs findMany + count in parallel — same pattern as listMovements.
 const listIdentities = async (
-	input: ListIdentitiesInput,
+  input: ListIdentitiesInput,
 ): Promise<PaginatedResult<Identity>> => {
-	const where = buildWhere(input);
-	const skip = (input.page - 1) * input.limit;
+  const where = buildWhere(input);
+  const skip = (input.page - 1) * input.limit;
 
-	const [data, total] = await Promise.all([
-		prisma.identity.findMany({
-			where,
-			skip,
-			take: input.limit,
-			orderBy: { username: "asc" },
-		}),
-		prisma.identity.count({ where }),
-	]);
+  const [data, total] = await Promise.all([
+    prisma.identity.findMany({
+      where,
+      skip,
+      take: input.limit,
+      orderBy: { username: "asc" },
+    }),
+    prisma.identity.count({ where }),
+  ]);
 
-	return { data, total, page: input.page, limit: input.limit };
-}
+  return { data, total, page: input.page, limit: input.limit };
+};
 
 // ─── Update ──────────────────────────────────────────────────
 
 const changePassword = async (
-	id: string,
-	input: ChangePasswordInput,
+  id: string,
+  input: ChangePasswordInput,
 ): Promise<Identity> => {
-	const identity = await getIdentityById(id);
-	if (!identity) throw new Error("Identity not found");
+  const identity = await getIdentityById(id);
+  if (!identity) throw new Error("Identity not found");
 
-	const valid = await verifyPassword(hmac(input.currentPassword), identity.hash);
-	if (!valid) throw new Error("Current password is incorrect");
+  const valid = await verifyPassword(
+    hmac(input.currentPassword),
+    identity.hash,
+  );
+  if (!valid) throw new Error("Current password is incorrect");
 
-	const { hash, salt } = await encryptPassword(hmac(input.newPassword));
+  const { hash, salt } = await encryptPassword(hmac(input.newPassword));
 
-	return prisma.identity.update({
-		where: { id },
-		data: { hash, salt, mustChangePassword: false },
-	});
-}
+  return prisma.identity.update({
+    where: { id },
+    data: { hash, salt, mustChangePassword: false },
+  });
+};
 
 // Updates mutable fields on an existing identity.
 // Throws P2002 if updated email collides within the same tenant.
 // Throws P2025 if identity does not exist.
 const updateIdentity = async (
-	id: string,
-	input: UpdateIdentityInput,
+  id: string,
+  input: UpdateIdentityInput,
 ): Promise<Identity> => {
-	return prisma.identity.update({
-		where: { id },
-		data: {
-			...(input.email !== undefined && { email: input.email }),
-			...(input.hash !== undefined && { hash: input.hash }),
-			...(input.salt !== undefined && { salt: input.salt }),
-			...(input.failedLoginAttempts !== undefined && {
-				failedLoginAttempts: input.failedLoginAttempts,
-			}),
-			...(input.lockedUntil !== undefined && {
-				lockedUntil: input.lockedUntil,
-			}),
-			...(input.mustChangePassword !== undefined && {
-				mustChangePassword: input.mustChangePassword,
-			}),
-			...(input.status !== undefined && { status: input.status }),
-		},
-	});
-}
+  return prisma.identity.update({
+    where: { id },
+    data: {
+      ...(input.email !== undefined && { email: input.email }),
+      ...(input.hash !== undefined && { hash: input.hash }),
+      ...(input.salt !== undefined && { salt: input.salt }),
+      ...(input.failedLoginAttempts !== undefined && {
+        failedLoginAttempts: input.failedLoginAttempts,
+      }),
+      ...(input.lockedUntil !== undefined && {
+        lockedUntil: input.lockedUntil,
+      }),
+      ...(input.mustChangePassword !== undefined && {
+        mustChangePassword: input.mustChangePassword,
+      }),
+      ...(input.status !== undefined && { status: input.status }),
+    },
+  });
+};
 
 // ─── Role assignment (many-to-many) ──────────────────────────
 
@@ -195,47 +205,47 @@ const updateIdentity = async (
 // Throws P2025 if either identity or role does not exist.
 // Connecting the same role twice is a no-op (Prisma deduplicates).
 const assignRoleToIdentity = async (
-	input: AssignRoleInput,
+  input: AssignRoleInput,
 ): Promise<Identity & { roles: Role[] }> => {
-	return prisma.identity.update({
-		where: { id: input.identityId },
-		data: {
-			roles: { connect: { id: input.roleId } },
-		},
-		include: { roles: true },
-	});
-}
+  return prisma.identity.update({
+    where: { id: input.identityId },
+    data: {
+      roles: { connect: { id: input.roleId } },
+    },
+    include: { roles: true },
+  });
+};
 
 // Disconnects a Role from an Identity.
 // No-op if the role was not assigned.
 // Throws P2025 if the identity does not exist.
 const removeRoleFromIdentity = async (
-	input: AssignRoleInput,
+  input: AssignRoleInput,
 ): Promise<Identity & { roles: Role[] }> => {
-	return prisma.identity.update({
-		where: { id: input.identityId },
-		data: {
-			roles: { disconnect: { id: input.roleId } },
-		},
-		include: { roles: true },
-	});
-}
+  return prisma.identity.update({
+    where: { id: input.identityId },
+    data: {
+      roles: { disconnect: { id: input.roleId } },
+    },
+    include: { roles: true },
+  });
+};
 
 // Replaces all assigned roles for an identity in one atomic write.
 // Uses Prisma's set: [] which disconnects all current roles first,
 // then connects the new set. Roles not in the new array are removed.
 const setRolesForIdentity = async (
-	identityId: string,
-	roleIds: string[],
+  identityId: string,
+  roleIds: string[],
 ): Promise<Identity & { roles: Role[] }> => {
-	return prisma.identity.update({
-		where: { id: identityId },
-		data: {
-			roles: { set: roleIds.map((id) => ({ id })) },
-		},
-		include: { roles: true },
-	});
-}
+  return prisma.identity.update({
+    where: { id: identityId },
+    data: {
+      roles: { set: roleIds.map((id) => ({ id })) },
+    },
+    include: { roles: true },
+  });
+};
 
 // ─── Soft delete ─────────────────────────────────────────────
 
@@ -244,33 +254,33 @@ const setRolesForIdentity = async (
 // Does NOT remove the implicit join table rows for roles —
 // Prisma's implicit many-to-many does not cascade soft deletes.
 const softDeleteIdentity = async (id: string): Promise<Identity> => {
-	return prisma.identity.update({
-		where: { id },
-		data: { deletedAt: new Date(), status: "INACTIVE" },
-	});
-}
+  return prisma.identity.update({
+    where: { id },
+    data: { deletedAt: new Date(), status: "INACTIVE" },
+  });
+};
 
 // Restores a soft-deleted identity back to PENDING_VERIFICATION.
 const restoreIdentity = async (id: string): Promise<Identity> => {
-	return prisma.identity.update({
-		where: { id },
-		data: { deletedAt: null, status: "PENDING_VERIFICATION" },
-	});
+  return prisma.identity.update({
+    where: { id },
+    data: { deletedAt: null, status: "PENDING_VERIFICATION" },
+  });
 };
 
 export {
-	createIdentity,
-	getIdentityById,
-	getIdentityByUsername,
-	getIdentityByEmail,
-	getIdentityWithRoles,
-	getIdentityWithRolesAndPolicies,
-	listIdentities,
-	changePassword,
-	updateIdentity,
-	assignRoleToIdentity,
-	removeRoleFromIdentity,
-	setRolesForIdentity,
-	softDeleteIdentity,
-	restoreIdentity,
+  createIdentity,
+  getIdentityById,
+  getIdentityByUsername,
+  getIdentityByEmail,
+  getIdentityWithRoles,
+  getIdentityWithRolesAndPolicies,
+  listIdentities,
+  changePassword,
+  updateIdentity,
+  assignRoleToIdentity,
+  removeRoleFromIdentity,
+  setRolesForIdentity,
+  softDeleteIdentity,
+  restoreIdentity,
 };

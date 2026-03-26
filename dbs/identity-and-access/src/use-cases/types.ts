@@ -13,7 +13,6 @@ import type {
   IdentityStatus,
   Policy,
   PolicyEffect,
-  Prisma,
   Role,
   Tenant,
 } from "../../generated/prisma/client.js";
@@ -109,7 +108,7 @@ export type ListPoliciesInput = PaginationInput & {
 export type CreateIdentityInput = {
   tenantId: string | null;
   username: string;
-  email?: string | null;  
+  email?: string | null;
   password: string;
   kind?: IdentityKind;
   mustChangePassword?: boolean;
@@ -125,7 +124,7 @@ export type UpdateIdentityInput = {
   hash?: string;
   salt?: string;
   failedLoginAttempts?: number;
-  lockedUntil?: Date | string | null;  
+  lockedUntil?: Date | string | null;
   mustChangePassword?: boolean;
   status?: IdentityStatus;
 };
@@ -137,7 +136,7 @@ export type UpdateIdentityInput = {
 export type CreateRoleInput = {
   tenantId: string | null; // unique scope key
   name: string; // unique per tenantId
-  description?: string | null;    // was: description?: string
+  description?: string | null; // was: description?: string
 };
 
 export type UpdateRoleInput = {
@@ -153,7 +152,7 @@ export type UpdateRoleInput = {
 export type CreatePolicyInput = {
   tenantId: string | null; // unique scope key
   name: string; // unique per tenantId
-  description?: string | null;    // was: description?: string
+  description?: string | null; // was: description?: string
   effect: PolicyEffect; // required — no default
   permissions: string[]; // required — convention: "service:resource:action"
   audience: string[]; // required — which services enforce this policy
@@ -161,7 +160,7 @@ export type CreatePolicyInput = {
   // Prisma.InputJsonObject is the correct concrete type for a JSON object —
   // Record<string, unknown> is not assignable to InputJsonValue.
   // The use case layer handles the null → Prisma.JsonNull conversion.
-  conditions?: Record<string, unknown> | null;  
+  conditions?: Record<string, unknown> | null;
 };
 
 export type UpdatePolicyInput = {

@@ -42,7 +42,7 @@ const createRole = async (input: CreateRoleInput): Promise<Role> => {
       // isActive uses schema default true
     },
   });
-}
+};
 
 // ─── Read ────────────────────────────────────────────────────
 
@@ -51,7 +51,7 @@ const getRoleById = async (id: string): Promise<Role | null> => {
   return prisma.role.findFirst({
     where: { id, deletedAt: null },
   });
-}
+};
 
 // Finds a non-deleted role by [tenantId, name].
 // Uses @@unique([tenantId, name]).
@@ -62,7 +62,7 @@ const getRoleByName = async (
   return prisma.role.findFirst({
     where: { tenantId, name, deletedAt: null },
   });
-}
+};
 
 // Returns a role with its attached policies included.
 const getRoleWithPolicies = async (
@@ -72,7 +72,7 @@ const getRoleWithPolicies = async (
     where: { id, deletedAt: null },
     include: { policies: true },
   });
-}
+};
 
 // Returns a role with its assigned identities included.
 const getRoleWithIdentities = async (
@@ -82,7 +82,7 @@ const getRoleWithIdentities = async (
     where: { id, deletedAt: null },
     include: { identities: true },
   });
-}
+};
 
 // ─── Paginated list ──────────────────────────────────────────
 
@@ -114,7 +114,7 @@ const listRoles = async (
   ]);
 
   return { data, total, page: input.page, limit: input.limit };
-}
+};
 
 // Lists platform-level roles (tenantId = null) — paginated.
 // Used only by ADMIN identities.
@@ -136,7 +136,7 @@ const listPlatformRoles = async (input: {
   ]);
 
   return { data, total, page: input.page, limit: input.limit };
-}
+};
 
 // ─── Update ──────────────────────────────────────────────────
 
@@ -157,7 +157,7 @@ const updateRole = async (
       ...(input.isActive !== undefined && { isActive: input.isActive }),
     },
   });
-}
+};
 
 // ─── Policy assignment (many-to-many) ────────────────────────
 
@@ -175,7 +175,7 @@ const attachPolicyToRole = async (
     },
     include: { policies: true },
   });
-}
+};
 
 // Detaches a Policy from a Role.
 // No-op if the policy was not attached.
@@ -190,7 +190,7 @@ const detachPolicyFromRole = async (
     },
     include: { policies: true },
   });
-}
+};
 
 // Replaces all policies attached to a role in one atomic write.
 // set: [] disconnects all current policies then connects the new set.
@@ -205,7 +205,7 @@ const setPoliciesForRole = async (
     },
     include: { policies: true },
   });
-}
+};
 
 // ─── Soft delete ─────────────────────────────────────────────
 
@@ -219,7 +219,7 @@ const softDeleteRole = async (id: string): Promise<Role> => {
     where: { id },
     data: { deletedAt: new Date(), isActive: false },
   });
-}
+};
 
 // Restores a soft-deleted role.
 const restoreRole = async (id: string): Promise<Role> => {
