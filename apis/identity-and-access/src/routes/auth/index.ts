@@ -2,11 +2,9 @@ import { Router } from "express";
 import { login } from "./controller/login";
 import { logout } from "./controller/logout";
 import { refresh } from "./controller/refresh";
-import { register } from "./controller/register";
 
 const router: Router = Router();
 
-router.post("/register", register);
 router.post("/login", login);
 router.post("/refresh", refresh);
 router.post("/logout", logout);

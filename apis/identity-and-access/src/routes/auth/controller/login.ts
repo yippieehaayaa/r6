@@ -10,11 +10,12 @@ export async function login(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { username, email, password, tenantId } = req.body as {
+    const { username, email, password, tenantId, tenantSlug } = req.body as {
       username?: string;
       email?: string;
       password: string;
       tenantId?: string;
+      tenantSlug?: string;
     };
 
     if (!password)
@@ -24,7 +25,7 @@ export async function login(
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
-      full = await verifyIdentity({ tenantId: tenantId ?? null, username, email, password });
+      full = await verifyIdentity({ tenantId: tenantId ?? null, tenantSlug, username, email, password });
     } catch (e) {
       const msg = (e as Error).message;
       if (msg === "invalid_credentials")

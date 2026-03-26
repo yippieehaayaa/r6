@@ -20,6 +20,7 @@
 
 import { encryptPassword, verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
+import { getTenantBySlug } from "./tenant.js";
 import type {
   Identity,
   Policy,
@@ -63,9 +64,13 @@ const createIdentity = async (
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted identity by primary key.
-const getIdentityById = async (id: string): Promise<Identity | null> => {
+// Optional tenantId adds DB-level tenant scope enforcement.
+const getIdentityById = async (
+  id: string,
+  tenantId?: string | null,
+): Promise<Identity | null> => {
   return prisma.identity.findFirst({
-    where: { id, deletedAt: null },
+    where: { id, deletedAt: null, ...(tenantId !== undefined && { tenantId }) },
   });
 };
 
@@ -104,13 +109,15 @@ const getIdentityWithRoles = async (
 
 // Returns a non-deleted identity with roles and their attached policies.
 // Used during auth flows to build token claims (role IDs + permission strings).
+// Optional tenantId adds DB-level tenant scope enforcement.
 const getIdentityWithRolesAndPolicies = async (
   id: string,
+  tenantId?: string | null,
 ): Promise<
   (Identity & { roles: (Role & { policies: Policy[] })[] }) | null
 > => {
   return prisma.identity.findFirst({
-    where: { id, deletedAt: null },
+    where: { id, deletedAt: null, ...(tenantId !== undefined && { tenantId }) },
     include: { roles: { include: { policies: true } } },
   });
 };
@@ -183,9 +190,18 @@ const LOGIN_LOCK_MS = 15 * 60 * 1000;
 const verifyIdentity = async (
   input: VerifyIdentityInput,
 ): Promise<Identity & { roles: (Role & { policies: Policy[] })[] }> => {
+  // Resolve tenantSlug → tenantId. Unknown slug is reported as invalid_credentials
+  // to avoid leaking whether a tenant exists.
+  let tenantId = input.tenantId ?? null;
+  if (tenantId === null && input.tenantSlug) {
+    const tenant = await getTenantBySlug(input.tenantSlug);
+    if (!tenant) throw new Error("invalid_credentials");
+    tenantId = tenant.id;
+  }
+
   const identity = input.username
-    ? await getIdentityByUsername(input.tenantId, input.username)
-    : await getIdentityByEmail(input.tenantId, input.email as string);
+    ? await getIdentityByUsername(tenantId, input.username)
+    : await getIdentityByEmail(tenantId, input.email as string);
 
   if (!identity) throw new Error("invalid_credentials");
 

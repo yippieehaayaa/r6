@@ -12,14 +12,7 @@ export const ensureIdentityBelongsToTenant = async (
   id: string,
   tenantId: string,
 ) => {
-  const identity = await getIdentityById(id);
+  const identity = await getIdentityById(id, tenantId);
   if (!identity) throw new AppError(404, "not_found", "Identity not found");
-  if (identity.tenantId !== tenantId) {
-    throw new AppError(
-      403,
-      "forbidden",
-      "Identity does not belong to this tenant",
-    );
-  }
   return identity;
 };

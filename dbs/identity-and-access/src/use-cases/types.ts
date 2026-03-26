@@ -115,7 +115,8 @@ export type CreateIdentityInput = {
 };
 
 export type VerifyIdentityInput = {
-  tenantId: string | null;
+  tenantId?: string | null;
+  tenantSlug?: string | null;
   username?: string;
   email?: string;
   password: string;
