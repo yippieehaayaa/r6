@@ -15,13 +15,13 @@
  * tenantId = uuid  → tenant-scoped  (USER identities, tenant roles/policies)
  *
  * Seeded identities:
- * ┌────────────┬──────────────┬─────────┬────────────┬──────────────────────────────────────┐
- * │ username   │ password     │ kind    │ tenant     │ permissions                          │
- * ├────────────┼──────────────┼─────────┼────────────┼──────────────────────────────────────┤
- * │ admin      │ Admin@1234!  │ ADMIN   │ (none)     │ iam:*:*  (role: admin)               │
- * │ testuser   │ User@1234!   │ USER    │ demo-corp  │ iam:identity:read, iam:session:*,    │
- * │            │              │         │            │ iam:otp:read/write  (role: user)     │
- * └────────────┴──────────────┴─────────┴────────────┴──────────────────────────────────────┘
+ * ┌────────────┬──────────────┬─────────┬────────────┬────────────────────────────────────────────────────────────────────────┐
+ * │ username   │ password     │ kind    │ tenant     │ permissions                                                            │
+ * ├────────────┼──────────────┼─────────┼────────────┼────────────────────────────────────────────────────────────────────────┤
+ * │ admin      │ Admin@1234!  │ ADMIN   │ (none)     │ iam:*:*  (role: admin)                                                 │
+ * │ testuser   │ User@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/list, iam:session:*, iam:otp:read/write       │
+ * │            │              │         │            │ (roles: user + tenant-owner)                                           │
+ * └────────────┴──────────────┴─────────┴────────────┴────────────────────────────────────────────────────────────────────────┘
  */
 
 import { prisma } from "../../src/client.js";
@@ -85,6 +85,21 @@ async function main() {
 		audience: ["iam-api"],
 	});
 
+	// Tenant-owner policy — grants identity management within the owner's tenant.
+	const tenantOwnerIdentityPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:tenant-owner:identity-management",
+		description:
+			"Allows tenant owners to create, read, and list identities within their own tenant",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:create",
+			"iam:identity:read",
+			"iam:identity:list",
+		],
+		audience: ["iam-api"],
+	});
+
 	console.log("\n── Roles ─────────────────────────────────────");
 
 	// Platform-level role (tenantId = null) — for ADMIN identities only.
@@ -98,6 +113,13 @@ async function main() {
 	const userRole = await upsertRole(
 		"user",
 		"Standard self-service user access",
+		demoTenant.id,
+	);
+
+	// Tenant-owner role — scoped to demo-corp; grants identity management.
+	const tenantOwnerRole = await upsertRole(
+		"tenant-owner",
+		"Tenant owner — can manage identities within their own tenant",
 		demoTenant.id,
 	);
 
@@ -119,6 +141,11 @@ async function main() {
 		"user → iam:user:session",
 	);
 	await linkPolicyToRole(userRole.id, userOtpPolicy.id, "user → iam:user:otp");
+	await linkPolicyToRole(
+		tenantOwnerRole.id,
+		tenantOwnerIdentityPolicy.id,
+		"tenant-owner → iam:tenant-owner:identity-management",
+	);
 
 	console.log("\n── Identities ────────────────────────────────");
 
@@ -148,12 +175,17 @@ async function main() {
 		"admin → role:admin",
 	);
 	await linkRoleToIdentity(userRole.id, testUser.id, "testuser → role:user");
+	await linkRoleToIdentity(
+		tenantOwnerRole.id,
+		testUser.id,
+		"testuser → role:tenant-owner",
+	);
 
 	console.log("\n── Done ──────────────────────────────────────\n");
 	console.log("Test credentials & resolved permissions:");
 	console.log("  admin    → iam:*:*  (role:admin → iam:admin:full-access)");
 	console.log(
-		"  testuser → iam:identity:read, iam:session:read/write/delete, iam:otp:read/write  (role:user, tenant:demo-corp)",
+		"  testuser → iam:identity:create/read/list, iam:session:read/write/delete, iam:otp:read/write  (roles:user+tenant-owner, tenant:demo-corp)",
 	);
 	console.log();
 }
