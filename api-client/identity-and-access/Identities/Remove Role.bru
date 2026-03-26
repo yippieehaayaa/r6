@@ -1,0 +1,15 @@
+meta {
+  name: Remove Role
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseURL}}/tenants/{{tenantId}}/identities/{{identityId}}/roles/{{roleId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

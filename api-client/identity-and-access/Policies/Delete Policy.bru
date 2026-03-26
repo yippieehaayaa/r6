@@ -1,0 +1,15 @@
+meta {
+  name: Delete Policy
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseURL}}/tenants/{{tenantId}}/policies/{{policyId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

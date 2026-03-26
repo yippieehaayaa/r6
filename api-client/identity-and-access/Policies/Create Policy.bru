@@ -1,0 +1,25 @@
+meta {
+  name: Create Policy
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantId}}/policies
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "inventory-read",
+    "effect": "ALLOW",
+    "permissions": ["inventory:product:read", "inventory:stock:read"],
+    "audience": ["inventory"],
+    "description": "Allow reading inventory resources"
+  }
+}

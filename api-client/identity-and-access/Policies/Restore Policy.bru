@@ -1,0 +1,15 @@
+meta {
+  name: Restore Policy
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantId}}/policies/{{policyId}}/restore
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

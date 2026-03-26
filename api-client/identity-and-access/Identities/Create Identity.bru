@@ -1,18 +1,21 @@
 meta {
-  name: Register
+  name: Create Identity
   type: http
   seq: 1
 }
 
 post {
-  url: {{baseURL}}/auth/register
+  url: {{baseURL}}/tenants/{{tenantId}}/identities
   body: json
-  auth: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
 }
 
 body:json {
   {
-    "tenantId": "{{tenantId}}",
     "username": "johndoe",
     "plainPassword": "Password1!",
     "email": "johndoe@example.com",

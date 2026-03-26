@@ -6,18 +6,16 @@ meta {
 
 post {
   url: {{baseURL}}/auth/logout
-  body: json
-  auth: none
+  body: none
+  auth: bearer
 }
 
-body:json {
-  {
-    "token": "{{refreshToken}}"
-  }
+auth:bearer {
+  token: {{accessToken}}
 }
 
 script:post-response {
-  if (res.status === 204) {
+  if (res.status === 200) {
     bru.setEnvVar("accessToken", "");
     bru.setEnvVar("refreshToken", "");
   }
