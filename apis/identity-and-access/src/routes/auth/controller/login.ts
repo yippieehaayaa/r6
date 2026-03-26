@@ -21,19 +21,37 @@ export async function login(
     if (!password)
       throw new AppError(400, "validation_error", "password is required");
     if (!username && !email)
-      throw new AppError(400, "validation_error", "username or email is required");
+      throw new AppError(
+        400,
+        "validation_error",
+        "username or email is required",
+      );
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
-      full = await verifyIdentity({ tenantId: tenantId ?? null, tenantSlug, username, email, password });
+      full = await verifyIdentity({
+        tenantId: tenantId ?? null,
+        tenantSlug,
+        username,
+        email,
+        password,
+      });
     } catch (e) {
       const msg = (e as Error).message;
       if (msg === "invalid_credentials")
         throw new AppError(401, "invalid_credentials", "Invalid credentials");
       if (msg === "account_locked")
-        throw new AppError(423, "account_locked", "Account is temporarily locked due to too many failed login attempts");
+        throw new AppError(
+          423,
+          "account_locked",
+          "Account is temporarily locked due to too many failed login attempts",
+        );
       if (msg.startsWith("account_inactive"))
-        throw new AppError(403, "account_inactive", `Account status is ${msg.split(":")[1]}`);
+        throw new AppError(
+          403,
+          "account_inactive",
+          `Account status is ${msg.split(":")[1]}`,
+        );
       throw e;
     }
 

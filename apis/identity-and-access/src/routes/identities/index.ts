@@ -19,7 +19,12 @@ import { updateIdentityHandler } from "./controller/update";
 const router: Router = Router({ mergeParams: true });
 
 router.use(authMiddleware(), requireTenantScope());
-router.post("/", requireAdminOrTenantOwner(), requirePermission("iam:identity:create"), createIdentityHandler);
+router.post(
+  "/",
+  requireAdminOrTenantOwner(),
+  requirePermission("iam:identity:create"),
+  createIdentityHandler,
+);
 router.get("/", list);
 router.get("/:id", getIdentity);
 router.patch("/:id", updateIdentityHandler);
