@@ -34,6 +34,7 @@ import type {
   ListIdentitiesInput,
   PaginatedResult,
   UpdateIdentityInput,
+  VerifyIdentityInput,
 } from "./types.js";
 
 // ─── Create ──────────────────────────────────────────────────
@@ -171,6 +172,51 @@ const changePassword = async (
   });
 };
 
+// ─── Verify (login) ─────────────────────────────────────────
+
+const LOGIN_MAX_ATTEMPTS = 5;
+const LOGIN_LOCK_MS = 15 * 60 * 1000;
+
+// Looks up an identity by username or email, verifies the HMAC-prefixed
+// bcrypt hash, manages failed attempt counting and account locking,
+// and returns the full identity with roles+policies on success.
+const verifyIdentity = async (
+  input: VerifyIdentityInput,
+): Promise<Identity & { roles: (Role & { policies: Policy[] })[] }> => {
+  const identity = input.username
+    ? await getIdentityByUsername(input.tenantId, input.username)
+    : await getIdentityByEmail(input.tenantId, input.email as string);
+
+  if (!identity) throw new Error("invalid_credentials");
+
+  if (identity.lockedUntil && identity.lockedUntil > new Date())
+    throw new Error("account_locked");
+
+  if (identity.status !== "ACTIVE")
+    throw new Error(`account_inactive:${identity.status}`);
+
+  const valid = await verifyPassword(hmac(input.password), identity.hash);
+
+  if (!valid) {
+    const newAttempts = identity.failedLoginAttempts + 1;
+    const lock = newAttempts >= LOGIN_MAX_ATTEMPTS;
+    await updateIdentity(identity.id, {
+      failedLoginAttempts: newAttempts,
+      lockedUntil: lock ? new Date(Date.now() + LOGIN_LOCK_MS) : undefined,
+    });
+    throw new Error("invalid_credentials");
+  }
+
+  await updateIdentity(identity.id, {
+    failedLoginAttempts: 0,
+    lockedUntil: null,
+  });
+
+  const full = await getIdentityWithRolesAndPolicies(identity.id);
+  if (!full) throw new Error("internal");
+  return full;
+};
+
 // Updates mutable fields on an existing identity.
 // Throws P2002 if updated email collides within the same tenant.
 // Throws P2025 if identity does not exist.
@@ -270,6 +316,7 @@ const restoreIdentity = async (id: string): Promise<Identity> => {
 
 export {
   createIdentity,
+  verifyIdentity,
   getIdentityById,
   getIdentityByUsername,
   getIdentityByEmail,

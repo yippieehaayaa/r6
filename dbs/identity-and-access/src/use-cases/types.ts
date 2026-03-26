@@ -114,6 +114,13 @@ export type CreateIdentityInput = {
   mustChangePassword?: boolean;
 };
 
+export type VerifyIdentityInput = {
+  tenantId: string | null;
+  username?: string;
+  email?: string;
+  password: string;
+};
+
 export type ChangePasswordInput = {
   currentPassword: string;
   newPassword: string;

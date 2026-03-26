@@ -1,4 +1,5 @@
 import { encryptPassword } from "@r6/bcrypt";
+import { hmac } from "@r6/crypto";
 import { prisma } from "../../src/client.js";
 import { log, skip } from "./helpers.js";
 
@@ -19,7 +20,7 @@ export async function upsertIdentity(input: {
 		return exists;
 	}
 
-	const { hash, salt } = await encryptPassword(input.password);
+	const { hash, salt } = await encryptPassword(hmac(input.password));
 
 	const identity = await prisma.identity.create({
 		data: {
