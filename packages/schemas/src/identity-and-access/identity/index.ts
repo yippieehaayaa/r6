@@ -110,6 +110,8 @@ export type IdentitySafe = z.infer<typeof IdentitySafeSchema>;
  */
 export const CreateIdentitySchema = IdentitySchema.omit({
   id: true,
+  // tenantId is injected from req.params.tenantId — never accepted from the body.
+  tenantId: true,
   hash: true,
   salt: true,
   createdAt: true,
@@ -117,8 +119,9 @@ export const CreateIdentitySchema = IdentitySchema.omit({
   deletedAt: true,
   failedLoginAttempts: true,
   lockedUntil: true,
-  mustChangePassword: true,
   status: true,
+  // kind is overridden below to restrict to USER only.
+  kind: true,
 }).extend({
   /**
    * Plain-text password provided by the caller.
@@ -137,6 +140,20 @@ export const CreateIdentitySchema = IdentitySchema.omit({
       /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/,
       "Password must contain at least one special character",
     ),
+
+  /**
+   * Only USER identities may be created through the tenant-scoped route.
+   * ADMIN and SERVICE identities are provisioned through separate
+   * platform-level flows.
+   */
+  kind: z.enum(["USER"]).default("USER"),
+
+  /**
+   * When true the identity must change its password on next login.
+   * Defaults to false for admin-created accounts.
+   * TODO: enforce this on the login flow once first-login UX is built.
+   */
+  mustChangePassword: z.boolean().default(false),
 });
 
 export type CreateIdentityInput = z.infer<typeof CreateIdentitySchema>;

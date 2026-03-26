@@ -154,6 +154,10 @@ export const requirePermission =
       });
     }
 
+    // ADMIN identities have unrestricted platform access and do not carry
+    // per-resource permission strings in their JWT.
+    if (payload.kind === "ADMIN") return next();
+
     const granted: string[] = Array.isArray(payload.permissions)
       ? (payload.permissions as string[])
       : [];

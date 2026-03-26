@@ -1,6 +1,11 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin, requireTenantScope } from "../../middleware/guard";
+import {
+  requireAdmin,
+  requireAdminOrTenantOwner,
+  requirePermission,
+  requireTenantScope,
+} from "../../middleware/guard";
 import { assignRole } from "./controller/assign-role";
 import { createIdentityHandler } from "./controller/create";
 import { getIdentity } from "./controller/get";
@@ -14,7 +19,7 @@ import { updateIdentityHandler } from "./controller/update";
 const router: Router = Router({ mergeParams: true });
 
 router.use(authMiddleware(), requireTenantScope());
-router.post("/", createIdentityHandler);
+router.post("/", requireAdminOrTenantOwner(), requirePermission("iam:identity:create"), createIdentityHandler);
 router.get("/", list);
 router.get("/:id", getIdentity);
 router.patch("/:id", updateIdentityHandler);

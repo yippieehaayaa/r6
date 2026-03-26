@@ -23,7 +23,7 @@ export async function createIdentityHandler(
       email: body.email ?? null,
       password: body.plainPassword,
       kind: body.kind ?? "USER",
-      mustChangePassword: false,
+      mustChangePassword: body.mustChangePassword ?? false,
     });
 
     await updateIdentity(identity.id, { status: "ACTIVE" });

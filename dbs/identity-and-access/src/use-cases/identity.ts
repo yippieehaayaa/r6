@@ -20,7 +20,6 @@
 
 import { encryptPassword, verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
-import { getTenantBySlug } from "./tenant.js";
 import type {
   Identity,
   Policy,
@@ -28,6 +27,7 @@ import type {
   Role,
 } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
+import { getTenantBySlug } from "./tenant.js";
 import type {
   AssignRoleInput,
   ChangePasswordInput,
