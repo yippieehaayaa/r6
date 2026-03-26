@@ -12,9 +12,9 @@ post {
 
 body:json {
   {
+    "tenantSlug": "demo-corp",
     "username": "testuser",
-    "password": "User@1234!",
-    "tenantSlug": "{{tenantSlug}}"
+    "password": "User@1234!"
   }
 }
 
@@ -22,15 +22,5 @@ script:post-response {
   if (res.status === 200) {
     bru.setEnvVar("accessToken", res.body.accessToken);
     bru.setEnvVar("refreshToken", res.body.refreshToken);
-
-    // Decode JWT payload (base64url) and auto-populate tenantId.
-    // Tenant users get it set automatically; ADMIN tokens carry null.
-    try {
-      const parts = res.body.accessToken.split(".");
-      const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
-      if (payload.tenantId) {
-        bru.setEnvVar("tenantId", payload.tenantId);
-      }
-    } catch (_) {}
   }
 }
