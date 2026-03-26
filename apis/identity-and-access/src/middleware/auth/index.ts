@@ -4,7 +4,7 @@ import { verifyAccessToken } from "../../lib/jwt";
 
 export type AuthJwtPayload = JWTPayload & {
   kind?: string;
-  tenantId?: string | null;
+  tenantSlug?: string | null;
   roles?: string[];
   permissions?: string[];
 };

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { ensureTenantExists } from "../helpers";
+import { ensureTenantExistsBySlug } from "../helpers";
 
 export async function getTenant(
   req: Request,
@@ -7,8 +7,8 @@ export async function getTenant(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantId = req.params.tenantId as string;
-    const tenant = await ensureTenantExists(tenantId);
+    const tenantSlug = req.params.tenantSlug as string;
+    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     res.status(200).json(tenant);
   } catch (error) {
     next(error);

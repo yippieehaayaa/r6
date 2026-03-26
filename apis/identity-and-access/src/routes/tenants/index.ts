@@ -20,13 +20,13 @@ router.use(authMiddleware());
 
 router.post("/", requireAdmin(), createTenantHandler);
 router.get("/", requireAdmin(), list);
-router.get("/:tenantId", requireAdminOrTenantOwner(), getTenant);
-router.patch("/:tenantId", requireAdminOrTenantOwner(), updateTenantHandler);
-router.delete("/:tenantId", requireAdmin(), remove);
-router.post("/:tenantId/restore", requireAdmin(), restore);
+router.get("/:tenantSlug", requireAdminOrTenantOwner(), getTenant);
+router.patch("/:tenantSlug", requireAdminOrTenantOwner(), updateTenantHandler);
+router.delete("/:tenantSlug", requireAdmin(), remove);
+router.post("/:tenantSlug/restore", requireAdmin(), restore);
 
-router.use("/:tenantId/identities", identitiesRouter);
-router.use("/:tenantId/roles", rolesRouter);
-router.use("/:tenantId/policies", policiesRouter);
+router.use("/:tenantSlug/identities", identitiesRouter);
+router.use("/:tenantSlug/roles", rolesRouter);
+router.use("/:tenantSlug/policies", policiesRouter);
 
 export default router;

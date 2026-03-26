@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { ensureTenantExistsBySlug } from "../../tenants/helpers";
 import {
   ensureIdentityBelongsToTenantWithDetails,
   toSafeIdentity,
@@ -10,11 +11,12 @@ export async function getIdentity(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantId = req.params.tenantId as string;
+    const tenantSlug = req.params.tenantSlug as string;
+    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     const id = req.params.id as string;
     const identity = await ensureIdentityBelongsToTenantWithDetails(
       id,
-      tenantId,
+      tenant.id,
     );
     res.status(200).json(toSafeIdentity(identity));
   } catch (error) {

@@ -1,6 +1,7 @@
 import { setPoliciesForRole } from "@r6/db-identity-and-access";
 import { AssignPoliciesToRoleSchema } from "@r6/schemas/identity-and-access";
 import type { NextFunction, Request, Response } from "express";
+import { ensureTenantExistsBySlug } from "../../tenants/helpers";
 import { ensureRoleBelongsToTenant } from "../helpers";
 
 export async function setPolicies(
@@ -9,9 +10,10 @@ export async function setPolicies(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantId = req.params.tenantId as string;
+    const tenantSlug = req.params.tenantSlug as string;
+    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     const id = req.params.id as string;
-    await ensureRoleBelongsToTenant(id, tenantId);
+    await ensureRoleBelongsToTenant(id, tenant.id);
     const { policyIds } = AssignPoliciesToRoleSchema.parse(req.body);
     const result = await setPoliciesForRole(id, policyIds);
     res.status(200).json(result);

@@ -1,8 +1,8 @@
-import { verifyIdentity } from "@r6/db-identity-and-access";
+import { getTenantById, verifyIdentity } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../lib/errors";
 import { signAccessToken, signRefreshToken } from "../../../lib/jwt";
-import { buildTokenClaims, toSafeIdentity } from "../helpers";
+import { buildTokenClaims } from "../helpers";
 
 export async function login(
   req: Request,
@@ -55,21 +55,22 @@ export async function login(
       throw e;
     }
 
+    const tenant = full.tenantId
+      ? await getTenantById(full.tenantId)
+      : null;
     const claims = buildTokenClaims(full);
     const [accessToken, refreshToken] = await Promise.all([
       signAccessToken({
         sub: full.id,
         kind: full.kind,
-        tenantId: full.tenantId,
+        tenantSlug: tenant?.slug ?? null,
         roles: claims.roles,
         permissions: claims.permissions,
       }),
       signRefreshToken(full.id),
     ]);
 
-    res
-      .status(200)
-      .json({ identity: toSafeIdentity(full), accessToken, refreshToken });
+    res.status(200).json({ accessToken, refreshToken });
   } catch (error) {
     next(error);
   }

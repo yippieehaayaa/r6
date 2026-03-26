@@ -1,7 +1,7 @@
 // Structural types for token-claim building — avoids depending on
 // Prisma model types flowing through the package boundary.
 type PolicyClaim = { effect: string; permissions: string[] };
-type RoleForToken = { id: string; isActive: boolean; policies: PolicyClaim[] };
+type RoleForToken = { name: string; isActive: boolean; policies: PolicyClaim[] };
 export type IdentityForToken = {
   id: string;
   kind: string;
@@ -11,7 +11,7 @@ export type IdentityForToken = {
 
 export const buildTokenClaims = (identity: IdentityForToken) => {
   const activeRoles = identity.roles.filter((r) => r.isActive);
-  const roleIds = activeRoles.map((r) => r.id);
+  const roleNames = activeRoles.map((r) => r.name);
   const permissions: string[] = [
     ...new Set(
       activeRoles.flatMap((r) =>
@@ -21,7 +21,7 @@ export const buildTokenClaims = (identity: IdentityForToken) => {
       ),
     ),
   ];
-  return { roles: roleIds, permissions };
+  return { roles: roleNames, permissions };
 };
 
 export const toSafeIdentity = <T extends { hash: string; salt: string }>(

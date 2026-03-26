@@ -22,26 +22,26 @@ const loadKeys = async (): Promise<void> => {
 
 // ─── Token payload ───────────────────────────────────────────
 //
-// kind and tenantId are signed into the token so guards can
+// kind and tenantSlug are signed into the token so guards can
 // authorize requests without a DB round-trip.
 //
 // kind:
-//   "ADMIN"   — platform super-admin, tenantId will be null
+//   "ADMIN"   — platform super-admin, tenantSlug will be null
 //   "USER"    — human user belonging to a tenant
 //   "SERVICE" — machine/service account belonging to a tenant
 //
-// tenantId:
+// tenantSlug:
 //   null for ADMIN identities.
-//   UUID string for USER and SERVICE identities.
+//   URL-safe slug string for USER and SERVICE identities.
 
 export type AccessTokenPayload = {
   /** Identity primary key (maps to JWT `sub`) */
   sub: string;
   /** IdentityKind: ADMIN | USER | SERVICE */
   kind: string;
-  /** null for ADMIN identities; UUID for USER / SERVICE */
-  tenantId: string | null;
-  /** Role IDs assigned to this identity */
+  /** null for ADMIN identities; slug string for USER / SERVICE */
+  tenantSlug: string | null;
+  /** Role names assigned to this identity */
   roles: string[];
   /** Flattened permission strings from all attached policies */
   permissions: string[];
@@ -56,7 +56,7 @@ export const signAccessToken = async (
 
   return new SignJWT({
     kind: payload.kind,
-    tenantId: payload.tenantId,
+    tenantSlug: payload.tenantSlug,
     roles: payload.roles,
     permissions: payload.permissions,
   })

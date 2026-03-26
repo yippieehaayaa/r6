@@ -6,6 +6,7 @@ import {
 import { CreateIdentitySchema } from "@r6/schemas/identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../lib/errors";
+import { ensureTenantExistsBySlug } from "../../tenants/helpers";
 import { toSafeIdentity } from "../helpers";
 
 export async function createIdentityHandler(
@@ -14,11 +15,12 @@ export async function createIdentityHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantId = req.params.tenantId as string;
+    const tenantSlug = req.params.tenantSlug as string;
+    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     const body = CreateIdentitySchema.parse(req.body);
 
     const identity = await createIdentity({
-      tenantId,
+      tenantId: tenant.id,
       username: body.username,
       email: body.email ?? null,
       password: body.plainPassword,

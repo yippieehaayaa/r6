@@ -1,6 +1,7 @@
 import { createRole } from "@r6/db-identity-and-access";
 import { CreateRoleSchema } from "@r6/schemas/identity-and-access";
 import type { NextFunction, Request, Response } from "express";
+import { ensureTenantExistsBySlug } from "../../tenants/helpers";
 
 export async function createRoleHandler(
   req: Request,
@@ -8,10 +9,11 @@ export async function createRoleHandler(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantId = req.params.tenantId as string;
+    const tenantSlug = req.params.tenantSlug as string;
+    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     const body = CreateRoleSchema.parse(req.body);
     const role = await createRole({
-      tenantId,
+      tenantId: tenant.id,
       name: body.name,
       description: body.description ?? null,
     });

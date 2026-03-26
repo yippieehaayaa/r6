@@ -10,10 +10,10 @@
 //    requireAuth              — any valid token (already done by authMiddleware,
 //                               re-exported here for co-location)
 //    requireAdmin             — kind === "ADMIN" only
-//    requireAdminOrTenantOwner — ADMIN, OR USER/SERVICE whose tenantId matches
-//                               the :tenantId route param or request body
-//    requireTenantScope       — ensures the acting identity's tenantId matches
-//                               the :tenantId param (tenant-scoped routes)
+//    requireAdminOrTenantOwner — ADMIN, OR USER/SERVICE whose tenantSlug matches
+//                               the :tenantSlug route param or request body
+//    requireTenantScope       — ensures the acting identity's tenantSlug matches
+//                               the :tenantSlug param (tenant-scoped routes)
 // ============================================================
 
 import type { NextFunction, Request, Response } from "express";
@@ -47,13 +47,13 @@ export const requireAdmin =
 // ─── requireAdminOrTenantOwner ───────────────────────────────
 
 // Allows:
-//   - ADMIN (cross-tenant, no tenantId restriction)
-//   - USER or SERVICE whose JWT tenantId matches the target tenant.
+//   - ADMIN (cross-tenant, no tenantSlug restriction)
+//   - USER or SERVICE whose JWT tenantSlug matches the target tenant.
 //
-// The target tenant id is resolved from (in order):
-//   1. req.params.tenantId
+// The target tenant slug is resolved from (in order):
+//   1. req.params.tenantSlug
 //   2. req.params.id           (for routes like /tenants/:id)
-//   3. req.body.tenantId
+//   3. req.body.tenantSlug
 //
 // Used for Tenant read/update routes.
 export const requireAdminOrTenantOwner =
@@ -69,17 +69,17 @@ export const requireAdminOrTenantOwner =
 
     if (payload.kind === "ADMIN") return next();
 
-    const targetTenantId: string | undefined =
-      req.params.tenantId ?? req.params.id ?? req.body?.tenantId;
+    const targetTenantSlug: string | undefined =
+      req.params.tenantSlug ?? req.params.id ?? req.body?.tenantSlug;
 
-    if (!targetTenantId) {
+    if (!targetTenantSlug) {
       return res.status(400).json({
         error: "bad_request",
         message: "Unable to determine target tenant",
       });
     }
 
-    if (payload.tenantId !== targetTenantId) {
+    if (payload.tenantSlug !== targetTenantSlug) {
       return res.status(403).json({
         error: "forbidden",
         message: "You do not have access to this tenant",
@@ -91,7 +91,7 @@ export const requireAdminOrTenantOwner =
 
 // ─── requireTenantScope ──────────────────────────────────────
 
-// Ensures the acting identity's tenantId matches the :tenantId
+// Ensures the acting identity's tenantSlug matches the :tenantSlug
 // route param. Used for tenant-scoped resource routes
 // (identities, roles, policies) where even an identity within
 // one tenant must not access another tenant's resources.
@@ -110,16 +110,16 @@ export const requireTenantScope =
 
     if (payload.kind === "ADMIN") return next();
 
-    const routeTenantId = req.params.tenantId;
+    const routeTenantSlug = req.params.tenantSlug;
 
-    if (!routeTenantId) {
+    if (!routeTenantSlug) {
       return res.status(400).json({
         error: "bad_request",
-        message: "Route is missing tenantId parameter",
+        message: "Route is missing tenantSlug parameter",
       });
     }
 
-    if (payload.tenantId !== routeTenantId) {
+    if (payload.tenantSlug !== routeTenantSlug) {
       return res.status(403).json({
         error: "forbidden",
         message: "You do not have access to this tenant's resources",

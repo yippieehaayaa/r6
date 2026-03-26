@@ -1,5 +1,6 @@
 import { getRoleWithPolicies } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
+import { ensureTenantExistsBySlug } from "../../tenants/helpers";
 import { ensureRoleBelongsToTenant } from "../helpers";
 
 export async function getRole(
@@ -8,9 +9,10 @@ export async function getRole(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantId = req.params.tenantId as string;
+    const tenantSlug = req.params.tenantSlug as string;
+    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     const id = req.params.id as string;
-    await ensureRoleBelongsToTenant(id, tenantId);
+    await ensureRoleBelongsToTenant(id, tenant.id);
     const role = await getRoleWithPolicies(id);
     res.status(200).json(role);
   } catch (error) {
