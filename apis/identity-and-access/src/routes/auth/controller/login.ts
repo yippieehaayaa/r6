@@ -55,9 +55,7 @@ export async function login(
       throw e;
     }
 
-    const tenant = full.tenantId
-      ? await getTenantById(full.tenantId)
-      : null;
+    const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
     const claims = buildTokenClaims(full);
     const [accessToken, refreshToken] = await Promise.all([
       signAccessToken({

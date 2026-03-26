@@ -1,4 +1,7 @@
-import { getIdentityWithRolesAndPolicies, getTenantById } from "@r6/db-identity-and-access";
+import {
+  getIdentityWithRolesAndPolicies,
+  getTenantById,
+} from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../lib/errors";
 import {
@@ -44,9 +47,7 @@ export async function refresh(
       );
     }
 
-    const tenant = full.tenantId
-      ? await getTenantById(full.tenantId)
-      : null;
+    const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
     const claims = buildTokenClaims(full);
     const [accessToken, refreshToken] = await Promise.all([
       signAccessToken({
