@@ -89,7 +89,7 @@ function ColorSwatch({
 				{token.utility}
 			</Badge>
 		</div>
-	)
+	);
 }
 
 function Section({
@@ -116,7 +116,7 @@ function Section({
 			</div>
 			{children}
 		</section>
-	)
+	);
 }
 
 function StylesShowcase() {
@@ -358,5 +358,5 @@ function StylesShowcase() {
 				</p>
 			</div>
 		</div>
-	)
+	);
 }

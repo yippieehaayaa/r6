@@ -10,42 +10,32 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as ColorRouteImport } from './routes/color'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ColorRoute = ColorRouteImport.update({
-  id: '/color',
-  path: '/color',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/color': typeof ColorRoute
   '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
-  '/color': typeof ColorRoute
   '/login': typeof LoginRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/color': typeof ColorRoute
   '/login': typeof LoginRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/color' | '/login'
+  fullPaths: '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/color' | '/login'
-  id: '__root__' | '/color' | '/login'
+  to: '/login'
+  id: '__root__' | '/login'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  ColorRoute: typeof ColorRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -58,18 +48,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/color': {
-      id: '/color'
-      path: '/color'
-      fullPath: '/color'
-      preLoaderRoute: typeof ColorRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  ColorRoute: ColorRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
