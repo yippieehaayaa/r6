@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   calculateJwkThumbprint,
   exportJWK,
@@ -7,6 +8,7 @@ import {
   jwtVerify,
   SignJWT,
 } from "jose";
+import { hmac } from "@r6/crypto";
 import { env } from "../config";
 
 let privateKey: CryptoKey | null = null;
@@ -52,7 +54,10 @@ export const signAccessToken = async (
 ): Promise<string> => {
   await loadKeys();
 
-  const expiresAt = new Date(Date.now() + Number(env.JWT_ACCESS_TTL_MS));
+  // Randomise TTL between 5 and 15 minutes to reduce the
+  // predictability of token expiry windows.
+  const ttlMs = 300_000 + Math.floor(Math.random() * 600_000);
+  const expiresAt = new Date(Date.now() + ttlMs);
 
   return new SignJWT({
     kind: payload.kind,
@@ -62,6 +67,7 @@ export const signAccessToken = async (
   })
     .setProtectedHeader({ alg: "RS256" })
     .setSubject(payload.sub)
+    .setJti(randomUUID())
     .setIssuer(env.JWT_ISSUER)
     .setAudience(env.JWT_AUDIENCE)
     .setIssuedAt()
@@ -81,19 +87,25 @@ export const verifyAccessToken = async (token: string): Promise<JWTPayload> => {
   return payload;
 };
 
-export const signRefreshToken = async (sub: string): Promise<string> => {
+export const signRefreshToken = async (
+  sub: string,
+): Promise<{ token: string; jti: string }> => {
   await loadKeys();
 
-  const expiresAt = new Date(Date.now() + Number(env.JWT_REFRESH_TTL_MS));
+  const jti = randomUUID();
+  const expiresAt = new Date(Date.now() + env.JWT_REFRESH_TTL_MS);
 
-  return new SignJWT({ tokenType: "refresh" })
+  const token = await new SignJWT({ tokenType: "refresh" })
     .setProtectedHeader({ alg: "RS256" })
     .setSubject(sub)
+    .setJti(jti)
     .setIssuer(env.JWT_ISSUER)
     .setAudience(env.JWT_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime(expiresAt)
     .sign(privateKey as CryptoKey);
+
+  return { token, jti };
 };
 
 export const verifyRefreshToken = async (
@@ -118,6 +130,12 @@ export const getPublicJwk = async () => {
 
   return { ...jwk, use: "sig", alg: "RS256", kid };
 };
+
+// Produces a stable HMAC fingerprint for the requesting device.
+// Built from User-Agent + IP so a stolen token from a different
+// network or browser will fail the device binding check on refresh.
+export const generateDeviceFingerprint = (userAgent: string, ip: string): string =>
+  hmac(`${userAgent}::${ip}`);
 
 // Checks whether a required permission string is satisfied by the
 // set of granted permission strings. Supports wildcard * segments.

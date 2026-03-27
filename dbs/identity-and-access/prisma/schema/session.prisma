@@ -1,0 +1,34 @@
+// ============================================================
+//  SESSION — RefreshToken
+//  Stateful refresh token store. One row per issued refresh
+//  token. The jti (JWT ID) claim is the natural primary key
+//  so lookups are a single indexed read with no extra join.
+//
+//  Lifecycle:
+//    created  — on login / successful refresh (rotation)
+//    revoked  — revokedAt is set on logout or token rotation
+//              (the old token is revoked, a new row is created)
+//    expired  — expiresAt has passed; row can be cleaned up
+//              by a periodic job (DELETE WHERE expiresAt < now())
+//
+//  Device binding:
+//    deviceFingerprint is HMAC(userAgent :: ip). If the
+//    fingerprint changes between issuance and use, the token
+//    is rejected with 401 device_mismatch.
+// ============================================================
+
+model RefreshToken {
+    jti               String    @id          // JWT jti claim (UUID)
+    identityId        String    @db.Uuid
+    identity          Identity  @relation(fields: [identityId], references: [id])
+    deviceFingerprint String                 // HMAC(userAgent::ip)
+    userAgent         String?
+    ipAddress         String?
+    expiresAt         DateTime
+    revokedAt         DateTime?              // null = active
+    createdAt         DateTime  @default(now())
+
+    @@index([identityId])
+    @@index([expiresAt])
+    @@map("refresh_tokens")
+}

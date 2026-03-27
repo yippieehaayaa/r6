@@ -1,7 +1,16 @@
-import { getTenantById, verifyIdentity } from "@r6/db-identity-and-access";
+import {
+  createRefreshToken,
+  getTenantById,
+  verifyIdentity,
+} from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../lib/errors";
-import { signAccessToken, signRefreshToken } from "../../../lib/jwt";
+import {
+  generateDeviceFingerprint,
+  signAccessToken,
+  signRefreshToken,
+} from "../../../lib/jwt";
+import { env } from "../../../config";
 import { buildTokenClaims } from "../helpers";
 
 export async function login(
@@ -57,18 +66,41 @@ export async function login(
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
     const claims = buildTokenClaims(full);
-    const [accessToken, refreshToken] = await Promise.all([
-      signAccessToken({
-        sub: full.id,
-        kind: full.kind,
-        tenantSlug: tenant?.slug ?? null,
-        roles: claims.roles,
-        permissions: claims.permissions,
-      }),
-      signRefreshToken(full.id),
-    ]);
 
-    res.status(200).json({ accessToken, refreshToken });
+    const fingerprint = generateDeviceFingerprint(
+      req.headers["user-agent"] ?? "",
+      req.ip ?? "",
+    );
+
+    const [accessToken, { token: refreshToken, jti: refreshJti }] =
+      await Promise.all([
+        signAccessToken({
+          sub: full.id,
+          kind: full.kind,
+          tenantSlug: tenant?.slug ?? null,
+          roles: claims.roles,
+          permissions: claims.permissions,
+        }),
+        signRefreshToken(full.id),
+      ]);
+
+    await createRefreshToken({
+      jti: refreshJti,
+      identityId: full.id,
+      deviceFingerprint: fingerprint,
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip,
+      expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_MS),
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: env.JWT_REFRESH_TTL_MS,
+    });
+
+    res.status(200).json({ accessToken });
   } catch (error) {
     next(error);
   }

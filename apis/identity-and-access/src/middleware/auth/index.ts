@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import type { JWTPayload } from "jose";
 import { verifyAccessToken } from "../../lib/jwt";
+import { isAccessTokenRevoked } from "../../lib/token-denylist";
 
 export type AuthJwtPayload = JWTPayload & {
   kind?: string;
@@ -33,6 +34,14 @@ export const authMiddleware =
 
     try {
       const payload = (await verifyAccessToken(token)) as AuthJwtPayload;
+
+      if (payload.jti && (await isAccessTokenRevoked(payload.jti))) {
+        return res.status(401).json({
+          error: "token_revoked",
+          message: "Token has been revoked",
+        });
+      }
+
       req.jwtPayload = payload;
       return next();
     } catch (err) {
