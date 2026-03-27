@@ -4,13 +4,13 @@ import {
   verifyIdentity,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
+import { env } from "../../../config";
 import { AppError } from "../../../lib/errors";
 import {
   generateDeviceFingerprint,
   signAccessToken,
   signRefreshToken,
 } from "../../../lib/jwt";
-import { env } from "../../../config";
 import { buildTokenClaims } from "../helpers";
 
 export async function login(

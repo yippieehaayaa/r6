@@ -6,6 +6,7 @@ import {
   revokeRefreshToken,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
+import { env } from "../../../config";
 import { AppError } from "../../../lib/errors";
 import {
   generateDeviceFingerprint,
@@ -13,7 +14,6 @@ import {
   signRefreshToken,
   verifyRefreshToken,
 } from "../../../lib/jwt";
-import { env } from "../../../config";
 import { buildTokenClaims } from "../helpers";
 
 export async function refresh(
@@ -24,10 +24,18 @@ export async function refresh(
   try {
     const raw: string | undefined = req.cookies?.refreshToken;
     if (!raw)
-      throw new AppError(400, "validation_error", "refresh token cookie is required");
+      throw new AppError(
+        400,
+        "validation_error",
+        "refresh token cookie is required",
+      );
 
     const payload = await verifyRefreshToken(raw).catch(() => {
-      throw new AppError(401, "invalid_token", "Invalid or expired refresh token");
+      throw new AppError(
+        401,
+        "invalid_token",
+        "Invalid or expired refresh token",
+      );
     });
 
     if ((payload as Record<string, unknown>).tokenType !== "refresh") {
@@ -40,11 +48,14 @@ export async function refresh(
 
     // ── Stateful checks ──────────────────────────────────────
     const stored = await getRefreshToken(payload.jti);
-    if (!stored)
-      throw new AppError(401, "invalid_token", "Token not found");
+    if (!stored) throw new AppError(401, "invalid_token", "Token not found");
 
     if (stored.revokedAt !== null)
-      throw new AppError(401, "token_revoked", "Refresh token has been revoked");
+      throw new AppError(
+        401,
+        "token_revoked",
+        "Refresh token has been revoked",
+      );
 
     // ── Device binding ───────────────────────────────────────
     const currentFingerprint = generateDeviceFingerprint(
@@ -52,7 +63,11 @@ export async function refresh(
       req.ip ?? "",
     );
     if (currentFingerprint !== stored.deviceFingerprint)
-      throw new AppError(401, "device_mismatch", "Token was issued to a different device");
+      throw new AppError(
+        401,
+        "device_mismatch",
+        "Token was issued to a different device",
+      );
 
     // ── Token rotation (invalidate old, issue new) ───────────
     await revokeRefreshToken(payload.jti);
@@ -60,7 +75,11 @@ export async function refresh(
     const full = await getIdentityWithRolesAndPolicies(payload.sub);
     if (!full) throw new AppError(401, "invalid_token", "Identity not found");
     if (full.status !== "ACTIVE") {
-      throw new AppError(403, "account_inactive", `Account status is ${full.status}`);
+      throw new AppError(
+        403,
+        "account_inactive",
+        `Account status is ${full.status}`,
+      );
     }
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;

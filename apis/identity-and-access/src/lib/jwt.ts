@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { hmac } from "@r6/crypto";
 import {
   calculateJwkThumbprint,
   exportJWK,
@@ -8,7 +9,6 @@ import {
   jwtVerify,
   SignJWT,
 } from "jose";
-import { hmac } from "@r6/crypto";
 import { env } from "../config";
 
 let privateKey: CryptoKey | null = null;
@@ -134,8 +134,10 @@ export const getPublicJwk = async () => {
 // Produces a stable HMAC fingerprint for the requesting device.
 // Built from User-Agent + IP so a stolen token from a different
 // network or browser will fail the device binding check on refresh.
-export const generateDeviceFingerprint = (userAgent: string, ip: string): string =>
-  hmac(`${userAgent}::${ip}`);
+export const generateDeviceFingerprint = (
+  userAgent: string,
+  ip: string,
+): string => hmac(`${userAgent}::${ip}`);
 
 // Checks whether a required permission string is satisfied by the
 // set of granted permission strings. Supports wildcard * segments.

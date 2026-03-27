@@ -1,7 +1,7 @@
 import { revokeRefreshToken } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
-import { revokeAccessToken } from "../../../lib/token-denylist";
 import { verifyRefreshToken } from "../../../lib/jwt";
+import { revokeAccessToken } from "../../../lib/token-denylist";
 
 export async function logout(
   req: Request,
