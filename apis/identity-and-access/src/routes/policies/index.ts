@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin, requireTenantScope } from "../../middleware/guard";
+import { requireAdmin } from "../../middleware/guard";
 import { createPolicyHandler } from "./controller/create";
 import { getPolicy } from "./controller/get";
 import { list } from "./controller/list";
@@ -10,13 +10,13 @@ import { updatePolicyHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
 
-router.use(authMiddleware(), requireTenantScope());
+router.use(authMiddleware(), requireAdmin());
 
 router.post("/", createPolicyHandler);
 router.get("/", list);
 router.get("/:id", getPolicy);
 router.patch("/:id", updatePolicyHandler);
 router.delete("/:id", remove);
-router.post("/:id/restore", requireAdmin(), restore);
+router.post("/:id/restore", restore);
 
 export default router;
