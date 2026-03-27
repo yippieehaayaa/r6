@@ -4,6 +4,7 @@ import {
   requireAdmin,
   requireAdminOrTenantOwner,
   requirePermission,
+  requireSelfOrAdminOrTenantOwner,
   requireTenantScope,
 } from "../../middleware/guard";
 import { assignRole } from "./controller/assign-role";
@@ -25,13 +26,13 @@ router.post(
   requirePermission("iam:identity:create"),
   createIdentityHandler,
 );
-router.get("/", list);
-router.get("/:id", getIdentity);
-router.patch("/:id", updateIdentityHandler);
-router.delete("/:id", remove);
+router.get("/", requireAdminOrTenantOwner(), list);
+router.get("/:id", requireSelfOrAdminOrTenantOwner(), getIdentity);
+router.patch("/:id", requireSelfOrAdminOrTenantOwner(), updateIdentityHandler);
+router.delete("/:id", requireAdminOrTenantOwner(), remove);
 router.post("/:id/restore", requireAdmin(), restore);
-router.post("/:id/roles", assignRole);
-router.delete("/:id/roles/:roleId", removeRole);
-router.put("/:id/roles", setRoles);
+router.post("/:id/roles", requireAdminOrTenantOwner(), assignRole);
+router.delete("/:id/roles/:roleId", requireAdminOrTenantOwner(), removeRole);
+router.put("/:id/roles", requireAdminOrTenantOwner(), setRoles);
 
 export default router;

@@ -7,13 +7,16 @@
 //  in the router chain.
 //
 //  Available guards:
-//    requireAuth              — any valid token (already done by authMiddleware,
-//                               re-exported here for co-location)
-//    requireAdmin             — kind === "ADMIN" only
-//    requireAdminOrTenantOwner — ADMIN, OR USER/SERVICE whose tenantSlug matches
-//                               the :tenantSlug route param or request body
-//    requireTenantScope       — ensures the acting identity's tenantSlug matches
-//                               the :tenantSlug param (tenant-scoped routes)
+//    requireAdmin                    — kind === "ADMIN" only
+//    requireAdminOrTenantOwner       — ADMIN, OR identity that holds the
+//                                      "tenant-owner" role within the target
+//                                      tenant (tenantSlug match + role check)
+//    requireSelfOrAdminOrTenantOwner — ADMIN, OR tenant owner within the target
+//                                      tenant, OR the identity whose id matches
+//                                      :id (the caller acting on themselves)
+//    requireTenantScope              — ensures the acting identity's tenantSlug
+//                                      matches the :tenantSlug param
+//    requirePermission               — fine-grained permission string check
 // ============================================================
 
 import type { NextFunction, Request, Response } from "express";
@@ -48,14 +51,13 @@ export const requireAdmin =
 
 // Allows:
 //   - ADMIN (cross-tenant, no tenantSlug restriction)
-//   - USER or SERVICE whose JWT tenantSlug matches the target tenant.
+//   - USER or SERVICE that holds the "tenant-owner" role AND whose JWT
+//     tenantSlug matches the target tenant slug, resolved from (in order):
+//       1. req.params.tenantSlug
+//       2. req.params.id  (for routes like /tenants/:id)
+//       3. req.body.tenantSlug
 //
-// The target tenant slug is resolved from (in order):
-//   1. req.params.tenantSlug
-//   2. req.params.id           (for routes like /tenants/:id)
-//   3. req.body.tenantSlug
-//
-// Used for Tenant read/update routes.
+// Used for tenant management routes and bulk identity operations.
 export const requireAdminOrTenantOwner =
   () => (req: Request, res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
@@ -79,7 +81,12 @@ export const requireAdminOrTenantOwner =
       });
     }
 
-    if (payload.tenantSlug !== targetTenantSlug) {
+    const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+
+    if (
+      !roles.includes("tenant-owner") ||
+      payload.tenantSlug !== targetTenantSlug
+    ) {
       return res.status(403).json({
         error: "forbidden",
         message: "You do not have access to this tenant",
@@ -87,6 +94,44 @@ export const requireAdminOrTenantOwner =
     }
 
     return next();
+  };
+
+// ─── requireSelfOrAdminOrTenantOwner ─────────────────────────
+
+// Allows:
+//   - ADMIN (cross-tenant, no restriction)
+//   - USER or SERVICE that holds the "tenant-owner" role within the
+//     target tenant (tenantSlug match + role check)
+//   - The identity whose primary key matches :id (acting on themselves)
+//
+// Used for per-identity read/update routes where a regular user may only
+// operate on their own record, while admins and tenant owners can reach any.
+export const requireSelfOrAdminOrTenantOwner =
+  () => (req: Request, res: Response, next: NextFunction) => {
+    const payload = req.jwtPayload as AuthJwtPayload | undefined;
+
+    if (!payload) {
+      return res.status(401).json({
+        error: "unauthorized",
+        message: "Authentication required",
+      });
+    }
+
+    if (payload.kind === "ADMIN") return next();
+
+    const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+    const tenantSlug = req.params.tenantSlug;
+
+    if (roles.includes("tenant-owner") && payload.tenantSlug === tenantSlug) {
+      return next();
+    }
+
+    if (payload.sub === req.params.id) return next();
+
+    return res.status(403).json({
+      error: "forbidden",
+      message: "You can only access your own identity",
+    });
   };
 
 // ─── requireTenantScope ──────────────────────────────────────
