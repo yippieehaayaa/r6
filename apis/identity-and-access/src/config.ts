@@ -17,6 +17,7 @@ const envSchema = z.object({
   HASH_SECRET: z.string(),
   REDIS_URL: z.string(),
   CORS_ORIGIN: z.url(),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 });
 
 const env = envSchema.parse({
@@ -29,6 +30,7 @@ const env = envSchema.parse({
   HASH_SECRET: process.env.HASH_SECRET,
   REDIS_URL: process.env.REDIS_URL,
   CORS_ORIGIN: process.env.CORS_ORIGIN,
+  NODE_ENV: process.env.NODE_ENV,
 });
 
 export { env };
