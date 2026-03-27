@@ -1,20 +1,50 @@
-import { createRootRoute, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import type { QueryClient } from "@tanstack/react-query";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import React from "react";
 
-export const Route = createRootRoute({
-	component: RootComponent,
+const TanStackQueryDevtools =
+	process.env.NODE_ENV === "production"
+		? () => null
+		: React.lazy(() =>
+				import(
+					"@tanstack/react-query-devtools/build/modern/production.js"
+				).then((d) => ({
+					default: d.ReactQueryDevtools,
+				})),
+			);
+
+const TanStackRouterDevtools =
+	process.env.NODE_ENV === "production"
+		? () => null
+		: React.lazy(() =>
+				import("@tanstack/react-router-devtools").then((res) => ({
+					default: res.TanStackRouterDevtools,
+				})),
+			);
+
+export const Route = createRootRouteWithContext<{
+	queryClient: QueryClient;
+}>()({
+	head: () => {
+		return {
+			meta: [
+				{
+					title: "Home",
+				},
+			],
+		};
+	},
+	component: Root,
 });
 
-function RootComponent() {
+function Root() {
 	return (
 		<>
-			<a href="#main-content" className="skip-link">
-				Skip to main content
-			</a>
 			<Outlet />
-			{import.meta.env.DEV ? (
-				<TanStackRouterDevtools position="bottom-right" />
-			) : null}
+			<React.Suspense>
+				<TanStackQueryDevtools />
+				<TanStackRouterDevtools />
+			</React.Suspense>
 		</>
 	);
 }

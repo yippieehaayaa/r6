@@ -1,18 +1,39 @@
-import { RouterProvider } from "@tanstack/react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import React from "react";
-import { createRoot } from "react-dom/client";
-import { getRouter } from "./router";
+import ReactDOM from "react-dom/client";
+import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 
-const router = getRouter();
-const rootElement = document.getElementById("app");
+const queryClient = new QueryClient();
 
-if (!rootElement) {
-	throw new Error('Missing root element with id "app"');
+const router = createRouter({
+	routeTree,
+	context: {
+		queryClient,
+	},
+});
+
+function InnerApp() {
+	return <RouterProvider router={router} />;
 }
 
-createRoot(rootElement).render(
-	<React.StrictMode>
-		<RouterProvider router={router} />
-	</React.StrictMode>,
-);
+function App() {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<InnerApp />
+		</QueryClientProvider>
+	);
+}
+
+const rootElement = document.getElementById("root");
+if (rootElement && !rootElement.innerHTML) {
+	const root = ReactDOM.createRoot(rootElement);
+	root.render(
+		<React.StrictMode>
+			<App />
+		</React.StrictMode>,
+	);
+} else {
+	console.error("Root element not found");
+}
