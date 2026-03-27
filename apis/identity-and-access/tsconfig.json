@@ -1,13 +1,12 @@
 {
-	"extends": "@r6/typescript-config/node.json",
-	"compilerOptions": {
-		"module": "NodeNext",
-		"moduleResolution": "NodeNext",
-		"jsx": "react-jsx",
-		"jsxImportSource": "hono/jsx",
-		"outDir": "./dist",
-		"noEmit": false,
-		"allowImportingTsExtensions": false
-	},
-	"exclude": ["node_modules"]
+  "extends": "@r6/typescript-config/base.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "rootDir": "src",
+    "outDir": "dist",
+    "typeRoots": ["./src/typings", "./node_modules/@types"]
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "__tests__", "src/**/*.test.ts"]
 }

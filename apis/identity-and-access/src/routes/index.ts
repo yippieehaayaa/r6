@@ -1,11 +1,16 @@
-import { Hono } from "hono";
-import auth, { wellknown } from "./auth/index.js";
-import main from "./main/index.js";
+import { Router } from "express";
+import auth from "./auth";
+import main from "./main";
+import me from "./me";
+import tenants from "./tenants";
+import wellKnown from "./well-known";
 
-const routes = new Hono();
+const router: Router = Router();
 
-routes.route("/", main);
-routes.route("/auth", auth);
-routes.route("/.well-known", wellknown);
+router.use("/", main);
+router.use("/auth", auth);
+router.use("/.well-known", wellKnown);
+router.use("/me", me);
+router.use("/tenants", tenants);
 
-export default routes;
+export default router;

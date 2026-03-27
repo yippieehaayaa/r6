@@ -36,7 +36,8 @@ model Identity {
     status              IdentityStatus @default(PENDING_VERIFICATION)
 
     // Relations
-    roles Role[] // many-to-many via implicit join table
+    roles          Role[]         // many-to-many via implicit join table
+    refreshTokens  RefreshToken[]
 
     // Timestamps
     createdAt DateTime  @default(now())

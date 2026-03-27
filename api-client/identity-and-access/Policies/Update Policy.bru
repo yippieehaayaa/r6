@@ -1,0 +1,25 @@
+meta {
+  name: Update Policy
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseURL}}/tenants/{{tenantId}}/policies/{{policyId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "inventory-read-write",
+    "effect": "ALLOW",
+    "permissions": ["inventory:product:read", "inventory:product:write"],
+    "audience": ["inventory"],
+    "description": "Allow reading and writing inventory resources"
+  }
+}

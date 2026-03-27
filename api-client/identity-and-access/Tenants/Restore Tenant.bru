@@ -1,0 +1,15 @@
+meta {
+  name: Restore Tenant
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantId}}/restore
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

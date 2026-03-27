@@ -38,11 +38,11 @@
       "require": "./build/index.js",
       "default": "./build/index.js"
     },
-    "./models/*": {
-      "types": "./src/models/*.ts",
-      "import": "./build/models/*.mjs",
-      "require": "./build/models/*.js",
-      "default": "./build/models/*.js"
+    "./use-cases/*": {
+      "types": "./src/use-cases/*.ts",
+      "import": "./build/use-cases/*.mjs",
+      "require": "./build/use-cases/*.js",
+      "default": "./build/use-cases/*.js"
     }
   },
   "license": "MIT"

@@ -1,0 +1,21 @@
+meta {
+  name: Attach Policy
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantId}}/roles/{{roleId}}/policies
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "policyId": "{{policyId}}"
+  }
+}

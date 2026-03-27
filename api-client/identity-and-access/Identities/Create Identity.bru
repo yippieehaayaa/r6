@@ -1,0 +1,23 @@
+meta {
+  name: Create Identity
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantId}}/identities
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "username": "johndoe",
+    "plainPassword": "Password1!",
+    "email": "johndoe@example.com"
+  }
+}

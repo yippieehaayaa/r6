@@ -13,10 +13,9 @@ import type {
   IdentityStatus,
   Policy,
   PolicyEffect,
-  Prisma,
   Role,
   Tenant,
-} from "../../generated/prisma/client";
+} from "../../generated/prisma/client.js";
 
 // ─── Re-exports for consumers ────────────────────────────────
 
@@ -107,13 +106,25 @@ export type ListPoliciesInput = PaginationInput & {
 // tenantId is null only when kind = ADMIN.
 // hash + salt are required — caller is responsible for hashing.
 export type CreateIdentityInput = {
-  tenantId: string | null; // null for ADMIN, required for USER/SERVICE
-  username: string; // unique per tenantId
-  email?: string; // unique per tenantId when provided
-  hash: string; // pre-hashed password
-  salt: string; // per-identity salt
-  kind?: IdentityKind; // default USER
-  mustChangePassword?: boolean; // default true
+  tenantId: string | null;
+  username: string;
+  email?: string | null;
+  password: string;
+  kind?: IdentityKind;
+  mustChangePassword?: boolean;
+};
+
+export type VerifyIdentityInput = {
+  tenantId?: string | null;
+  tenantSlug?: string | null;
+  username?: string;
+  email?: string;
+  password: string;
+};
+
+export type ChangePasswordInput = {
+  currentPassword: string;
+  newPassword: string;
 };
 
 export type UpdateIdentityInput = {
@@ -121,7 +132,7 @@ export type UpdateIdentityInput = {
   hash?: string;
   salt?: string;
   failedLoginAttempts?: number;
-  lockedUntil?: Date | null;
+  lockedUntil?: Date | string | null;
   mustChangePassword?: boolean;
   status?: IdentityStatus;
 };
@@ -133,7 +144,7 @@ export type UpdateIdentityInput = {
 export type CreateRoleInput = {
   tenantId: string | null; // unique scope key
   name: string; // unique per tenantId
-  description?: string;
+  description?: string | null; // was: description?: string
 };
 
 export type UpdateRoleInput = {
@@ -149,7 +160,7 @@ export type UpdateRoleInput = {
 export type CreatePolicyInput = {
   tenantId: string | null; // unique scope key
   name: string; // unique per tenantId
-  description?: string;
+  description?: string | null; // was: description?: string
   effect: PolicyEffect; // required — no default
   permissions: string[]; // required — convention: "service:resource:action"
   audience: string[]; // required — which services enforce this policy
@@ -157,7 +168,7 @@ export type CreatePolicyInput = {
   // Prisma.InputJsonObject is the correct concrete type for a JSON object —
   // Record<string, unknown> is not assignable to InputJsonValue.
   // The use case layer handles the null → Prisma.JsonNull conversion.
-  conditions?: Prisma.InputJsonObject | null;
+  conditions?: Record<string, unknown> | null;
 };
 
 export type UpdatePolicyInput = {
@@ -169,7 +180,7 @@ export type UpdatePolicyInput = {
   // Pass null to explicitly clear conditions.
   // Prisma.InputJsonObject is the correct concrete type for a JSON object.
   // The use case layer handles the null → Prisma.JsonNull conversion.
-  conditions?: Prisma.InputJsonObject | null;
+  conditions?: Record<string, unknown> | null;
 };
 
 // ─── Relation inputs ─────────────────────────────────────────

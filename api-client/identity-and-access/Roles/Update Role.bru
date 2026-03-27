@@ -1,0 +1,23 @@
+meta {
+  name: Update Role
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseURL}}/tenants/{{tenantId}}/roles/{{roleId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "editor",
+    "description": "Can read and write resources",
+    "isActive": true
+  }
+}

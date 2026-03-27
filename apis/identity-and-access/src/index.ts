@@ -1,15 +1,17 @@
-import { serve } from "@hono/node-server";
-import app from "./app.js";
-import { env } from "./config.js";
+import http from "node:http";
+import app from "./app";
+import { env } from "./config";
+import { connectDenylist } from "./lib/token-denylist";
 
-const port = Number(env.PORT) || 3000;
+const server = http.createServer(app);
 
-serve(
-	{
-		fetch: app.fetch,
-		port: port,
-	},
-	() => {
-		console.log(`Server is running on http://localhost:${port}`);
-	},
-);
+connectDenylist()
+  .then(() => {
+    server.listen(env.PORT, () => {
+      console.log(`Server is running on port ${env.PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to Redis denylist:", err);
+    process.exit(1);
+  });

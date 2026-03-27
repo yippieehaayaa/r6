@@ -1,0 +1,15 @@
+meta {
+  name: Detach Policy
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{baseURL}}/tenants/{{tenantId}}/roles/{{roleId}}/policies/{{policyId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

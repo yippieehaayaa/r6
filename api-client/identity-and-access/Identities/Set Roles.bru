@@ -1,0 +1,21 @@
+meta {
+  name: Set Roles
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{baseURL}}/tenants/{{tenantId}}/identities/{{identityId}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "roleIds": ["{{roleId}}"]
+  }
+}

@@ -1,0 +1,20 @@
+meta {
+  name: List Identities
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantId}}/identities
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  page: 1
+  limit: 20
+}
