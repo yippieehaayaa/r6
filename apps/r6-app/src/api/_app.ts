@@ -4,6 +4,7 @@ import axios, {
 } from "axios";
 import { env } from "@/config";
 import { getToken, setToken } from "@/api/token";
+import { emitSessionExpired } from "@/api/session-events";
 
 const api = axios.create({
 	baseURL: env.API_URL,
@@ -71,7 +72,23 @@ function attachAuthInterceptors(
 				config.headers.Authorization = `Bearer ${data.accessToken}`;
 				return instance(config);
 			} catch {
+				const staleToken = getToken();
 				setToken(null);
+				// Best-effort server-side logout: revoke the refresh token cookie
+				// if we still hold a valid access token (e.g. network blip during refresh).
+				if (staleToken) {
+					axios
+						.post(
+							`${env.API_URL}/identity-and-access/auth/logout`,
+							{},
+							{
+								withCredentials: true,
+								headers: { Authorization: `Bearer ${staleToken}` },
+							},
+						)
+						.catch(() => null);
+				}
+				emitSessionExpired();
 				return Promise.reject(error);
 			}
 		},

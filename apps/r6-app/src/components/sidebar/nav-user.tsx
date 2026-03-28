@@ -5,10 +5,10 @@ import {
 	Bell,
 	ChevronsUpDown,
 	CreditCard,
-	LogOut,
 	Sparkles,
 } from "lucide-react";
 
+import { LogoutMenuItem } from "#/features/auth/logout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
@@ -98,10 +98,7 @@ export function NavUser({
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem>
-							<LogOut />
-							Log out
-						</DropdownMenuItem>
+					<LogoutMenuItem />
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>

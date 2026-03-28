@@ -1,7 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import React from "react";
-import type { AuthContext } from "@/auth";
+import { createRootRouteWithContext, Outlet, useNavigate } from "@tanstack/react-router";
+import React, { useEffect } from "react";
+import { toast } from "sonner";
+import { useAuth, type AuthContext } from "@/auth";
+import { onSessionExpired } from "@/api/session-events";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -42,10 +44,26 @@ export const Route = createRootRouteWithContext<{
 	component: Root,
 });
 
+function SessionExpiredListener() {
+	const { logout } = useAuth();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		return onSessionExpired(async () => {
+			await logout();
+			toast.error("Session expired. Please sign in again.");
+			navigate({ to: "/login", replace: true });
+		});
+	}, [logout, navigate]);
+
+	return null;
+}
+
 function Root() {
 	return (
 		<ThemeProvider defaultTheme="system" storageKey="r6-ui-theme">
 			<TooltipProvider>
+				<SessionExpiredListener />
 				<Outlet />
 				<Toaster />
 				<React.Suspense>

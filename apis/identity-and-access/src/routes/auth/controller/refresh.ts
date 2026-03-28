@@ -106,10 +106,11 @@ export async function refresh(
       expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_MS),
     });
 
+    const isProd = env.NODE_ENV === "production";
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: env.JWT_REFRESH_TTL_MS,
     });
 
