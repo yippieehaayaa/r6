@@ -3,8 +3,8 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/globals.css";
+import { type AuthContext, AuthProvider, useAuth } from "./auth";
 import { routeTree } from "./routeTree.gen";
-import { AuthProvider, useAuth, type AuthContext } from "./auth";
 
 const queryClient = new QueryClient();
 

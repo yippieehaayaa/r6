@@ -1,5 +1,5 @@
-import { LogOut } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { LogOut } from "lucide-react";
 import { useAuth } from "@/auth";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 

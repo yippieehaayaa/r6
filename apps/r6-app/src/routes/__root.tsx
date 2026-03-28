@@ -1,11 +1,15 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { createRootRouteWithContext, Outlet, useNavigate } from "@tanstack/react-router";
+import {
+	createRootRouteWithContext,
+	Outlet,
+	useNavigate,
+} from "@tanstack/react-router";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { useAuth, type AuthContext } from "@/auth";
 import { onSessionExpired } from "@/api/session-events";
-import { Toaster } from "@/components/ui/sonner";
+import { type AuthContext, useAuth } from "@/auth";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 const TanStackQueryDevtools =

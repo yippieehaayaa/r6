@@ -1,10 +1,7 @@
-import axios, {
-	type AxiosError,
-	type InternalAxiosRequestConfig,
-} from "axios";
-import { env } from "@/config";
-import { getToken, setToken } from "@/api/token";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { emitSessionExpired } from "@/api/session-events";
+import { getToken, setToken } from "@/api/token";
+import { env } from "@/config";
 
 const api = axios.create({
 	baseURL: env.API_URL,
