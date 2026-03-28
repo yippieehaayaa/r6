@@ -7,12 +7,12 @@ import {
 	Command,
 	Frame,
 	GalleryVerticalEnd,
-	Map,
+	MapIcon,
 	PieChart,
 	Settings2,
 	SquareTerminal,
 } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 
 import { NavMain } from "@/components/sidebar/nav-main";
 import { NavProjects } from "@/components/sidebar/nav-projects";
@@ -153,7 +153,7 @@ const data = {
 		{
 			name: "Travel",
 			url: "#",
-			icon: Map,
+			icon: MapIcon,
 		},
 	],
 };
@@ -168,12 +168,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" asChild>
 							<div>
-								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-accent text-white">
 									<team.logo className="size-4" />
 								</div>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium">{team.name}</span>
-									<span className="truncate text-xs">{team.plan}</span>
+									<span className="truncate font-semibold text-accent">
+										{team.name}
+									</span>
+									<span className="truncate text-xs text-muted-foreground">
+										{team.plan}
+									</span>
 								</div>
 							</div>
 						</SidebarMenuButton>

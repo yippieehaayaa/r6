@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { GalleryVerticalEnd } from "lucide-react";
 
 import { LoginForm } from "@/components/login-form";
@@ -10,15 +11,15 @@ export default function LoginPage() {
 				<ModeToggle />
 			</div>
 			<div className="flex w-full max-w-sm flex-col gap-6">
-				<a
-					href="#"
+				<Link
+					to="/login"
 					className="flex items-center gap-2 self-center font-medium text-[var(--text-primary)]"
 				>
 					<div className="flex size-6 items-center justify-center rounded-md bg-[var(--accent)] text-white">
 						<GalleryVerticalEnd className="size-4" />
 					</div>
 					R6 Inc.
-				</a>
+				</Link>
 				<LoginForm />
 			</div>
 		</div>

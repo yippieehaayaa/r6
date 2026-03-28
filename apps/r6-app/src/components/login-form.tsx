@@ -1,3 +1,4 @@
+import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -19,6 +20,13 @@ export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
+	const navigate = useNavigate();
+
+	function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+		navigate({ to: "/" });
+	}
+
 	return (
 		<div
 			className={cn("flex flex-col gap-4 w-full max-w-sm", className)}
@@ -50,7 +58,7 @@ export function LoginForm({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="px-8 pb-8 pt-5">
-						<form>
+						<form onSubmit={handleSubmit}>
 							<FieldGroup className="gap-4">
 								<Field>
 									<FieldLabel
@@ -76,12 +84,6 @@ export function LoginForm({
 										>
 											Password
 										</FieldLabel>
-										<a
-											href="#"
-											className="text-[13px] text-[var(--accent)] hover:opacity-75 transition-opacity"
-										>
-											Forgot password?
-										</a>
 									</div>
 									<Input
 										id="password"
@@ -106,14 +108,14 @@ export function LoginForm({
 			<FieldDescription className="text-center text-[12px] text-[var(--text-secondary)] leading-relaxed">
 				By signing in, you agree to our{" "}
 				<a
-					href="#"
+					href="/"
 					className="text-[var(--accent)] hover:opacity-75 transition-opacity underline-offset-2 hover:underline"
 				>
 					Terms of Service
 				</a>{" "}
 				and{" "}
 				<a
-					href="#"
+					href="/"
 					className="text-[var(--accent)] hover:opacity-75 transition-opacity underline-offset-2 hover:underline"
 				>
 					Privacy Policy

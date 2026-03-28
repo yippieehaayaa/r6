@@ -9,12 +9,7 @@ import {
 	Input,
 	Separator,
 } from "@components/ui";
-import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-
-export const Route = createFileRoute("/color")({
-	component: StylesShowcase,
-});
 
 const tokens = [
 	{
@@ -91,6 +86,8 @@ function ColorSwatch({
 		</div>
 	);
 }
+
+export default StylesShowcase;
 
 function Section({
 	title,
