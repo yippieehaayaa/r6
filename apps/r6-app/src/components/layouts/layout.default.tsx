@@ -1,6 +1,6 @@
-import { Outlet } from "@tanstack/react-router";
 import { ModeToggle } from "@/components/mode-toggle";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { AnimatedOutlet } from "@/components/transitions/animated-outlet";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -35,7 +35,7 @@ export function DefaultLayout() {
 					</div>
 				</header>
 				<div className="flex flex-1 flex-col">
-					<Outlet />
+					<AnimatedOutlet />
 				</div>
 			</SidebarInset>
 		</SidebarProvider>
