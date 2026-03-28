@@ -13,7 +13,6 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 export function LoginForm({
@@ -25,7 +24,9 @@ export function LoginForm({
 			className={cn("flex flex-col gap-4 w-full max-w-sm", className)}
 			{...props}
 		>
-			<Card className="border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
+			<div className="relative">
+				<div className="absolute inset-0 translate-y-2 translate-x-2 rounded-2xl bg-foreground/[0.04] dark:bg-foreground/[0.06] ring-1 ring-foreground/8 dark:ring-foreground/10" />
+			<Card className="relative border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
 				<CardHeader className="text-center pb-2 pt-8 px-8">
 					<div className="mx-auto mb-4 size-12 rounded-2xl bg-[var(--accent)] shadow-lg shadow-[var(--accent)]/30 flex items-center justify-center">
 						<svg
@@ -101,6 +102,7 @@ export function LoginForm({
 					</form>
 				</CardContent>
 			</Card>
+			</div>
 			<FieldDescription className="text-center text-[12px] text-[var(--text-secondary)] leading-relaxed">
 				By signing in, you agree to our{" "}
 				<a
