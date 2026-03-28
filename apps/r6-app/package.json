@@ -13,6 +13,7 @@
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@r6/schemas": "*",
 		"@tailwindcss/vite": "^4.2.2",
 		"@tanstack/react-query": "^5.95.2",
 		"@tanstack/react-query-devtools": "^5.95.2",

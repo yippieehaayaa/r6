@@ -77,8 +77,7 @@ export function NavProjects({
 						</DropdownMenu>
 					</SidebarMenuItem>
 				))}
-				<SidebarMenuItem>
-				</SidebarMenuItem>
+				<SidebarMenuItem></SidebarMenuItem>
 			</SidebarMenu>
 		</SidebarGroup>
 	);
