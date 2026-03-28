@@ -1,4 +1,4 @@
-import { IdentitySafeSchema, type IdentitySafe } from "@r6/schemas";
+import { type IdentitySafe, IdentitySafeSchema } from "@r6/schemas";
 import { identityApi } from "@/api/_app";
 
 export async function getMeFn(): Promise<IdentitySafe> {

@@ -1,9 +1,16 @@
 import type { IdentitySafe, LoginRequestInput } from "@r6/schemas";
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { getMeFn } from "@/api/me/queries/get-me";
+import {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { loginFn } from "@/api/auth/mutations/login";
 import { logoutFn } from "@/api/auth/mutations/logout";
 import { refreshFn } from "@/api/auth/mutations/refresh";
+import { getMeFn } from "@/api/me/queries/get-me";
 import { getToken, setToken } from "@/api/token";
 import { parseTokenClaims, type TokenClaims } from "@/lib/parse-token";
 
@@ -30,15 +37,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [profile, setProfile] = useState<UserProfile | null>(null);
 	const initialized = useRef(false);
 
-	const hydrateSession = useCallback(async (accessToken: string): Promise<void> => {
-		setToken(accessToken);
-		setClaims(parseTokenClaims(accessToken));
-		// Profile fetch is best-effort — auth still succeeds if /me fails.
-		getMeFn()
-			.then((me) => setProfile({ username: me.username, email: me.email }))
-			.catch(() => null);
-		setStatus("authenticated");
-	}, []);
+	const hydrateSession = useCallback(
+		async (accessToken: string): Promise<void> => {
+			setToken(accessToken);
+			setClaims(parseTokenClaims(accessToken));
+			// Profile fetch is best-effort — auth still succeeds if /me fails.
+			getMeFn()
+				.then((me) => setProfile({ username: me.username, email: me.email }))
+				.catch(() => null);
+			setStatus("authenticated");
+		},
+		[],
+	);
 
 	useEffect(() => {
 		if (initialized.current) return;

@@ -23,9 +23,7 @@ export function parseTokenClaims(token: string): TokenClaims {
 		kind: typeof payload.kind === "string" ? payload.kind : "",
 		tenantSlug:
 			typeof payload.tenantSlug === "string" ? payload.tenantSlug : null,
-		roles: Array.isArray(payload.roles)
-			? (payload.roles as string[])
-			: [],
+		roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
 		permissions: Array.isArray(payload.permissions)
 			? (payload.permissions as string[])
 			: [],
