@@ -15,7 +15,7 @@ import {
 	SidebarMenuItem,
 	SidebarRail,
 } from "@/components/ui/sidebar";
-import { data } from "@/features/dashboard/sidebar-data";
+import { data } from "@/features/navigation/sidebar-data";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const team = data.teams[0];
