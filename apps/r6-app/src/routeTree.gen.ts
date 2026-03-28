@@ -9,50 +9,74 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
+import { Route as DefaultRouteImport } from './routes/_default'
+import { Route as DefaultIndexRouteImport } from './routes/_default/index'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const DefaultRoute = DefaultRouteImport.update({
+  id: '/_default',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DefaultIndexRoute = DefaultIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DefaultRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/login': typeof LoginRoute
+  '/': typeof DefaultIndexRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
+  '/': typeof DefaultIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/login': typeof LoginRoute
+  '/_default': typeof DefaultRouteWithChildren
+  '/_default/': typeof DefaultIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login'
-  id: '__root__' | '/login'
+  to: '/'
+  id: '__root__' | '/_default' | '/_default/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  LoginRoute: typeof LoginRoute
+  DefaultRoute: typeof DefaultRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/_default': {
+      id: '/_default'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof DefaultRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_default/': {
+      id: '/_default/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof DefaultIndexRouteImport
+      parentRoute: typeof DefaultRoute
     }
   }
 }
 
+interface DefaultRouteChildren {
+  DefaultIndexRoute: typeof DefaultIndexRoute
+}
+
+const DefaultRouteChildren: DefaultRouteChildren = {
+  DefaultIndexRoute: DefaultIndexRoute,
+}
+
+const DefaultRouteWithChildren =
+  DefaultRoute._addFileChildren(DefaultRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  LoginRoute: LoginRoute,
+  DefaultRoute: DefaultRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
