@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DefaultRouteImport } from './routes/_default'
 import { Route as DefaultIndexRouteImport } from './routes/_default/index'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DefaultRoute = DefaultRouteImport.update({
   id: '/_default',
   getParentRoute: () => rootRouteImport,
@@ -24,29 +30,40 @@ const DefaultIndexRoute = DefaultIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof DefaultIndexRoute
+  '/login': typeof LoginRoute
 }
 export interface FileRoutesByTo {
+  '/login': typeof LoginRoute
   '/': typeof DefaultIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_default': typeof DefaultRouteWithChildren
+  '/login': typeof LoginRoute
   '/_default/': typeof DefaultIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/_default' | '/_default/'
+  to: '/login' | '/'
+  id: '__root__' | '/_default' | '/login' | '/_default/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   DefaultRoute: typeof DefaultRouteWithChildren
+  LoginRoute: typeof LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_default': {
       id: '/_default'
       path: ''
@@ -77,6 +94,7 @@ const DefaultRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   DefaultRoute: DefaultRouteWithChildren,
+  LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
