@@ -1,6 +1,8 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import React from "react";
+import type { AuthContext } from "@/auth";
+import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -26,6 +28,7 @@ const TanStackRouterDevtools =
 
 export const Route = createRootRouteWithContext<{
 	queryClient: QueryClient;
+	auth: AuthContext;
 }>()({
 	head: () => {
 		return {
@@ -44,6 +47,7 @@ function Root() {
 		<ThemeProvider defaultTheme="system" storageKey="r6-ui-theme">
 			<TooltipProvider>
 				<Outlet />
+				<Toaster />
 				<React.Suspense>
 					<TanStackQueryDevtools />
 					<TanStackRouterDevtools />

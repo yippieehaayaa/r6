@@ -1,4 +1,9 @@
+import { useState } from "react";
+import { isAxiosError } from "axios";
 import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { Loader2Icon } from "lucide-react";
+import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -21,10 +26,39 @@ export function LoginForm({
 	...props
 }: React.ComponentProps<"div">) {
 	const navigate = useNavigate();
+	const auth = useAuth();
+	const [loading, setLoading] = useState(false);
 
-	function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();
-		navigate({ to: "/" });
+		const formData = new FormData(e.currentTarget);
+		const username = (formData.get("username") as string).trim();
+		const password = formData.get("password") as string;
+
+		setLoading(true);
+		try {
+			await auth.login({ username, password });
+			toast.success("Signed in successfully");
+			navigate({ to: "/" });
+		} catch (error) {
+			let message = "Something went wrong. Please try again.";
+			if (isAxiosError(error)) {
+				switch (error.response?.status) {
+					case 401:
+						message = "Invalid credentials";
+						break;
+					case 423:
+						message = "Account is temporarily locked";
+						break;
+					case 403:
+						message = "Account is inactive";
+						break;
+				}
+			}
+			toast.error(message);
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	return (
@@ -68,8 +102,7 @@ export function LoginForm({
 										Username
 									</FieldLabel>
 									<Input
-										id="username"
-										type="text"
+										id="username"									name="username"										type="text"
 										placeholder="username"
 										autoComplete="username"
 										className="h-10 rounded-xl text-[15px] px-3.5"
@@ -86,8 +119,7 @@ export function LoginForm({
 										</FieldLabel>
 									</div>
 									<Input
-										id="password"
-										type="password"
+										id="password"									name="password"										type="password"
 										placeholder="••••••••"
 										autoComplete="current-password"
 										className="h-10 rounded-xl text-[15px] px-3.5"
@@ -96,9 +128,17 @@ export function LoginForm({
 								</Field>
 								<Button
 									type="submit"
+									disabled={loading}
 									className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
 								>
-									Sign In
+									{loading ? (
+										<>
+											<Loader2Icon className="size-4 animate-spin" />
+											Signing in...
+										</>
+									) : (
+										"Sign In"
+									)}
 								</Button>
 							</FieldGroup>
 						</form>

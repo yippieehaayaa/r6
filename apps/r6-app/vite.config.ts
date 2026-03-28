@@ -6,7 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 const config = defineConfig({
 	plugins: [
-		tanstackRouter({ target: "react" }),
+		tanstackRouter({ target: "react", routeFileIgnorePattern: "_default" }),
 		tsconfigPaths({ projects: ["./tsconfig.json"] }),
 		tailwindcss(),
 		viteReact({

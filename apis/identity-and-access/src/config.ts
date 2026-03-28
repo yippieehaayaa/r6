@@ -16,7 +16,9 @@ const envSchema = z.object({
     .transform(Number),
   HASH_SECRET: z.string(),
   REDIS_URL: z.string(),
-  CORS_ORIGIN: z.url(),
+  CORS_ORIGIN: z
+    .string()
+    .transform((v) => v.split(",").map((s) => s.trim())),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),

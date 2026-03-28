@@ -4,6 +4,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/globals.css";
 import { routeTree } from "./routeTree.gen";
+import { AuthProvider, useAuth, type AuthContext } from "./auth";
 
 const queryClient = new QueryClient();
 
@@ -11,17 +12,28 @@ const router = createRouter({
 	routeTree,
 	context: {
 		queryClient,
+		auth: null as unknown as AuthContext,
 	},
 });
 
+declare module "@tanstack/react-router" {
+	interface Register {
+		router: typeof router;
+	}
+}
+
 function InnerApp() {
-	return <RouterProvider router={router} />;
+	const auth = useAuth();
+	if (auth.status === "loading") return null;
+	return <RouterProvider router={router} context={{ queryClient, auth }} />;
 }
 
 function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<InnerApp />
+			<AuthProvider>
+				<InnerApp />
+			</AuthProvider>
 		</QueryClientProvider>
 	);
 }
