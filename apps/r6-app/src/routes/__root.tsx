@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import React from "react";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const TanStackQueryDevtools =
 	process.env.NODE_ENV === "production"
@@ -39,12 +40,12 @@ export const Route = createRootRouteWithContext<{
 
 function Root() {
 	return (
-		<>
+		<ThemeProvider defaultTheme="system" storageKey="r6-ui-theme">
 			<Outlet />
 			<React.Suspense>
 				<TanStackQueryDevtools />
 				<TanStackRouterDevtools />
 			</React.Suspense>
-		</>
+		</ThemeProvider>
 	);
 }
