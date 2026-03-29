@@ -29,15 +29,17 @@ export function LoginForm({
 	const auth = useAuth();
 	const [loading, setLoading] = useState(false);
 
-	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+	async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
 		const username = (formData.get("username") as string).trim();
 		const password = formData.get("password") as string;
+		const tenantSlugRaw = (formData.get("tenantSlug") as string).trim();
+		const tenantSlug = tenantSlugRaw || undefined;
 
 		setLoading(true);
 		try {
-			await auth.login({ username, password });
+			await auth.login({ username, password, tenantSlug });
 			toast.success("Signed in successfully");
 			navigate({ to: "/" });
 		} catch (error) {
@@ -94,6 +96,22 @@ export function LoginForm({
 					<CardContent className="px-8 pb-8 pt-5">
 						<form onSubmit={handleSubmit}>
 							<FieldGroup className="gap-4">
+								<Field>
+									<FieldLabel
+										htmlFor="tenantSlug"
+										className="text-[13px] font-medium text-[var(--text-primary)]"
+									>
+										Company Name
+									</FieldLabel>
+									<Input
+										id="tenantSlug"
+										name="tenantSlug"
+										type="text"
+										placeholder="acme"
+										autoComplete="organization"
+										className="h-10 rounded-xl text-[15px] px-3.5"
+									/>
+								</Field>
 								<Field>
 									<FieldLabel
 										htmlFor="username"
