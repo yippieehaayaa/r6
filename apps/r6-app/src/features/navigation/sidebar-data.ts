@@ -142,21 +142,29 @@ export const data = {
 			],
 		},
 		{
-			title: "Administration",
-			url: "#",
+			title: "Identity & Access",
+			url: "/iam",
 			icon: Shield,
 			items: [
 				{
-					title: "Identities",
-					url: "#",
+					title: "Overview",
+					url: "/iam",
 				},
 				{
-					title: "Roles & Policies",
-					url: "#",
+					title: "Identities",
+					url: "/iam/identities",
+				},
+				{
+					title: "Roles",
+					url: "/iam/roles",
+				},
+				{
+					title: "Policies",
+					url: "/iam/policies",
 				},
 				{
 					title: "Tenants",
-					url: "#",
+					url: "/iam/tenants",
 				},
 			],
 		},

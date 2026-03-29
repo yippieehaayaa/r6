@@ -12,6 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedIamIndexRouteImport } from './routes/_authenticated/iam/index'
+import { Route as AuthenticatedIamTenantsRouteImport } from './routes/_authenticated/iam/tenants'
+import { Route as AuthenticatedIamRolesRouteImport } from './routes/_authenticated/iam/roles'
+import { Route as AuthenticatedIamPoliciesRouteImport } from './routes/_authenticated/iam/policies'
+import { Route as AuthenticatedIamIdentitiesRouteImport } from './routes/_authenticated/iam/identities'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -27,27 +32,92 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedIamIndexRoute = AuthenticatedIamIndexRouteImport.update({
+  id: '/iam/',
+  path: '/iam/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedIamTenantsRoute = AuthenticatedIamTenantsRouteImport.update({
+  id: '/iam/tenants',
+  path: '/iam/tenants',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedIamRolesRoute = AuthenticatedIamRolesRouteImport.update({
+  id: '/iam/roles',
+  path: '/iam/roles',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedIamPoliciesRoute =
+  AuthenticatedIamPoliciesRouteImport.update({
+    id: '/iam/policies',
+    path: '/iam/policies',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedIamIdentitiesRoute =
+  AuthenticatedIamIdentitiesRouteImport.update({
+    id: '/iam/identities',
+    path: '/iam/identities',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
+  '/iam/policies': typeof AuthenticatedIamPoliciesRoute
+  '/iam/roles': typeof AuthenticatedIamRolesRoute
+  '/iam/tenants': typeof AuthenticatedIamTenantsRoute
+  '/iam/': typeof AuthenticatedIamIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthenticatedIndexRoute
+  '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
+  '/iam/policies': typeof AuthenticatedIamPoliciesRoute
+  '/iam/roles': typeof AuthenticatedIamRolesRoute
+  '/iam/tenants': typeof AuthenticatedIamTenantsRoute
+  '/iam': typeof AuthenticatedIamIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/iam/identities': typeof AuthenticatedIamIdentitiesRoute
+  '/_authenticated/iam/policies': typeof AuthenticatedIamPoliciesRoute
+  '/_authenticated/iam/roles': typeof AuthenticatedIamRolesRoute
+  '/_authenticated/iam/tenants': typeof AuthenticatedIamTenantsRoute
+  '/_authenticated/iam/': typeof AuthenticatedIamIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/iam/identities'
+    | '/iam/policies'
+    | '/iam/roles'
+    | '/iam/tenants'
+    | '/iam/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_authenticated' | '/login' | '/_authenticated/'
+  to:
+    | '/login'
+    | '/'
+    | '/iam/identities'
+    | '/iam/policies'
+    | '/iam/roles'
+    | '/iam/tenants'
+    | '/iam'
+  id:
+    | '__root__'
+    | '/_authenticated'
+    | '/login'
+    | '/_authenticated/'
+    | '/_authenticated/iam/identities'
+    | '/_authenticated/iam/policies'
+    | '/_authenticated/iam/roles'
+    | '/_authenticated/iam/tenants'
+    | '/_authenticated/iam/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,15 +148,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/iam/': {
+      id: '/_authenticated/iam/'
+      path: '/iam'
+      fullPath: '/iam/'
+      preLoaderRoute: typeof AuthenticatedIamIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/iam/tenants': {
+      id: '/_authenticated/iam/tenants'
+      path: '/iam/tenants'
+      fullPath: '/iam/tenants'
+      preLoaderRoute: typeof AuthenticatedIamTenantsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/iam/roles': {
+      id: '/_authenticated/iam/roles'
+      path: '/iam/roles'
+      fullPath: '/iam/roles'
+      preLoaderRoute: typeof AuthenticatedIamRolesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/iam/policies': {
+      id: '/_authenticated/iam/policies'
+      path: '/iam/policies'
+      fullPath: '/iam/policies'
+      preLoaderRoute: typeof AuthenticatedIamPoliciesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/iam/identities': {
+      id: '/_authenticated/iam/identities'
+      path: '/iam/identities'
+      fullPath: '/iam/identities'
+      preLoaderRoute: typeof AuthenticatedIamIdentitiesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedIamIdentitiesRoute: typeof AuthenticatedIamIdentitiesRoute
+  AuthenticatedIamPoliciesRoute: typeof AuthenticatedIamPoliciesRoute
+  AuthenticatedIamRolesRoute: typeof AuthenticatedIamRolesRoute
+  AuthenticatedIamTenantsRoute: typeof AuthenticatedIamTenantsRoute
+  AuthenticatedIamIndexRoute: typeof AuthenticatedIamIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedIamIdentitiesRoute: AuthenticatedIamIdentitiesRoute,
+  AuthenticatedIamPoliciesRoute: AuthenticatedIamPoliciesRoute,
+  AuthenticatedIamRolesRoute: AuthenticatedIamRolesRoute,
+  AuthenticatedIamTenantsRoute: AuthenticatedIamTenantsRoute,
+  AuthenticatedIamIndexRoute: AuthenticatedIamIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

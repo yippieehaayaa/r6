@@ -23,9 +23,13 @@ export async function listTenantsFn(
 	return ListTenantsResponseSchema.parse(data);
 }
 
-export function useListTenantsQuery(params: ListTenantsParams = {}) {
+export function useListTenantsQuery(
+	params: ListTenantsParams = {},
+	options?: { staleTime?: number; gcTime?: number },
+) {
 	return useQuery({
 		queryKey: ["tenants", params],
 		queryFn: () => listTenantsFn(params),
+		...options,
 	});
 }

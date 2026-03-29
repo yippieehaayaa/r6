@@ -33,10 +33,12 @@ export async function listIdentitiesFn(
 export function useListIdentitiesQuery(
 	tenantSlug: string,
 	params: ListIdentitiesParams = {},
+	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
 		queryKey: ["identities", tenantSlug, params],
 		queryFn: () => listIdentitiesFn(tenantSlug, params),
 		enabled: !!tenantSlug,
+		...options,
 	});
 }

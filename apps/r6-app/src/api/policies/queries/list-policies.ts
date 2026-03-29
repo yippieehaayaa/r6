@@ -27,10 +27,12 @@ export async function listPoliciesFn(
 export function useListPoliciesQuery(
 	tenantSlug: string,
 	params: ListPoliciesParams = {},
+	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
 		queryKey: ["policies", tenantSlug, params],
 		queryFn: () => listPoliciesFn(tenantSlug, params),
 		enabled: !!tenantSlug,
+		...options,
 	});
 }

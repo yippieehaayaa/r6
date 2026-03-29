@@ -6,7 +6,13 @@ import "./styles/globals.css";
 import { type AuthContext, AuthProvider, useAuth } from "./auth";
 import { routeTree } from "./routeTree.gen";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			staleTime: 2 * 60 * 1000,
+		},
+	},
+});
 
 const router = createRouter({
 	routeTree,
