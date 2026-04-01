@@ -15,6 +15,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Link } from "@tanstack/react-router";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -43,10 +44,10 @@ export function NavProjects({
 				{projects.map((item) => (
 					<SidebarMenuItem key={item.name}>
 						<SidebarMenuButton asChild>
-							<a href={item.url}>
-								<item.icon />
-								<span>{item.name}</span>
-							</a>
+						<Link to={item.url}>
+							<item.icon />
+							<span>{item.name}</span>
+						</Link>
 						</SidebarMenuButton>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>

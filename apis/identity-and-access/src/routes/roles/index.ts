@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin } from "../../middleware/guard";
+import { requireAdmin, requireAdminOrTenantOwner } from "../../middleware/guard";
 import { attachPolicy } from "./controller/attach-policy";
 import { createRoleHandler } from "./controller/create";
 import { detachPolicy } from "./controller/detach-policy";
@@ -13,16 +13,16 @@ import { updateRoleHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
 
-router.use(authMiddleware(), requireAdmin());
+router.use(authMiddleware());
 
-router.post("/", createRoleHandler);
-router.get("/", list);
-router.get("/:id", getRole);
-router.patch("/:id", updateRoleHandler);
-router.delete("/:id", remove);
-router.post("/:id/restore", restore);
-router.post("/:id/policies", attachPolicy);
-router.delete("/:id/policies/:policyId", detachPolicy);
-router.put("/:id/policies", setPolicies);
+router.post("/", requireAdminOrTenantOwner(), createRoleHandler);
+router.get("/", requireAdminOrTenantOwner(), list);
+router.get("/:id", requireAdminOrTenantOwner(), getRole);
+router.patch("/:id", requireAdminOrTenantOwner(), updateRoleHandler);
+router.delete("/:id", requireAdminOrTenantOwner(), remove);
+router.post("/:id/restore", requireAdmin(), restore);
+router.post("/:id/policies", requireAdminOrTenantOwner(), attachPolicy);
+router.delete("/:id/policies/:policyId", requireAdminOrTenantOwner(), detachPolicy);
+router.put("/:id/policies", requireAdminOrTenantOwner(), setPolicies);
 
 export default router;

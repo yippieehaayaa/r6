@@ -1,9 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import TenantsPage from "@/features/iam/tenants/page";
 
-export const Route = createFileRoute('/_authenticated/iam/tenants')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/_authenticated/iam/tenants"!</div>
-}
+export const Route = createFileRoute("/_authenticated/iam/tenants")({
+	beforeLoad: ({ context }) => {
+		if (context.auth.claims?.kind !== "ADMIN") {
+			throw redirect({ to: "/iam" });
+		}
+	},
+	component: TenantsPage,
+});
