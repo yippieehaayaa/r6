@@ -32,14 +32,12 @@ export function LoginForm({
 	async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
 		e.preventDefault();
 		const formData = new FormData(e.currentTarget);
-		const username = (formData.get("username") as string).trim();
+		const login = (formData.get("login") as string).trim();
 		const password = formData.get("password") as string;
-		const tenantSlugRaw = (formData.get("tenantSlug") as string).trim();
-		const tenantSlug = tenantSlugRaw || undefined;
 
 		setLoading(true);
 		try {
-			await auth.login({ username, password, tenantSlug });
+			await auth.login({ login, password });
 			toast.success("Signed in successfully");
 			navigate({ to: "/" });
 		} catch (error) {
@@ -98,32 +96,16 @@ export function LoginForm({
 							<FieldGroup className="gap-4">
 								<Field>
 									<FieldLabel
-										htmlFor="tenantSlug"
-										className="text-[13px] font-medium text-[var(--text-primary)]"
-									>
-										Company Name
-									</FieldLabel>
-									<Input
-										id="tenantSlug"
-										name="tenantSlug"
-										type="text"
-										placeholder="acme"
-										autoComplete="organization"
-										className="h-10 rounded-xl text-[15px] px-3.5"
-									/>
-								</Field>
-								<Field>
-									<FieldLabel
-										htmlFor="username"
+										htmlFor="login"
 										className="text-[13px] font-medium text-[var(--text-primary)]"
 									>
 										Username
 									</FieldLabel>
 									<Input
-										id="username"
-										name="username"
+										id="login"
+										name="login"
 										type="text"
-										placeholder="username"
+										placeholder="john@acme-corp"
 										autoComplete="username"
 										className="h-10 rounded-xl text-[15px] px-3.5"
 										required

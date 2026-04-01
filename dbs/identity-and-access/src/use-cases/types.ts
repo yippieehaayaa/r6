@@ -118,7 +118,6 @@ export type VerifyIdentityInput = {
   tenantId?: string | null;
   tenantSlug?: string | null;
   username?: string;
-  email?: string;
   password: string;
 };
 

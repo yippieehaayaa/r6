@@ -19,30 +19,26 @@ export async function login(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { username, email, password, tenantId, tenantSlug } = req.body as {
-      username?: string;
-      email?: string;
-      password: string;
-      tenantId?: string;
-      tenantSlug?: string;
+    const { login, password } = req.body as {
+      login?: string;
+      password?: string;
     };
 
     if (!password)
       throw new AppError(400, "validation_error", "password is required");
-    if (!username && !email)
-      throw new AppError(
-        400,
-        "validation_error",
-        "username or email is required",
-      );
+    if (!login)
+      throw new AppError(400, "validation_error", "login is required");
+
+    // Parse combined identifier: "username@tenant-slug" or plain "username" (ADMIN)
+    const atIndex = login.lastIndexOf("@");
+    const username = atIndex === -1 ? login : login.slice(0, atIndex);
+    const tenantSlug = atIndex === -1 ? undefined : login.slice(atIndex + 1) || undefined;
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
       full = await verifyIdentity({
-        tenantId: tenantId ?? null,
         tenantSlug,
         username,
-        email,
         password,
       });
     } catch (e) {

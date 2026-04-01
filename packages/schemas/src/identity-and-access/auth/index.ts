@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { emailRegex } from "../base.schema";
 
 // ============================================================
 //  AUTH SCHEMAS
@@ -8,26 +7,13 @@ import { emailRegex } from "../base.schema";
 
 // ── Login ────────────────────────────────────────────────────
 
-export const LoginRequestSchema = z
-  .object({
-    /** Login via username */
-    username: z.string().min(1).optional(),
-    /** Login via e-mail */
-    email: z
-      .string()
-      .regex(emailRegex, "Must be a valid e-mail address")
-      .toLowerCase()
-      .optional(),
-    password: z.string().min(1, "Password is required"),
-    /** Resolve the tenant by UUID */
-    tenantId: z.string().uuid().optional(),
-    /** Resolve the tenant by URL slug */
-    tenantSlug: z.string().optional(),
-  })
-  .refine((d) => d.username !== undefined || d.email !== undefined, {
-    message: "Either username or email is required",
-    path: ["username"],
-  });
+// Combined login identifier.
+// Tenanted users: "username@tenant-slug" (e.g. "john@acme-corp")
+// ADMIN users:    plain username, no "@" (e.g. "admin")
+export const LoginRequestSchema = z.object({
+  login: z.string().min(1, "Login is required"),
+  password: z.string().min(1, "Password is required"),
+});
 
 export type LoginRequestInput = z.infer<typeof LoginRequestSchema>;
 
