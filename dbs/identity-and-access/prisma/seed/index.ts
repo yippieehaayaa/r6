@@ -6,7 +6,7 @@
  *
  * Permission format: {service}:{resource}:{action}
  *   service  → iam
- *   resource → identity | session | otp | role | policy | tenant
+ *   resource → identity | session | role | policy | tenant
  *   action   → read | create | update | delete | list | * (wildcard)
  *
  * Hierarchy: Tenant → Identity → Role → Policy → permissions[]
@@ -22,7 +22,7 @@
  * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read  iam:tenant:read  │
  * │ iam-viewer       │ Viewer@1234!     │ USER    │ demo-corp  │ iam:identity:read  iam:role:read  iam:policy:read  iam:tenant:read           │
  * │ identity-manager │ Identity@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/update/delete                                      │
- * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*  iam:otp:r/w            │
+ * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*                        │
  * └──────────────────┴──────────────────┴─────────┴────────────┴─────────────────────────────────────────────────────────────────────────────┘
  *
  * Sidebar visibility matrix (apps/r6-app sidebar-data permissions):
@@ -86,15 +86,6 @@ async function main() {
 			"iam:session:write",
 			"iam:session:delete",
 		],
-		audience: ["iam-api"],
-	});
-
-	const userOtpPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
-		name: "iam:user:otp",
-		description: "Request and verify OTPs",
-		effect: "ALLOW",
-		permissions: ["iam:otp:read", "iam:otp:write"],
 		audience: ["iam-api"],
 	});
 
@@ -254,7 +245,6 @@ async function main() {
 		userSessionPolicy.id,
 		"user → iam:user:session",
 	);
-	await linkPolicyToRole(userRole.id, userOtpPolicy.id, "user → iam:user:otp");
 
 	// tenant-owner (existing)
 	await linkPolicyToRole(

@@ -38,7 +38,7 @@ export const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
  * e.g. "inventory:stock:read", "inventory:*:*"
  */
 export const permissionRegex =
-  /^[a-z][a-z0-9-]*:[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*|\*)*$|^\*$/;
+  /^([a-z][a-z0-9-]*|\*):([a-z][a-z0-9-]*|\*):([a-z][a-z0-9-]*|\*)$|^\*$/;
 
 /**
  * Audience / service name: lowercase letters, digits, hyphens.
