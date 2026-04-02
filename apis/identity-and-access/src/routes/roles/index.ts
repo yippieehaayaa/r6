@@ -15,14 +15,17 @@ const router: Router = Router({ mergeParams: true });
 
 router.use(authMiddleware());
 
-router.post("/", requireAdminOrTenantOwner(), createRoleHandler);
+// Role definitions and policy attachments are ADMIN-only operations.
+// Tenant owners may read roles (to know which ones exist for assignment)
+// but cannot create, modify, or control what policies a role contains.
+router.post("/", requireAdmin(), createRoleHandler);
 router.get("/", requireAdminOrTenantOwner(), list);
 router.get("/:id", requireAdminOrTenantOwner(), getRole);
-router.patch("/:id", requireAdminOrTenantOwner(), updateRoleHandler);
-router.delete("/:id", requireAdminOrTenantOwner(), remove);
+router.patch("/:id", requireAdmin(), updateRoleHandler);
+router.delete("/:id", requireAdmin(), remove);
 router.post("/:id/restore", requireAdmin(), restore);
-router.post("/:id/policies", requireAdminOrTenantOwner(), attachPolicy);
-router.delete("/:id/policies/:policyId", requireAdminOrTenantOwner(), detachPolicy);
-router.put("/:id/policies", requireAdminOrTenantOwner(), setPolicies);
+router.post("/:id/policies", requireAdmin(), attachPolicy);
+router.delete("/:id/policies/:policyId", requireAdmin(), detachPolicy);
+router.put("/:id/policies", requireAdmin(), setPolicies);
 
 export default router;
