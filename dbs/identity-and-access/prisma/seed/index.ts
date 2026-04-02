@@ -19,7 +19,7 @@
  * │ login            │ password         │ kind    │ tenant     │ resolved permissions                                                        │
  * ├──────────────────┼──────────────────┼─────────┼────────────┼─────────────────────────────────────────────────────────────────────────────┤
  * │ admin            │ Admin@1234!      │ ADMIN   │ (none)     │ iam:*:*                                                                     │
- * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:r/c/u/d  iam:tenant:r   │
+ * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read  iam:tenant:read  │
  * │ iam-viewer       │ Viewer@1234!     │ USER    │ demo-corp  │ iam:identity:read  iam:role:read  iam:policy:read  iam:tenant:read           │
  * │ identity-manager │ Identity@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/update/delete                                      │
  * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*  iam:otp:r/w            │
@@ -142,17 +142,12 @@ async function main() {
 		audience: ["iam-api"],
 	});
 
-	const policyFullAccessPolicy = await upsertPolicy({
+	const policyReadPolicy = await upsertPolicy({
 		tenantId: demoTenant.id,
-		name: "iam:policy:full-access",
-		description: "Full CRUD access to policies",
+		name: "iam:policy:read-only",
+		description: "Read-only access to policies (writes are ADMIN-only at the API level)",
 		effect: "ALLOW",
-		permissions: [
-			"iam:policy:read",
-			"iam:policy:create",
-			"iam:policy:update",
-			"iam:policy:delete",
-		],
+		permissions: ["iam:policy:read"],
 		audience: ["iam-api"],
 	});
 
@@ -281,8 +276,8 @@ async function main() {
 	);
 	await linkPolicyToRole(
 		iamManagerRole.id,
-		policyFullAccessPolicy.id,
-		"iam-manager → iam:policy:full-access",
+		policyReadPolicy.id,
+		"iam-manager → iam:policy:read-only",
 	);
 	await linkPolicyToRole(
 		iamManagerRole.id,

@@ -2,7 +2,8 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
   requireAdmin,
-  requireAdminOrTenantOwner,
+  requirePermission,
+  requireTenantScope,
 } from "../../middleware/guard";
 import { attachPolicy } from "./controller/attach-policy";
 import { createRoleHandler } from "./controller/create";
@@ -16,17 +17,13 @@ import { updateRoleHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
 
-router.use(authMiddleware());
-
-// Tenant owners can fully manage role definitions within their tenant
-// (create, read, update, delete) to build their org structure.
-// Policy attachment is ADMIN-only — ADMIN controls what permissions
-// a role actually carries, preventing tenant privilege escalation.
-router.post("/", requireAdminOrTenantOwner(), createRoleHandler);
-router.get("/", requireAdminOrTenantOwner(), list);
-router.get("/:id", requireAdminOrTenantOwner(), getRole);
-router.patch("/:id", requireAdminOrTenantOwner(), updateRoleHandler);
-router.delete("/:id", requireAdminOrTenantOwner(), remove);
+// Policy attachment stays ADMIN-only — prevents tenant privilege escalation.
+router.use(authMiddleware(), requireTenantScope());
+router.post("/", requirePermission("iam:role:create"), createRoleHandler);
+router.get("/", requirePermission("iam:role:read"), list);
+router.get("/:id", requirePermission("iam:role:read"), getRole);
+router.patch("/:id", requirePermission("iam:role:update"), updateRoleHandler);
+router.delete("/:id", requirePermission("iam:role:delete"), remove);
 router.post("/:id/restore", requireAdmin(), restore);
 router.post("/:id/policies", requireAdmin(), attachPolicy);
 router.delete("/:id/policies/:policyId", requireAdmin(), detachPolicy);

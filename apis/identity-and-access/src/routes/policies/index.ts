@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin } from "../../middleware/guard";
+import {
+  requireAdmin,
+  requirePermission,
+  requireTenantScope,
+} from "../../middleware/guard";
 import { createPolicyHandler } from "./controller/create";
 import { getPolicy } from "./controller/get";
 import { list } from "./controller/list";
@@ -10,13 +14,13 @@ import { updatePolicyHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
 
-router.use(authMiddleware());
-
-// Policies define the permission vocabulary of the platform.
-// Only ADMIN can create, read, update, or delete them.
+// Reads are open to any identity with iam:policy:read.
+// Writes remain ADMIN-only — policies define the permission vocabulary;
+// allowing tenant users to mutate them would enable privilege escalation.
+router.use(authMiddleware(), requireTenantScope());
 router.post("/", requireAdmin(), createPolicyHandler);
-router.get("/", requireAdmin(), list);
-router.get("/:id", requireAdmin(), getPolicy);
+router.get("/", requirePermission("iam:policy:read"), list);
+router.get("/:id", requirePermission("iam:policy:read"), getPolicy);
 router.patch("/:id", requireAdmin(), updatePolicyHandler);
 router.delete("/:id", requireAdmin(), remove);
 router.post("/:id/restore", requireAdmin(), restore);
