@@ -7,21 +7,34 @@
  * Permission format: {service}:{resource}:{action}
  *   service  → iam
  *   resource → identity | session | otp | role | policy | tenant
- *   action   → read | write | delete | list | * (wildcard)
+ *   action   → read | create | update | delete | list | * (wildcard)
  *
  * Hierarchy: Tenant → Identity → Role → Policy → permissions[]
  *
  * tenantId = null  → platform-level (ADMIN identities, platform roles/policies)
  * tenantId = uuid  → tenant-scoped  (USER identities, tenant roles/policies)
  *
- * Seeded identities:
- * ┌────────────┬──────────────┬─────────┬────────────┬────────────────────────────────────────────────────────────────────────┐
- * │ username   │ password     │ kind    │ tenant     │ permissions                                                            │
- * ├────────────┼──────────────┼─────────┼────────────┼────────────────────────────────────────────────────────────────────────┤
- * │ admin      │ Admin@1234!  │ ADMIN   │ (none)     │ iam:*:*  (role: admin)                                                 │
- * │ testuser   │ User@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/list, iam:session:*, iam:otp:read/write       │
- * │            │              │         │            │ (roles: user + tenant-owner)                                           │
- * └────────────┴──────────────┴─────────┴────────────┴────────────────────────────────────────────────────────────────────────┘
+ * Seeded identities
+ * ┌──────────────────┬──────────────────┬─────────┬────────────┬─────────────────────────────────────────────────────────────────────────────┐
+ * │ login            │ password         │ kind    │ tenant     │ resolved permissions                                                        │
+ * ├──────────────────┼──────────────────┼─────────┼────────────┼─────────────────────────────────────────────────────────────────────────────┤
+ * │ admin            │ Admin@1234!      │ ADMIN   │ (none)     │ iam:*:*                                                                     │
+ * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:r/c/u/d  iam:tenant:r   │
+ * │ iam-viewer       │ Viewer@1234!     │ USER    │ demo-corp  │ iam:identity:read  iam:role:read  iam:policy:read  iam:tenant:read           │
+ * │ identity-manager │ Identity@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/update/delete                                      │
+ * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*  iam:otp:r/w            │
+ * └──────────────────┴──────────────────┴─────────┴────────────┴─────────────────────────────────────────────────────────────────────────────┘
+ *
+ * Sidebar visibility matrix (apps/r6-app sidebar-data permissions):
+ * ┌──────────────────┬────────────┬───────┬──────────┬─────────┐
+ * │ identity         │ Identities │ Roles │ Policies │ Tenants │
+ * ├──────────────────┼────────────┼───────┼──────────┼─────────┤
+ * │ admin            │ ✓          │ ✓     │ ✓        │ ✓       │
+ * │ iam-manager      │ ✓          │ ✓     │ ✓        │ ✓       │
+ * │ iam-viewer       │ ✓          │ ✓     │ ✓        │ ✓       │
+ * │ identity-manager │ ✓          │ ✗     │ ✗        │ ✗       │
+ * │ testuser         │ ✓          │ ✓     │ ✗        │ ✗       │
+ * └──────────────────┴────────────┴───────┴──────────┴─────────┘
  */
 
 import { prisma } from "../../src/client.js";
@@ -33,8 +46,6 @@ import { upsertTenant } from "./tenant.js";
 async function main() {
 	console.log("\n── Tenants ───────────────────────────────────");
 
-	// Platform-level ADMIN identities have tenantId = null.
-	// All USER identities must belong to a tenant — create one for seeding.
 	const demoTenant = await upsertTenant({
 		name: "Demo Corp",
 		slug: "demo-corp",
@@ -43,7 +54,8 @@ async function main() {
 
 	console.log("\n── Policies ──────────────────────────────────");
 
-	// Platform-level policy (tenantId = null) — attached to the admin role only.
+	// ── Platform-level (tenantId: null) ──────────────────────────────────────
+
 	const adminPolicy = await upsertPolicy({
 		tenantId: null,
 		name: "iam:admin:full-access",
@@ -53,7 +65,8 @@ async function main() {
 		audience: ["iam-api"],
 	});
 
-	// Tenant-scoped policies — attached to the user role for demo-corp.
+	// ── Tenant-scoped: existing user policies ────────────────────────────────
+
 	const userIdentityPolicy = await upsertPolicy({
 		tenantId: demoTenant.id,
 		name: "iam:user:identity",
@@ -85,7 +98,6 @@ async function main() {
 		audience: ["iam-api"],
 	});
 
-	// Tenant-owner policy — grants identity management within the owner's tenant.
 	const tenantOwnerIdentityPolicy = await upsertPolicy({
 		tenantId: demoTenant.id,
 		name: "iam:tenant-owner:identity-management",
@@ -100,36 +112,143 @@ async function main() {
 		audience: ["iam-api"],
 	});
 
+	// ── Tenant-scoped: granular resource policies ─────────────────────────────
+
+	const identityFullAccessPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:identity:full-access",
+		description: "Full CRUD access to identities",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:identity:create",
+			"iam:identity:update",
+			"iam:identity:delete",
+		],
+		audience: ["iam-api"],
+	});
+
+	const roleFullAccessPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:role:full-access",
+		description: "Full CRUD access to roles",
+		effect: "ALLOW",
+		permissions: [
+			"iam:role:read",
+			"iam:role:create",
+			"iam:role:update",
+			"iam:role:delete",
+		],
+		audience: ["iam-api"],
+	});
+
+	const policyFullAccessPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:policy:full-access",
+		description: "Full CRUD access to policies",
+		effect: "ALLOW",
+		permissions: [
+			"iam:policy:read",
+			"iam:policy:create",
+			"iam:policy:update",
+			"iam:policy:delete",
+		],
+		audience: ["iam-api"],
+	});
+
+	const tenantReadPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:tenant:read-only",
+		description: "Read-only access to tenant information",
+		effect: "ALLOW",
+		permissions: ["iam:tenant:read"],
+		audience: ["iam-api"],
+	});
+
+	const iamReadOnlyPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:read-only",
+		description:
+			"Read-only access to all IAM resources (identities, roles, policies, tenants)",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:role:read",
+			"iam:policy:read",
+			"iam:tenant:read",
+		],
+		audience: ["iam-api"],
+	});
+
+	const roleReadOnlyPolicy = await upsertPolicy({
+		tenantId: demoTenant.id,
+		name: "iam:role:read-only",
+		description: "Read-only access to roles",
+		effect: "ALLOW",
+		permissions: ["iam:role:read"],
+		audience: ["iam-api"],
+	});
+
 	console.log("\n── Roles ─────────────────────────────────────");
 
-	// Platform-level role (tenantId = null) — for ADMIN identities only.
+	// ── Platform-level ────────────────────────────────────────────────────────
+
 	const adminRole = await upsertRole(
 		"admin",
 		"Full IAM administration access",
 		null,
 	);
 
-	// Tenant-scoped role for demo-corp USER identities.
+	// ── Tenant-scoped: existing ───────────────────────────────────────────────
+
 	const userRole = await upsertRole(
 		"user",
 		"Standard self-service user access",
 		demoTenant.id,
 	);
 
-	// Tenant-owner role — scoped to demo-corp; grants identity management.
 	const tenantOwnerRole = await upsertRole(
 		"tenant-owner",
 		"Tenant owner — can manage identities within their own tenant",
 		demoTenant.id,
 	);
 
+	// ── Tenant-scoped: new ────────────────────────────────────────────────────
+
+	const iamManagerRole = await upsertRole(
+		"iam-manager",
+		"Full IAM management: identities, roles, policies, and tenant read",
+		demoTenant.id,
+	);
+
+	const iamViewerRole = await upsertRole(
+		"iam-viewer",
+		"Read-only access to all IAM resources",
+		demoTenant.id,
+	);
+
+	const identityManagerRole = await upsertRole(
+		"identity-manager",
+		"Full CRUD access to identities only",
+		demoTenant.id,
+	);
+
+	const roleViewerRole = await upsertRole(
+		"role-viewer",
+		"Read-only access to roles",
+		demoTenant.id,
+	);
+
 	console.log("\n── Role → Policy assignments ─────────────────");
 
+	// admin
 	await linkPolicyToRole(
 		adminRole.id,
 		adminPolicy.id,
 		"admin → iam:admin:full-access",
 	);
+
+	// user (existing)
 	await linkPolicyToRole(
 		userRole.id,
 		userIdentityPolicy.id,
@@ -141,15 +260,59 @@ async function main() {
 		"user → iam:user:session",
 	);
 	await linkPolicyToRole(userRole.id, userOtpPolicy.id, "user → iam:user:otp");
+
+	// tenant-owner (existing)
 	await linkPolicyToRole(
 		tenantOwnerRole.id,
 		tenantOwnerIdentityPolicy.id,
 		"tenant-owner → iam:tenant-owner:identity-management",
 	);
 
+	// iam-manager: full CRUD on identity + role + policy, plus tenant read
+	await linkPolicyToRole(
+		iamManagerRole.id,
+		identityFullAccessPolicy.id,
+		"iam-manager → iam:identity:full-access",
+	);
+	await linkPolicyToRole(
+		iamManagerRole.id,
+		roleFullAccessPolicy.id,
+		"iam-manager → iam:role:full-access",
+	);
+	await linkPolicyToRole(
+		iamManagerRole.id,
+		policyFullAccessPolicy.id,
+		"iam-manager → iam:policy:full-access",
+	);
+	await linkPolicyToRole(
+		iamManagerRole.id,
+		tenantReadPolicy.id,
+		"iam-manager → iam:tenant:read-only",
+	);
+
+	// iam-viewer: read-only across all IAM resources
+	await linkPolicyToRole(
+		iamViewerRole.id,
+		iamReadOnlyPolicy.id,
+		"iam-viewer → iam:read-only",
+	);
+
+	// identity-manager: identity CRUD only
+	await linkPolicyToRole(
+		identityManagerRole.id,
+		identityFullAccessPolicy.id,
+		"identity-manager → iam:identity:full-access",
+	);
+
+	// role-viewer: role read only
+	await linkPolicyToRole(
+		roleViewerRole.id,
+		roleReadOnlyPolicy.id,
+		"role-viewer → iam:role:read-only",
+	);
+
 	console.log("\n── Identities ────────────────────────────────");
 
-	// ADMIN identity — tenantId = null (platform-level).
 	const adminIdentity = await upsertIdentity({
 		tenantId: null,
 		username: "admin",
@@ -158,7 +321,6 @@ async function main() {
 		kind: "ADMIN",
 	});
 
-	// USER identity — scoped to demo-corp.
 	const testUser = await upsertIdentity({
 		tenantId: demoTenant.id,
 		username: "testuser",
@@ -167,26 +329,91 @@ async function main() {
 		kind: "USER",
 	});
 
+	const iamManagerUser = await upsertIdentity({
+		tenantId: demoTenant.id,
+		username: "iam-manager",
+		email: "iam-manager@example.com",
+		password: "Manager@1234!",
+		kind: "USER",
+	});
+
+	const iamViewerUser = await upsertIdentity({
+		tenantId: demoTenant.id,
+		username: "iam-viewer",
+		email: "iam-viewer@example.com",
+		password: "Viewer@1234!",
+		kind: "USER",
+	});
+
+	const identityManagerUser = await upsertIdentity({
+		tenantId: demoTenant.id,
+		username: "identity-manager",
+		email: "identity-manager@example.com",
+		password: "Identity@1234!",
+		kind: "USER",
+	});
+
 	console.log("\n── Identity → Role assignments ───────────────");
 
+	// admin
 	await linkRoleToIdentity(
 		adminRole.id,
 		adminIdentity.id,
 		"admin → role:admin",
 	);
+
+	// testuser: existing roles + new role-viewer (Identities ✓, Roles ✓, Policies ✗, Tenants ✗)
 	await linkRoleToIdentity(userRole.id, testUser.id, "testuser → role:user");
 	await linkRoleToIdentity(
 		tenantOwnerRole.id,
 		testUser.id,
 		"testuser → role:tenant-owner",
 	);
+	await linkRoleToIdentity(
+		roleViewerRole.id,
+		testUser.id,
+		"testuser → role:role-viewer",
+	);
+
+	// dedicated identities
+	await linkRoleToIdentity(
+		iamManagerRole.id,
+		iamManagerUser.id,
+		"iam-manager → role:iam-manager",
+	);
+	await linkRoleToIdentity(
+		iamViewerRole.id,
+		iamViewerUser.id,
+		"iam-viewer → role:iam-viewer",
+	);
+	await linkRoleToIdentity(
+		identityManagerRole.id,
+		identityManagerUser.id,
+		"identity-manager → role:identity-manager",
+	);
 
 	console.log("\n── Done ──────────────────────────────────────\n");
-	console.log("Test credentials & resolved permissions:");
-	console.log("  admin    → iam:*:*  (role:admin → iam:admin:full-access)");
+	console.log("Test credentials and sidebar access:");
 	console.log(
-		"  testuser → iam:identity:create/read/list, iam:session:read/write/delete, iam:otp:read/write  (roles:user+tenant-owner, tenant:demo-corp)",
+		"  admin             (Admin@1234!)    → all IAM sections  [ADMIN bypass]",
 	);
+	console.log(
+		"  iam-manager       (Manager@1234!)  → all IAM sections  + write",
+	);
+	console.log(
+		"  iam-viewer        (Viewer@1234!)   → all IAM sections  read-only",
+	);
+	console.log(
+		"  identity-manager  (Identity@1234!) → Identities only   + write",
+	);
+	console.log(
+		"  testuser          (User@1234!)     → Identities + Roles only",
+	);
+	console.log();
+	console.log(
+		"Login format: username@tenant-slug  (e.g. iam-manager@demo-corp)",
+	);
+	console.log("Admin login:  username only         (e.g. admin)");
 	console.log();
 }
 
