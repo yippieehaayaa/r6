@@ -2,6 +2,7 @@
 
 import { Link } from "@tanstack/react-router";
 import { ChevronRight, type LucideIcon } from "lucide-react";
+import { useAuth } from "@/auth";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -29,14 +30,26 @@ export function NavMain({
 		items?: {
 			title: string;
 			url: string;
+			permission?: string;
 		}[];
 	}[];
 }) {
+	const { hasPermission } = useAuth();
+
+	const visibleItems = items
+		.map((item) => ({
+			...item,
+			items: item.items?.filter(
+				(sub) => !sub.permission || hasPermission(sub.permission),
+			),
+		}))
+		.filter((item) => !item.items || item.items.length > 0);
+
 	return (
 		<SidebarGroup>
 			<SidebarGroupLabel>Platform</SidebarGroupLabel>
 			<SidebarMenu>
-				{items.map((item) => (
+				{visibleItems.map((item) => (
 					<Collapsible
 						key={item.title}
 						asChild

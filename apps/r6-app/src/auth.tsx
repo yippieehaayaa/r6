@@ -80,7 +80,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	}
 
 	function hasPermission(permission: string): boolean {
-		return claims?.permissions.includes(permission) ?? false;
+		if (!claims) return false;
+		if (claims.kind === "ADMIN") return true;
+		const required = permission.split(":");
+		return claims.permissions.some((granted) => {
+			const segments = granted.split(":");
+			if (segments.length !== required.length) return false;
+			return segments.every((seg, i) => seg === "*" || seg === required[i]);
+		});
 	}
 
 	function hasRole(role: string): boolean {

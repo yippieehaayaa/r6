@@ -149,22 +149,27 @@ export const data = {
 				{
 					title: "Overview",
 					url: "/iam",
+					permission: "iam:identity:read",
 				},
 				{
 					title: "Identities",
 					url: "/iam/identities",
+					permission: "iam:identity:read",
 				},
 				{
 					title: "Roles",
 					url: "/iam/roles",
+					permission: "iam:role:read",
 				},
 				{
 					title: "Policies",
 					url: "/iam/policies",
+					permission: "iam:policy:read",
 				},
 				{
 					title: "Tenants",
 					url: "/iam/tenants",
+					permission: "iam:tenant:read",
 				},
 			],
 		},

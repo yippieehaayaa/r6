@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedForbiddenRouteImport } from './routes/_authenticated/forbidden'
 import { Route as AuthenticatedIamIndexRouteImport } from './routes/_authenticated/iam/index'
 import { Route as AuthenticatedIamTenantsRouteImport } from './routes/_authenticated/iam/tenants'
 import { Route as AuthenticatedIamRolesRouteImport } from './routes/_authenticated/iam/roles'
@@ -30,6 +31,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedForbiddenRoute = AuthenticatedForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedIamIndexRoute = AuthenticatedIamIndexRouteImport.update({
@@ -63,6 +69,7 @@ const AuthenticatedIamIdentitiesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/forbidden': typeof AuthenticatedForbiddenRoute
   '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
   '/iam/policies': typeof AuthenticatedIamPoliciesRoute
   '/iam/roles': typeof AuthenticatedIamRolesRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/forbidden': typeof AuthenticatedForbiddenRoute
   '/': typeof AuthenticatedIndexRoute
   '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
   '/iam/policies': typeof AuthenticatedIamPoliciesRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/forbidden': typeof AuthenticatedForbiddenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/iam/identities': typeof AuthenticatedIamIdentitiesRoute
   '/_authenticated/iam/policies': typeof AuthenticatedIamPoliciesRoute
@@ -94,6 +103,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/forbidden'
     | '/iam/identities'
     | '/iam/policies'
     | '/iam/roles'
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/forbidden'
     | '/'
     | '/iam/identities'
     | '/iam/policies'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/forbidden'
     | '/_authenticated/'
     | '/_authenticated/iam/identities'
     | '/_authenticated/iam/policies'
@@ -146,6 +158,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/forbidden': {
+      id: '/_authenticated/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof AuthenticatedForbiddenRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/iam/': {
@@ -187,6 +206,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedForbiddenRoute: typeof AuthenticatedForbiddenRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedIamIdentitiesRoute: typeof AuthenticatedIamIdentitiesRoute
   AuthenticatedIamPoliciesRoute: typeof AuthenticatedIamPoliciesRoute
@@ -196,6 +216,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedForbiddenRoute: AuthenticatedForbiddenRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedIamIdentitiesRoute: AuthenticatedIamIdentitiesRoute,
   AuthenticatedIamPoliciesRoute: AuthenticatedIamPoliciesRoute,

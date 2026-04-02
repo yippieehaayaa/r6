@@ -8,6 +8,7 @@ import {
 	MoreHorizontal,
 	Trash2,
 } from "lucide-react";
+import { useAuth } from "@/auth";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -32,15 +33,21 @@ export function NavProjects({
 		name: string;
 		url: string;
 		icon: LucideIcon;
+		permission?: string;
 	}[];
 }) {
 	const { isMobile } = useSidebar();
+	const { hasPermission } = useAuth();
+
+	const visibleProjects = projects.filter(
+		(item) => !item.permission || hasPermission(item.permission),
+	);
 
 	return (
 		<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 			<SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
 			<SidebarMenu>
-				{projects.map((item) => (
+				{visibleProjects.map((item) => (
 					<SidebarMenuItem key={item.name}>
 						<SidebarMenuButton asChild>
 							<Link to={item.url}>
