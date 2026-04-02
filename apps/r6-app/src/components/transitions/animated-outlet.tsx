@@ -6,7 +6,7 @@ export function AnimatedOutlet() {
 	return (
 		<div
 			key={pathname}
-			className="animate-apple-enter w-full flex flex-1 flex-col"
+			className="animate-page-enter w-full flex flex-1 flex-col"
 		>
 			<Outlet />
 		</div>
