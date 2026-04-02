@@ -18,14 +18,15 @@ const router: Router = Router({ mergeParams: true });
 
 router.use(authMiddleware());
 
-// Role definitions and policy attachments are ADMIN-only operations.
-// Tenant owners may read roles (to know which ones exist for assignment)
-// but cannot create, modify, or control what policies a role contains.
-router.post("/", requireAdmin(), createRoleHandler);
+// Tenant owners can fully manage role definitions within their tenant
+// (create, read, update, delete) to build their org structure.
+// Policy attachment is ADMIN-only — ADMIN controls what permissions
+// a role actually carries, preventing tenant privilege escalation.
+router.post("/", requireAdminOrTenantOwner(), createRoleHandler);
 router.get("/", requireAdminOrTenantOwner(), list);
 router.get("/:id", requireAdminOrTenantOwner(), getRole);
-router.patch("/:id", requireAdmin(), updateRoleHandler);
-router.delete("/:id", requireAdmin(), remove);
+router.patch("/:id", requireAdminOrTenantOwner(), updateRoleHandler);
+router.delete("/:id", requireAdminOrTenantOwner(), remove);
 router.post("/:id/restore", requireAdmin(), restore);
 router.post("/:id/policies", requireAdmin(), attachPolicy);
 router.delete("/:id/policies/:policyId", requireAdmin(), detachPolicy);
