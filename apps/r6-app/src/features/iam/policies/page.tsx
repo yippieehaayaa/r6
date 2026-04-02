@@ -1,6 +1,6 @@
 import type { Policy } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {

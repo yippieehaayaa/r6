@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { KeyRound, ShieldCheck, Users, Building2 } from "lucide-react";
+import { Building2, KeyRound, ShieldCheck, Users } from "lucide-react";
 import {
 	Card,
 	CardContent,

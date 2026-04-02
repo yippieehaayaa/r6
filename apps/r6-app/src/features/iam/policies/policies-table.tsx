@@ -1,5 +1,5 @@
 import type { Policy } from "@r6/schemas";
-import { MoreHorizontal, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,13 +47,19 @@ export function PoliciesTable({
 			<TableBody>
 				{isLoading ? (
 					<TableRow>
-						<TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+						<TableCell
+							colSpan={6}
+							className="text-center text-muted-foreground py-8"
+						>
 							Loading…
 						</TableCell>
 					</TableRow>
 				) : data.length === 0 ? (
 					<TableRow>
-						<TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+						<TableCell
+							colSpan={6}
+							className="text-center text-muted-foreground py-8"
+						>
 							No policies found.
 						</TableCell>
 					</TableRow>
@@ -63,7 +69,9 @@ export function PoliciesTable({
 							<TableCell className="font-medium">{policy.name}</TableCell>
 							<TableCell>
 								<Badge
-									variant={policy.effect === "ALLOW" ? "default" : "destructive"}
+									variant={
+										policy.effect === "ALLOW" ? "default" : "destructive"
+									}
 								>
 									{policy.effect}
 								</Badge>

@@ -1,6 +1,6 @@
 import type { IdentitySafe } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -66,7 +66,9 @@ export default function IdentitiesPage() {
 			{ tenantSlug, id: deleteTarget.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["identities", tenantSlug] });
+					queryClient.invalidateQueries({
+						queryKey: ["identities", tenantSlug],
+					});
 					toast.success("Identity deleted.");
 					setDeleteTarget(null);
 				},
@@ -80,7 +82,9 @@ export default function IdentitiesPage() {
 			{ tenantSlug, id: identity.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["identities", tenantSlug] });
+					queryClient.invalidateQueries({
+						queryKey: ["identities", tenantSlug],
+					});
 					toast.success("Identity restored.");
 				},
 				onError: (err) => toast.error(err.message),
@@ -161,10 +165,7 @@ export default function IdentitiesPage() {
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction
-							variant="destructive"
-							onClick={confirmDelete}
-						>
+						<AlertDialogAction variant="destructive" onClick={confirmDelete}>
 							Delete
 						</AlertDialogAction>
 					</AlertDialogFooter>

@@ -1,5 +1,5 @@
 import type { Tenant } from "@r6/schemas";
-import { MoreHorizontal, Pencil, Trash2, RotateCcw } from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,13 @@ interface Props {
 	onRestore: (tenant: Tenant) => void;
 }
 
-export function TenantsTable({ data, isLoading, onEdit, onDelete, onRestore }: Props) {
+export function TenantsTable({
+	data,
+	isLoading,
+	onEdit,
+	onDelete,
+	onRestore,
+}: Props) {
 	return (
 		<Table>
 			<TableHeader>
@@ -41,13 +47,19 @@ export function TenantsTable({ data, isLoading, onEdit, onDelete, onRestore }: P
 			<TableBody>
 				{isLoading ? (
 					<TableRow>
-						<TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+						<TableCell
+							colSpan={6}
+							className="text-center text-muted-foreground py-8"
+						>
 							Loading…
 						</TableCell>
 					</TableRow>
 				) : data.length === 0 ? (
 					<TableRow>
-						<TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+						<TableCell
+							colSpan={6}
+							className="text-center text-muted-foreground py-8"
+						>
 							No tenants found.
 						</TableCell>
 					</TableRow>

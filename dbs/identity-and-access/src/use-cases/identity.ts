@@ -199,7 +199,10 @@ const verifyIdentity = async (
     tenantId = tenant.id;
   }
 
-  const identity = await getIdentityByUsername(tenantId, input.username as string);
+  const identity = await getIdentityByUsername(
+    tenantId,
+    input.username as string,
+  );
 
   if (!identity) throw new Error("invalid_credentials");
 

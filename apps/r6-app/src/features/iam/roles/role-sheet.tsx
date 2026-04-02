@@ -2,10 +2,7 @@ import type { Role } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-	useCreateRoleMutation,
-	useUpdateRoleMutation,
-} from "@/api/roles";
+import { useCreateRoleMutation, useUpdateRoleMutation } from "@/api/roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,7 +129,10 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 								onChange={(e) => setIsActive(e.target.checked)}
 								className="size-4 rounded border-input"
 							/>
-							<Label htmlFor="isActive" className="text-sm font-normal cursor-pointer">
+							<Label
+								htmlFor="isActive"
+								className="text-sm font-normal cursor-pointer"
+							>
 								Active
 							</Label>
 						</div>

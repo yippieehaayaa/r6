@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
-import { requireAdmin, requireAdminOrTenantOwner } from "../../middleware/guard";
+import {
+  requireAdmin,
+  requireAdminOrTenantOwner,
+} from "../../middleware/guard";
 import { attachPolicy } from "./controller/attach-policy";
 import { createRoleHandler } from "./controller/create";
 import { detachPolicy } from "./controller/detach-policy";

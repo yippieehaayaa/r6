@@ -1,4 +1,3 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import {
 	Sidebar,
 	SidebarContent,
@@ -13,6 +12,7 @@ import {
 	SidebarRail,
 	SidebarSeparator,
 } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function SkeletonSidebar() {
 	return (

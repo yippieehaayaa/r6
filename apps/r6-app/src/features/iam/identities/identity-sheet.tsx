@@ -31,7 +31,12 @@ const STATUS_OPTIONS = [
 	"PENDING_VERIFICATION",
 ] as const;
 
-export function IdentitySheet({ open, onOpenChange, tenantSlug, identity }: Props) {
+export function IdentitySheet({
+	open,
+	onOpenChange,
+	tenantSlug,
+	identity,
+}: Props) {
 	const isEdit = !!identity;
 	const queryClient = useQueryClient();
 
@@ -76,7 +81,9 @@ export function IdentitySheet({ open, onOpenChange, tenantSlug, identity }: Prop
 				},
 				{
 					onSuccess: () => {
-						queryClient.invalidateQueries({ queryKey: ["identities", tenantSlug] });
+						queryClient.invalidateQueries({
+							queryKey: ["identities", tenantSlug],
+						});
 						toast.success("Identity updated.");
 						onOpenChange(false);
 					},
@@ -97,7 +104,9 @@ export function IdentitySheet({ open, onOpenChange, tenantSlug, identity }: Prop
 				},
 				{
 					onSuccess: () => {
-						queryClient.invalidateQueries({ queryKey: ["identities", tenantSlug] });
+						queryClient.invalidateQueries({
+							queryKey: ["identities", tenantSlug],
+						});
 						toast.success("Identity created.");
 						onOpenChange(false);
 					},
@@ -177,7 +186,10 @@ export function IdentitySheet({ open, onOpenChange, tenantSlug, identity }: Prop
 							onChange={(e) => setMustChangePassword(e.target.checked)}
 							className="size-4 rounded border-input"
 						/>
-						<Label htmlFor="mustChange" className="text-sm font-normal cursor-pointer">
+						<Label
+							htmlFor="mustChange"
+							className="text-sm font-normal cursor-pointer"
+						>
 							Must change password on next login
 						</Label>
 					</div>

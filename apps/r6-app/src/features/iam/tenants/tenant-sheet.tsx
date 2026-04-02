@@ -158,7 +158,9 @@ export function TenantSheet({ open, onOpenChange, tenant }: Props) {
 					<div className="flex flex-col gap-1.5">
 						<Label htmlFor="modules">
 							Module Access{" "}
-							<span className="text-muted-foreground font-normal">(one per line)</span>
+							<span className="text-muted-foreground font-normal">
+								(one per line)
+							</span>
 						</Label>
 						<textarea
 							id="modules"
@@ -180,7 +182,10 @@ export function TenantSheet({ open, onOpenChange, tenant }: Props) {
 								onChange={(e) => setIsActive(e.target.checked)}
 								className="size-4 rounded border-input"
 							/>
-							<Label htmlFor="isActive" className="text-sm font-normal cursor-pointer">
+							<Label
+								htmlFor="isActive"
+								className="text-sm font-normal cursor-pointer"
+							>
 								Active
 							</Label>
 						</div>

@@ -1,6 +1,6 @@
 import type { Tenant } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -19,8 +19,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { TenantsTable } from "./tenants-table";
 import { TenantSheet } from "./tenant-sheet";
+import { TenantsTable } from "./tenants-table";
 
 const PAGE_SIZE = 20;
 

@@ -81,7 +81,9 @@ export function PolicySheet({ open, onOpenChange, tenantSlug, policy }: Props) {
 				},
 				{
 					onSuccess: () => {
-						queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
+						queryClient.invalidateQueries({
+							queryKey: ["policies", tenantSlug],
+						});
 						toast.success("Policy updated.");
 						onOpenChange(false);
 					},
@@ -104,7 +106,9 @@ export function PolicySheet({ open, onOpenChange, tenantSlug, policy }: Props) {
 				},
 				{
 					onSuccess: () => {
-						queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
+						queryClient.invalidateQueries({
+							queryKey: ["policies", tenantSlug],
+						});
 						toast.success("Policy created.");
 						onOpenChange(false);
 					},
@@ -161,7 +165,9 @@ export function PolicySheet({ open, onOpenChange, tenantSlug, policy }: Props) {
 					<div className="flex flex-col gap-1.5">
 						<Label htmlFor="permissions">
 							Permissions{" "}
-							<span className="text-muted-foreground font-normal">(one per line)</span>
+							<span className="text-muted-foreground font-normal">
+								(one per line)
+							</span>
 						</Label>
 						<textarea
 							id="permissions"
@@ -177,7 +183,9 @@ export function PolicySheet({ open, onOpenChange, tenantSlug, policy }: Props) {
 					<div className="flex flex-col gap-1.5">
 						<Label htmlFor="audience">
 							Audience{" "}
-							<span className="text-muted-foreground font-normal">(one per line)</span>
+							<span className="text-muted-foreground font-normal">
+								(one per line)
+							</span>
 						</Label>
 						<textarea
 							id="audience"

@@ -21,5 +21,4 @@ router.patch("/:id", requireAdmin(), updatePolicyHandler);
 router.delete("/:id", requireAdmin(), remove);
 router.post("/:id/restore", requireAdmin(), restore);
 
-
 export default router;

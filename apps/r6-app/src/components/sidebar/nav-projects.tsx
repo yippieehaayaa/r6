@@ -1,5 +1,6 @@
 "use client";
 
+import { Link } from "@tanstack/react-router";
 import {
 	Folder,
 	Forward,
@@ -7,7 +8,6 @@ import {
 	MoreHorizontal,
 	Trash2,
 } from "lucide-react";
-
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -15,7 +15,6 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "@tanstack/react-router";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -44,10 +43,10 @@ export function NavProjects({
 				{projects.map((item) => (
 					<SidebarMenuItem key={item.name}>
 						<SidebarMenuButton asChild>
-						<Link to={item.url}>
-							<item.icon />
-							<span>{item.name}</span>
-						</Link>
+							<Link to={item.url}>
+								<item.icon />
+								<span>{item.name}</span>
+							</Link>
 						</SidebarMenuButton>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>

@@ -1,9 +1,13 @@
 import type { Role } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useListRolesQuery, useRemoveRoleMutation, useRestoreRoleMutation } from "@/api/roles";
+import {
+	useListRolesQuery,
+	useRemoveRoleMutation,
+	useRestoreRoleMutation,
+} from "@/api/roles";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,
@@ -16,8 +20,8 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { RolesTable } from "./roles-table";
 import { RoleSheet } from "./role-sheet";
+import { RolesTable } from "./roles-table";
 
 const PAGE_SIZE = 20;
 

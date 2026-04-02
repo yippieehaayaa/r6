@@ -32,7 +32,8 @@ export async function login(
     // Parse combined identifier: "username@tenant-slug" or plain "username" (ADMIN)
     const atIndex = login.lastIndexOf("@");
     const username = atIndex === -1 ? login : login.slice(0, atIndex);
-    const tenantSlug = atIndex === -1 ? undefined : login.slice(atIndex + 1) || undefined;
+    const tenantSlug =
+      atIndex === -1 ? undefined : login.slice(atIndex + 1) || undefined;
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
