@@ -207,7 +207,7 @@ const verifyIdentity = async (
   if (!identity) throw new Error("invalid_credentials");
 
   if (identity.lockedUntil && identity.lockedUntil > new Date())
-    throw new Error("account_locked");
+    throw new Error(`account_locked:${identity.lockedUntil.toISOString()}`);
 
   if (identity.status !== "ACTIVE")
     throw new Error(`account_inactive:${identity.status}`);

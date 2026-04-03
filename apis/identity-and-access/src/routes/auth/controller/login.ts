@@ -46,14 +46,21 @@ export async function login(
       const msg = (e as Error).message;
       if (msg === "invalid_credentials")
         throw new AppError(401, "invalid_credentials", "Invalid credentials");
-      if (msg === "account_locked")
+      if (msg.startsWith("account_locked")) {
+        const lockedUntil = msg.split(":").slice(1).join(":") || undefined;
         throw new AppError(
           423,
           "account_locked",
           "Account is temporarily locked due to too many failed login attempts",
+          lockedUntil ? { lockedUntil } : undefined,
         );
-      if (msg.startsWith("account_inactive"))
-        throw new AppError(403, "account_inactive", "Account is not active");
+      }
+      if (msg.startsWith("account_inactive")) {
+        const status = msg.split(":")[1] || undefined;
+        throw new AppError(403, "account_inactive", "Account is not active",
+          status ? { status } : undefined,
+        );
+      }
       throw new AppError(
         500,
         "internal_server_error",
