@@ -139,7 +139,7 @@ function enforceReadBaseline(
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["permissions"],
-        message: `"${ns}:${action}" requires "${ns}:read" — read is a prerequisite for write actions`,
+        message: `"${ns}:read" must be included when granting write access to "${ns}"`,
       });
     }
   }

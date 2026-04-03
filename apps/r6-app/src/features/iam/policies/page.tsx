@@ -1,5 +1,6 @@
 import type { Policy } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -70,7 +71,11 @@ export default function PoliciesPage() {
 					toast.success("Policy deleted.");
 					setDeleteTarget(null);
 				},
-				onError: (err) => toast.error(err.message),
+				onError: (err) =>
+					toast.error(
+						(err as AxiosError<{ message: string }>).response?.data?.message ??
+							err.message,
+					),
 			},
 		);
 	}
@@ -83,7 +88,11 @@ export default function PoliciesPage() {
 					queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
 					toast.success("Policy restored.");
 				},
-				onError: (err) => toast.error(err.message),
+				onError: (err) =>
+					toast.error(
+						(err as AxiosError<{ message: string }>).response?.data?.message ??
+							err.message,
+					),
 			},
 		);
 	}

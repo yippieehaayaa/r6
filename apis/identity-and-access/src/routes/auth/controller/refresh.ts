@@ -75,11 +75,7 @@ export async function refresh(
     const full = await getIdentityWithRolesAndPolicies(payload.sub);
     if (!full) throw new AppError(401, "invalid_token", "Identity not found");
     if (full.status !== "ACTIVE") {
-      throw new AppError(
-        403,
-        "account_inactive",
-        `Account status is ${full.status}`,
-      );
+      throw new AppError(403, "account_inactive", "Account is not active");
     }
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;

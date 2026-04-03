@@ -1,5 +1,6 @@
 import type { Role } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
+import type { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCreateRoleMutation, useUpdateRoleMutation } from "@/api/roles";
@@ -64,7 +65,11 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 						toast.success("Role updated.");
 						onOpenChange(false);
 					},
-					onError: (err) => toast.error(err.message),
+					onError: (err) =>
+						toast.error(
+							(err as AxiosError<{ message: string }>).response?.data
+								?.message ?? err.message,
+						),
 				},
 			);
 		} else {
@@ -83,7 +88,11 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 						toast.success("Role created.");
 						onOpenChange(false);
 					},
-					onError: (err) => toast.error(err.message),
+					onError: (err) =>
+						toast.error(
+							(err as AxiosError<{ message: string }>).response?.data
+								?.message ?? err.message,
+						),
 				},
 			);
 		}

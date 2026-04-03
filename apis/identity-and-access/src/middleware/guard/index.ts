@@ -40,7 +40,7 @@ export const requireAdmin =
     if (payload.kind !== "ADMIN") {
       return res.status(403).json({
         error: "forbidden",
-        message: "This action requires ADMIN privileges",
+        message: "Administrator access required",
       });
     }
 
@@ -210,7 +210,7 @@ export const requirePermission =
     if (!checkPermission(required, granted)) {
       return res.status(403).json({
         error: "forbidden",
-        message: `Missing required permission: ${required}`,
+        message: "You do not have permission to perform this action.",
       });
     }
 

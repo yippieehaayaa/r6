@@ -44,9 +44,10 @@ export const authMiddleware =
 
       req.jwtPayload = payload;
       return next();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Invalid or expired token";
-      return res.status(401).json({ error: "unauthorized", message });
+    } catch {
+      return res.status(401).json({
+        error: "unauthorized",
+        message: "Invalid or expired token",
+      });
     }
   };

@@ -53,12 +53,12 @@ export async function login(
           "Account is temporarily locked due to too many failed login attempts",
         );
       if (msg.startsWith("account_inactive"))
-        throw new AppError(
-          403,
-          "account_inactive",
-          `Account status is ${msg.split(":")[1]}`,
-        );
-      throw e;
+        throw new AppError(403, "account_inactive", "Account is not active");
+      throw new AppError(
+        500,
+        "internal_server_error",
+        "An unexpected error occurred",
+      );
     }
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;

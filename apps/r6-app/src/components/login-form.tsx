@@ -1,5 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
-import { isAxiosError } from "axios";
+import type { AxiosError } from "axios";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -41,21 +41,8 @@ export function LoginForm({
 			toast.success("Signed in successfully");
 			navigate({ to: "/" });
 		} catch (error) {
-			let message = "Something went wrong. Please try again.";
-			if (isAxiosError(error)) {
-				switch (error.response?.status) {
-					case 401:
-						message = "Invalid credentials";
-						break;
-					case 423:
-						message = "Account is temporarily locked";
-						break;
-					case 403:
-						message = "Account is inactive";
-						break;
-				}
-			}
-			toast.error(message);
+			const axiosError = error as AxiosError<{ message: string }>;
+			toast.error(axiosError.response?.data?.message ?? axiosError.message);
 		} finally {
 			setLoading(false);
 		}
