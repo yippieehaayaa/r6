@@ -1,6 +1,5 @@
 import type { Tenant } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -17,6 +16,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 interface Props {
 	open: boolean;

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
-import { parseApiError } from "@/lib/api-error";
 import {
 	Card,
 	CardContent,
@@ -19,6 +18,7 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { parseApiError } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 
 export function LoginForm({
@@ -44,12 +44,13 @@ export function LoginForm({
 			const { code, message, details } = parseApiError(error);
 
 			if (code === "account_locked") {
-				const lockedUntil = (details as { lockedUntil?: string } | undefined)?.lockedUntil;
+				const lockedUntil = (details as { lockedUntil?: string } | undefined)
+					?.lockedUntil;
 				const until = lockedUntil
 					? new Intl.DateTimeFormat(undefined, {
 							hour: "2-digit",
 							minute: "2-digit",
-					  }).format(new Date(lockedUntil))
+						}).format(new Date(lockedUntil))
 					: null;
 				toast.error(
 					until
@@ -59,7 +60,8 @@ export function LoginForm({
 			} else if (code === "account_inactive") {
 				const status = (details as { status?: string } | undefined)?.status;
 				const messages: Record<string, string> = {
-					PENDING_VERIFICATION: "Account not yet verified. Please check your email.",
+					PENDING_VERIFICATION:
+						"Account not yet verified. Please check your email.",
 					SUSPENDED: "Account suspended. Please contact support.",
 					INACTIVE: "Account is inactive. Please contact support.",
 				};

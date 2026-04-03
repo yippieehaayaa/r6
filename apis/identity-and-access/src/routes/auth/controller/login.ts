@@ -57,7 +57,10 @@ export async function login(
       }
       if (msg.startsWith("account_inactive")) {
         const status = msg.split(":")[1] || undefined;
-        throw new AppError(403, "account_inactive", "Account is not active",
+        throw new AppError(
+          403,
+          "account_inactive",
+          "Account is not active",
           status ? { status } : undefined,
         );
       }

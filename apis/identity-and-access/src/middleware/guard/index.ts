@@ -20,28 +20,69 @@
 // ============================================================
 
 import type { NextFunction, Request, Response } from "express";
+import { AppError } from "../../lib/errors";
+import { checkPermission } from "../../lib/jwt";
 import type { AuthJwtPayload } from "../auth";
+
+// ─── describePermission ──────────────────────────────────────
+
+// Converts a permission string (e.g. "iam:identity:create") into a
+// human-readable phrase (e.g. "create identities") for use in error
+// messages. Falls back to "perform this action" for unknown patterns.
+const RESOURCE_LABELS: Record<string, string> = {
+  identity: "identities",
+  role: "roles",
+  policy: "policies",
+  tenant: "tenants",
+  user: "users",
+};
+
+const ACTION_LABELS: Record<string, string> = {
+  create: "create",
+  read: "view",
+  update: "update",
+  delete: "delete",
+  "*": "manage",
+};
+
+function describePermission(required: string): string {
+  const parts = required.split(":");
+  // Expect at least "service:resource:action"
+  if (parts.length < 3) return "perform this action";
+
+  const resource = parts[1];
+  const action = parts[2];
+
+  if (!resource || !action) return "perform this action";
+
+  const noun = RESOURCE_LABELS[resource];
+  const verb = ACTION_LABELS[action] ?? ACTION_LABELS["*"];
+
+  if (!noun || !verb) return "perform this action";
+
+  return `${verb} ${noun}`;
+}
 
 // ─── requireAdmin ────────────────────────────────────────────
 
 // Allows only ADMIN identities (kind === "ADMIN").
 // All platform-level management routes (cross-tenant) use this guard.
 export const requireAdmin =
-  () => (req: Request, res: Response, next: NextFunction) => {
+  () => (req: Request, _res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
     if (!payload) {
-      return res.status(401).json({
-        error: "unauthorized",
-        message: "Authentication required",
-      });
+      return next(new AppError(401, "unauthorized", "Authentication required"));
     }
 
     if (payload.kind !== "ADMIN") {
-      return res.status(403).json({
-        error: "forbidden",
-        message: "Administrator access required",
-      });
+      return next(
+        new AppError(
+          403,
+          "forbidden",
+          "This action requires administrator privileges",
+        ),
+      );
     }
 
     return next();
@@ -59,14 +100,11 @@ export const requireAdmin =
 //
 // Used for tenant management routes and bulk identity operations.
 export const requireAdminOrTenantOwner =
-  () => (req: Request, res: Response, next: NextFunction) => {
+  () => (req: Request, _res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
     if (!payload) {
-      return res.status(401).json({
-        error: "unauthorized",
-        message: "Authentication required",
-      });
+      return next(new AppError(401, "unauthorized", "Authentication required"));
     }
 
     if (payload.kind === "ADMIN") return next();
@@ -75,10 +113,9 @@ export const requireAdminOrTenantOwner =
       req.params.tenantSlug ?? req.params.id ?? req.body?.tenantSlug;
 
     if (!targetTenantSlug) {
-      return res.status(400).json({
-        error: "bad_request",
-        message: "Unable to determine target tenant",
-      });
+      return next(
+        new AppError(400, "bad_request", "Unable to determine target tenant"),
+      );
     }
 
     const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
@@ -87,10 +124,13 @@ export const requireAdminOrTenantOwner =
       !roles.includes("tenant-owner") ||
       payload.tenantSlug !== targetTenantSlug
     ) {
-      return res.status(403).json({
-        error: "forbidden",
-        message: "You do not have access to this tenant",
-      });
+      return next(
+        new AppError(
+          403,
+          "forbidden",
+          "You do not have owner access to this tenant",
+        ),
+      );
     }
 
     return next();
@@ -107,14 +147,11 @@ export const requireAdminOrTenantOwner =
 // Used for per-identity read/update routes where a regular user may only
 // operate on their own record, while admins and tenant owners can reach any.
 export const requireSelfOrAdminOrTenantOwner =
-  () => (req: Request, res: Response, next: NextFunction) => {
+  () => (req: Request, _res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
     if (!payload) {
-      return res.status(401).json({
-        error: "unauthorized",
-        message: "Authentication required",
-      });
+      return next(new AppError(401, "unauthorized", "Authentication required"));
     }
 
     if (payload.kind === "ADMIN") return next();
@@ -128,10 +165,13 @@ export const requireSelfOrAdminOrTenantOwner =
 
     if (payload.sub === req.params.id) return next();
 
-    return res.status(403).json({
-      error: "forbidden",
-      message: "You can only access your own identity",
-    });
+    return next(
+      new AppError(
+        403,
+        "forbidden",
+        "You can only perform this action on your own identity",
+      ),
+    );
   };
 
 // ─── requireTenantScope ──────────────────────────────────────
@@ -143,14 +183,11 @@ export const requireSelfOrAdminOrTenantOwner =
 //
 // ADMIN bypasses this check (cross-tenant access allowed).
 export const requireTenantScope =
-  () => (req: Request, res: Response, next: NextFunction) => {
+  () => (req: Request, _res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
     if (!payload) {
-      return res.status(401).json({
-        error: "unauthorized",
-        message: "Authentication required",
-      });
+      return next(new AppError(401, "unauthorized", "Authentication required"));
     }
 
     if (payload.kind === "ADMIN") return next();
@@ -158,17 +195,23 @@ export const requireTenantScope =
     const routeTenantSlug = req.params.tenantSlug;
 
     if (!routeTenantSlug) {
-      return res.status(400).json({
-        error: "bad_request",
-        message: "Route is missing tenantSlug parameter",
-      });
+      return next(
+        new AppError(
+          400,
+          "bad_request",
+          "Route is missing tenantSlug parameter",
+        ),
+      );
     }
 
     if (payload.tenantSlug !== routeTenantSlug) {
-      return res.status(403).json({
-        error: "forbidden",
-        message: "You do not have access to this tenant's resources",
-      });
+      return next(
+        new AppError(
+          403,
+          "forbidden",
+          "Your token is not scoped to this tenant",
+        ),
+      );
     }
 
     return next();
@@ -186,17 +229,12 @@ export const requireTenantScope =
 //     requirePermission("iam:identity:delete"),
 //     softDeleteIdentityHandler,
 //   );
-import { checkPermission } from "../../lib/jwt";
-
 export const requirePermission =
-  (required: string) => (req: Request, res: Response, next: NextFunction) => {
+  (required: string) => (req: Request, _res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
     if (!payload) {
-      return res.status(401).json({
-        error: "unauthorized",
-        message: "Authentication required",
-      });
+      return next(new AppError(401, "unauthorized", "Authentication required"));
     }
 
     // ADMIN identities have unrestricted platform access and do not carry
@@ -208,10 +246,13 @@ export const requirePermission =
       : [];
 
     if (!checkPermission(required, granted)) {
-      return res.status(403).json({
-        error: "forbidden",
-        message: "You do not have permission to perform this action.",
-      });
+      return next(
+        new AppError(
+          403,
+          "forbidden",
+          `You do not have permission to ${describePermission(required)}`,
+        ),
+      );
     }
 
     return next();

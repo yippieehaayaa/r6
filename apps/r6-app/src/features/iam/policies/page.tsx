@@ -1,6 +1,5 @@
 import type { Policy } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { getApiErrorMessage } from "@/lib/api-error";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +20,7 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { PoliciesTable } from "./policies-table";
 import { PolicySheet } from "./policy-sheet";
 
