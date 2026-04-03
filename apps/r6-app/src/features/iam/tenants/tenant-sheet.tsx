@@ -1,6 +1,6 @@
 import type { Tenant } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -97,11 +97,7 @@ export function TenantSheet({ open, onOpenChange, tenant }: Props) {
 						toast.success("Tenant updated.");
 						onOpenChange(false);
 					},
-					onError: (err) =>
-						toast.error(
-							(err as AxiosError<{ message: string }>).response?.data
-								?.message ?? err.message,
-						),
+					onError: (err) => toast.error(getApiErrorMessage(err)),
 				},
 			);
 		} else {
@@ -117,11 +113,7 @@ export function TenantSheet({ open, onOpenChange, tenant }: Props) {
 						toast.success("Tenant created.");
 						onOpenChange(false);
 					},
-					onError: (err) =>
-						toast.error(
-							(err as AxiosError<{ message: string }>).response?.data
-								?.message ?? err.message,
-						),
+					onError: (err) => toast.error(getApiErrorMessage(err)),
 				},
 			);
 		}

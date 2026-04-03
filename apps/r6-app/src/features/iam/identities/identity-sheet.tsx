@@ -1,6 +1,6 @@
 import type { IdentitySafe } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -88,11 +88,7 @@ export function IdentitySheet({
 						toast.success("Identity updated.");
 						onOpenChange(false);
 					},
-					onError: (err) =>
-						toast.error(
-							(err as AxiosError<{ message: string }>).response?.data
-								?.message ?? err.message,
-						),
+					onError: (err) => toast.error(getApiErrorMessage(err)),
 				},
 			);
 		} else {
@@ -115,11 +111,7 @@ export function IdentitySheet({
 						toast.success("Identity created.");
 						onOpenChange(false);
 					},
-					onError: (err) =>
-						toast.error(
-							(err as AxiosError<{ message: string }>).response?.data
-								?.message ?? err.message,
-						),
+					onError: (err) => toast.error(getApiErrorMessage(err)),
 				},
 			);
 		}

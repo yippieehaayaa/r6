@@ -1,10 +1,10 @@
 import { useNavigate } from "@tanstack/react-router";
-import type { AxiosError } from "axios";
 import { Loader2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
+import { parseApiError } from "@/lib/api-error";
 import {
 	Card,
 	CardContent,
@@ -41,8 +41,32 @@ export function LoginForm({
 			toast.success("Signed in successfully");
 			navigate({ to: "/" });
 		} catch (error) {
-			const axiosError = error as AxiosError<{ message: string }>;
-			toast.error(axiosError.response?.data?.message ?? axiosError.message);
+			const { code, message, details } = parseApiError(error);
+
+			if (code === "account_locked") {
+				const lockedUntil = (details as { lockedUntil?: string } | undefined)?.lockedUntil;
+				const until = lockedUntil
+					? new Intl.DateTimeFormat(undefined, {
+							hour: "2-digit",
+							minute: "2-digit",
+					  }).format(new Date(lockedUntil))
+					: null;
+				toast.error(
+					until
+						? `Account locked. Try again after ${until}.`
+						: "Account temporarily locked. Try again later.",
+				);
+			} else if (code === "account_inactive") {
+				const status = (details as { status?: string } | undefined)?.status;
+				const messages: Record<string, string> = {
+					PENDING_VERIFICATION: "Account not yet verified. Please check your email.",
+					SUSPENDED: "Account suspended. Please contact support.",
+					INACTIVE: "Account is inactive. Please contact support.",
+				};
+				toast.error((status && messages[status]) ?? message);
+			} else {
+				toast.error(message);
+			}
 		} finally {
 			setLoading(false);
 		}

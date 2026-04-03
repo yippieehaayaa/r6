@@ -1,6 +1,6 @@
 import type { Policy } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -88,11 +88,7 @@ export function PolicySheet({ open, onOpenChange, tenantSlug, policy }: Props) {
 						toast.success("Policy updated.");
 						onOpenChange(false);
 					},
-					onError: (err) =>
-						toast.error(
-							(err as AxiosError<{ message: string }>).response?.data
-								?.message ?? err.message,
-						),
+					onError: (err) => toast.error(getApiErrorMessage(err)),
 				},
 			);
 		} else {
@@ -117,11 +113,7 @@ export function PolicySheet({ open, onOpenChange, tenantSlug, policy }: Props) {
 						toast.success("Policy created.");
 						onOpenChange(false);
 					},
-					onError: (err) =>
-						toast.error(
-							(err as AxiosError<{ message: string }>).response?.data
-								?.message ?? err.message,
-						),
+					onError: (err) => toast.error(getApiErrorMessage(err)),
 				},
 			);
 		}

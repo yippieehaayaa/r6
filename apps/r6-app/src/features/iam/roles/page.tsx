@@ -1,6 +1,6 @@
 import type { Role } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import type { AxiosError } from "axios";
+import { getApiErrorMessage } from "@/lib/api-error";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -71,11 +71,7 @@ export default function RolesPage() {
 					toast.success("Role deleted.");
 					setDeleteTarget(null);
 				},
-				onError: (err) =>
-					toast.error(
-						(err as AxiosError<{ message: string }>).response?.data?.message ??
-							err.message,
-					),
+				onError: (err) => toast.error(getApiErrorMessage(err)),
 			},
 		);
 	}
@@ -88,11 +84,7 @@ export default function RolesPage() {
 					queryClient.invalidateQueries({ queryKey: ["roles", tenantSlug] });
 					toast.success("Role restored.");
 				},
-				onError: (err) =>
-					toast.error(
-						(err as AxiosError<{ message: string }>).response?.data?.message ??
-							err.message,
-					),
+				onError: (err) => toast.error(getApiErrorMessage(err)),
 			},
 		);
 	}
