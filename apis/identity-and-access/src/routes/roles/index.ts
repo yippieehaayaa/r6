@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
   requireAdmin,
+  requireAdminOrTenantOwner,
   requirePermission,
   requireTenantScope,
 } from "../../middleware/guard";
@@ -17,7 +18,6 @@ import { updateRoleHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
 
-// Policy attachment stays ADMIN-only — prevents tenant privilege escalation.
 router.use(authMiddleware(), requireTenantScope());
 router.post("/", requirePermission("iam:role:create"), createRoleHandler);
 router.get("/", requirePermission("iam:role:read"), list);
@@ -25,8 +25,15 @@ router.get("/:id", requirePermission("iam:role:read"), getRole);
 router.patch("/:id", requirePermission("iam:role:update"), updateRoleHandler);
 router.delete("/:id", requirePermission("iam:role:delete"), remove);
 router.post("/:id/restore", requireAdmin(), restore);
-router.post("/:id/policies", requireAdmin(), attachPolicy);
-router.delete("/:id/policies/:policyId", requireAdmin(), detachPolicy);
-router.put("/:id/policies", requireAdmin(), setPolicies);
+// Tenant-Owner/Tenant-Admin may manage role-policy assignments, but the
+// attach and set-policies controllers enforce module-scope validation so
+// they can only assign policies within their availed services.
+router.post("/:id/policies", requireAdminOrTenantOwner(), attachPolicy);
+router.delete(
+  "/:id/policies/:policyId",
+  requireAdminOrTenantOwner(),
+  detachPolicy,
+);
+router.put("/:id/policies", requireAdminOrTenantOwner(), setPolicies);
 
 export default router;
