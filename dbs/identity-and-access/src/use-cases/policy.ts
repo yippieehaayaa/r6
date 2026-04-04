@@ -95,7 +95,6 @@ const getPolicyWithRoles = async (
 const buildWhere = (
   input: Omit<ListPoliciesInput, "page" | "limit">,
 ): Prisma.PolicyWhereInput => ({
-  tenantId: null,
   deletedAt: null,
   // audience filter uses Postgres array containment: { has: value }
   ...(input.audience !== undefined && {
@@ -103,7 +102,7 @@ const buildWhere = (
   }),
 });
 
-// Returns a paginated list of policies for a tenant.
+// Returns a paginated list of all policies.
 // audience filter uses Postgres array containment (has).
 // Runs findMany + count in parallel — same pattern as listMovements.
 const listPolicies = async (
