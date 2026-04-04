@@ -48,7 +48,7 @@ export default function IdentitiesPage() {
 
 	const { data: tenantsData } = useListTenantsQuery(
 		{ limit: 100 },
-		{ staleTime: 5 * 60 * 1000 },
+		{ staleTime: 5 * 60 * 1000, enabled: isAdmin },
 	);
 
 	const [page, setPage] = useState(1);

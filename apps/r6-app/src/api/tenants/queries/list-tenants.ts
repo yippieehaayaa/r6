@@ -25,7 +25,7 @@ export async function listTenantsFn(
 
 export function useListTenantsQuery(
 	params: ListTenantsParams = {},
-	options?: { staleTime?: number; gcTime?: number },
+	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
 		queryKey: ["tenants", params],
