@@ -1,6 +1,6 @@
 import type { IdentitySafe } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Building2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -130,11 +130,18 @@ export default function IdentitiesPage() {
 				)}
 			</div>
 
-			{isAdmin && (
-				<div className="flex items-center gap-2">
-					<span className="text-sm text-muted-foreground whitespace-nowrap">
-						Viewing tenant:
-					</span>
+
+
+			<div className="rounded-xl border bg-card overflow-hidden">
+			{isAdmin && !activeTenantSlug ? (
+				<div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+					<Building2 className="h-10 w-10 text-muted-foreground/50" />
+					<div>
+						<p className="font-medium">No tenant selected</p>
+						<p className="text-sm text-muted-foreground">
+							Choose a tenant to view its identities.
+						</p>
+					</div>
 					<Select
 						value={selectedTenantSlug}
 						onValueChange={(v) => {
@@ -142,7 +149,7 @@ export default function IdentitiesPage() {
 							setPage(1);
 						}}
 					>
-						<SelectTrigger className="w-52">
+						<SelectTrigger className="w-64">
 							<SelectValue placeholder="Select a tenant…" />
 						</SelectTrigger>
 						<SelectContent>
@@ -154,9 +161,7 @@ export default function IdentitiesPage() {
 						</SelectContent>
 					</Select>
 				</div>
-			)}
-
-			<div className="rounded-xl border bg-card overflow-hidden">
+			) : (
 				<IdentitiesTable
 					data={data?.data ?? []}
 					isLoading={isLoading}
@@ -165,6 +170,7 @@ export default function IdentitiesPage() {
 					onRestore={handleRestore}
 					isAdmin={isAdmin}
 				/>
+			)}
 			</div>
 
 			{(data?.total ?? 0) > PAGE_SIZE && (
