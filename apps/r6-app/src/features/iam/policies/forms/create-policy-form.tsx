@@ -78,11 +78,10 @@ const CreatePolicyFormSchema = PolicySchema.omit({
 type CreatePolicyFormValues = z.infer<typeof CreatePolicyFormSchema>;
 
 interface Props {
-	tenantSlug: string;
 	onSuccess: () => void;
 }
 
-export function CreatePolicyForm({ tenantSlug, onSuccess }: Props) {
+export function CreatePolicyForm({ onSuccess }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useCreatePolicyMutation();
 
@@ -113,10 +112,10 @@ export function CreatePolicyForm({ tenantSlug, onSuccess }: Props) {
 			audience: linesToArray(audienceText),
 		};
 		mutation.mutate(
-			{ tenantSlug, body },
+			{ body },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
+					queryClient.invalidateQueries({ queryKey: ["policies"] });
 					toast.success("Policy created.");
 					onSuccess();
 				},

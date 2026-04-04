@@ -86,12 +86,11 @@ const EditPolicyFormSchema = PolicySchema.omit({
 type EditPolicyFormValues = z.infer<typeof EditPolicyFormSchema>;
 
 interface Props {
-	tenantSlug: string;
 	policy: Policy;
 	onSuccess: () => void;
 }
 
-export function EditPolicyForm({ tenantSlug, policy, onSuccess }: Props) {
+export function EditPolicyForm({ policy, onSuccess }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useUpdatePolicyMutation();
 
@@ -125,10 +124,10 @@ export function EditPolicyForm({ tenantSlug, policy, onSuccess }: Props) {
 			}),
 		};
 		mutation.mutate(
-			{ tenantSlug, id: policy.id, body },
+			{ id: policy.id, body },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
+					queryClient.invalidateQueries({ queryKey: ["policies"] });
 					toast.success("Policy updated.");
 					onSuccess();
 				},

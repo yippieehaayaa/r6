@@ -3,6 +3,7 @@ import { authMiddleware } from "../middleware/auth";
 import auth from "./auth";
 import main from "./main";
 import me from "./me";
+import policies from "./policies";
 import tenants from "./tenants";
 import wellKnown from "./well-known";
 
@@ -15,6 +16,7 @@ router.use("/.well-known", wellKnown);
 
 // Authenticated routes — authMiddleware applied here AND in each sub-router (defense-in-depth)
 router.use("/me", authMiddleware(), me);
+router.use("/policies", authMiddleware(), policies);
 router.use("/tenants", authMiddleware(), tenants);
 
 export default router;

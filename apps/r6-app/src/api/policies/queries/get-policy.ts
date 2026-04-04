@@ -2,20 +2,15 @@ import { type Policy, PolicySchema } from "@r6/schemas";
 import { useQuery } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
-export async function getPolicyFn(
-	tenantSlug: string,
-	id: string,
-): Promise<Policy> {
-	const { data } = await identityApi.get<unknown>(
-		`/tenants/${tenantSlug}/policies/${id}`,
-	);
+export async function getPolicyFn(id: string): Promise<Policy> {
+	const { data } = await identityApi.get<unknown>(`/policies/${id}`);
 	return PolicySchema.parse(data);
 }
 
-export function useGetPolicyQuery(tenantSlug: string, id: string) {
+export function useGetPolicyQuery(id: string) {
 	return useQuery({
-		queryKey: ["policies", tenantSlug, id],
-		queryFn: () => getPolicyFn(tenantSlug, id),
-		enabled: !!tenantSlug && !!id,
+		queryKey: ["policies", id],
+		queryFn: () => getPolicyFn(id),
+		enabled: !!id,
 	});
 }

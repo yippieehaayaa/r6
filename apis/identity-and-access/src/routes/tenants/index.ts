@@ -2,7 +2,6 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import { requireAdmin, requirePermission } from "../../middleware/guard";
 import identitiesRouter from "../identities";
-import policiesRouter from "../policies";
 import rolesRouter from "../roles";
 import { createTenantHandler } from "./controller/create";
 import { getTenant } from "./controller/get";
@@ -24,6 +23,5 @@ router.post("/:tenantSlug/restore", requireAdmin(), restore);
 
 router.use("/:tenantSlug/identities", identitiesRouter);
 router.use("/:tenantSlug/roles", rolesRouter);
-router.use("/:tenantSlug/policies", policiesRouter);
 
 export default router;

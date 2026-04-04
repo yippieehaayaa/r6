@@ -3,18 +3,13 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface CreatePolicyParams {
-	tenantSlug: string;
 	body: CreatePolicyInput;
 }
 
 export async function createPolicyFn({
-	tenantSlug,
 	body,
 }: CreatePolicyParams): Promise<Policy> {
-	const { data } = await identityApi.post<unknown>(
-		`/tenants/${tenantSlug}/policies`,
-		body,
-	);
+	const { data } = await identityApi.post<unknown>("/policies", body);
 	return PolicySchema.parse(data);
 }
 

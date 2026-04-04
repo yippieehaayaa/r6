@@ -8,7 +8,6 @@ import {
 	useRemovePolicyMutation,
 	useRestorePolicyMutation,
 } from "@/api/policies";
-import { useAuth } from "@/auth";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -27,8 +26,6 @@ import { PolicySheet } from "./policy-sheet";
 const PAGE_SIZE = 20;
 
 export default function PoliciesPage() {
-	const { claims } = useAuth();
-	const tenantSlug = claims?.tenantSlug ?? "";
 	const queryClient = useQueryClient();
 
 	const [page, setPage] = useState(1);
@@ -37,7 +34,6 @@ export default function PoliciesPage() {
 	const [deleteTarget, setDeleteTarget] = useState<Policy | null>(null);
 
 	const { data, isLoading } = useListPoliciesQuery(
-		tenantSlug,
 		{ page, limit: PAGE_SIZE },
 		{ staleTime: 5 * 60 * 1000 },
 	);
@@ -64,10 +60,10 @@ export default function PoliciesPage() {
 	function confirmDelete() {
 		if (!deleteTarget) return;
 		removeMutation.mutate(
-			{ tenantSlug, id: deleteTarget.id },
+			{ id: deleteTarget.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
+					queryClient.invalidateQueries({ queryKey: ["policies"] });
 					toast.success("Policy deleted.");
 					setDeleteTarget(null);
 				},
@@ -78,10 +74,10 @@ export default function PoliciesPage() {
 
 	function handleRestore(policy: Policy) {
 		restoreMutation.mutate(
-			{ tenantSlug, id: policy.id },
+			{ id: policy.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["policies", tenantSlug] });
+					queryClient.invalidateQueries({ queryKey: ["policies"] });
 					toast.success("Policy restored.");
 				},
 				onError: (err) => toast.error(getApiErrorMessage(err)),
@@ -143,7 +139,6 @@ export default function PoliciesPage() {
 			<PolicySheet
 				open={sheetOpen}
 				onOpenChange={handleSheetOpenChange}
-				tenantSlug={tenantSlug}
 				policy={editTarget}
 			/>
 

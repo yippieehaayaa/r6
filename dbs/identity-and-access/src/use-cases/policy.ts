@@ -95,7 +95,7 @@ const getPolicyWithRoles = async (
 const buildWhere = (
   input: Omit<ListPoliciesInput, "page" | "limit">,
 ): Prisma.PolicyWhereInput => ({
-  tenantId: input.tenantId,
+  tenantId: null,
   deletedAt: null,
   // audience filter uses Postgres array containment: { has: value }
   ...(input.audience !== undefined && {
