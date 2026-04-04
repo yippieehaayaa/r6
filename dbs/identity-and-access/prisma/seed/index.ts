@@ -63,11 +63,12 @@
  *   Tenant management is ADMIN-only (adminOnly sidebar flag + requireAdmin() routes).
  */
 
-import { prisma } from "../../src/client.js";
+import { upsertRole, linkPolicyToRole } from "./role.js";
 import { upsertIdentity, linkRoleToIdentity } from "./identity.js";
 import { upsertPolicy } from "./policy.js";
-import { upsertRole, linkPolicyToRole } from "./role.js";
 import { upsertTenant } from "./tenant.js";
+import { prisma } from "../../src/client.js";
+
 
 async function main() {
 	console.log("\n── Cleanup ───────────────────────────────────");
