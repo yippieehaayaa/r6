@@ -1,9 +1,4 @@
-import {
-	type Role,
-	RoleSchema,
-	type UpdateRoleInput,
-	UpdateRoleSchema,
-} from "@r6/schemas";
+import { type Role, RoleSchema, type UpdateRoleInput } from "@r6/schemas";
 import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
@@ -18,10 +13,9 @@ export async function updateRoleFn({
 	id,
 	body,
 }: UpdateRoleParams): Promise<Role> {
-	const parsed = UpdateRoleSchema.parse(body);
 	const { data } = await identityApi.patch<unknown>(
 		`/tenants/${tenantSlug}/roles/${id}`,
-		parsed,
+		body,
 	);
 	return RoleSchema.parse(data);
 }

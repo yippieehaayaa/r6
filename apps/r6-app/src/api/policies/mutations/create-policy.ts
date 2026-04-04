@@ -1,9 +1,4 @@
-import {
-	type CreatePolicyInput,
-	CreatePolicySchema,
-	type Policy,
-	PolicySchema,
-} from "@r6/schemas";
+import { type CreatePolicyInput, type Policy, PolicySchema } from "@r6/schemas";
 import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
@@ -16,10 +11,9 @@ export async function createPolicyFn({
 	tenantSlug,
 	body,
 }: CreatePolicyParams): Promise<Policy> {
-	const parsed = CreatePolicySchema.parse(body);
 	const { data } = await identityApi.post<unknown>(
 		`/tenants/${tenantSlug}/policies`,
-		parsed,
+		body,
 	);
 	return PolicySchema.parse(data);
 }

@@ -1,6 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { type LoginRequestInput, LoginRequestSchema } from "@r6/schemas";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2Icon } from "lucide-react";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,7 @@ import {
 import {
 	Field,
 	FieldDescription,
+	FieldError,
 	FieldGroup,
 	FieldLabel,
 } from "@/components/ui/field";
@@ -27,17 +30,19 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
 	const navigate = useNavigate();
 	const auth = useAuth();
-	const [loading, setLoading] = useState(false);
 
-	async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
-		e.preventDefault();
-		const formData = new FormData(e.currentTarget);
-		const login = (formData.get("login") as string).trim();
-		const password = formData.get("password") as string;
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useForm<LoginRequestInput>({
+		resolver: zodResolver(LoginRequestSchema),
+		mode: "onTouched",
+	});
 
-		setLoading(true);
+	async function onSubmit(values: LoginRequestInput) {
 		try {
-			await auth.login({ login, password });
+			await auth.login(values);
 			toast.success("Signed in successfully");
 			navigate({ to: "/" });
 		} catch (error) {
@@ -69,8 +74,6 @@ export function LoginForm({
 			} else {
 				toast.error(message);
 			}
-		} finally {
-			setLoading(false);
 		}
 	}
 
@@ -105,9 +108,9 @@ export function LoginForm({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="px-8 pb-8 pt-5">
-						<form onSubmit={handleSubmit}>
+						<form onSubmit={handleSubmit(onSubmit)}>
 							<FieldGroup className="gap-4">
-								<Field>
+								<Field data-invalid={!!errors.login}>
 									<FieldLabel
 										htmlFor="login"
 										className="text-[13px] font-medium text-[var(--text-primary)]"
@@ -116,15 +119,16 @@ export function LoginForm({
 									</FieldLabel>
 									<Input
 										id="login"
-										name="login"
 										type="text"
 										placeholder="john@acme-corp"
 										autoComplete="username"
+										aria-invalid={!!errors.login}
 										className="h-10 rounded-xl text-[15px] px-3.5"
-										required
+										{...register("login")}
 									/>
+									<FieldError errors={errors.login ? [errors.login] : []} />
 								</Field>
-								<Field>
+								<Field data-invalid={!!errors.password}>
 									<div className="flex items-center justify-between">
 										<FieldLabel
 											htmlFor="password"
@@ -135,20 +139,23 @@ export function LoginForm({
 									</div>
 									<Input
 										id="password"
-										name="password"
 										type="password"
 										placeholder="••••••••"
 										autoComplete="current-password"
+										aria-invalid={!!errors.password}
 										className="h-10 rounded-xl text-[15px] px-3.5"
-										required
+										{...register("password")}
+									/>
+									<FieldError
+										errors={errors.password ? [errors.password] : []}
 									/>
 								</Field>
 								<Button
 									type="submit"
-									disabled={loading}
+									disabled={isSubmitting}
 									className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
 								>
-									{loading ? (
+									{isSubmitting ? (
 										<>
 											<Loader2Icon className="size-4 animate-spin" />
 											Signing in...

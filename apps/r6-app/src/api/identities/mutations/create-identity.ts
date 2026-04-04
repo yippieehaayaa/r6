@@ -1,6 +1,5 @@
 import {
 	type CreateIdentityInput,
-	CreateIdentitySchema,
 	type IdentitySafe,
 	IdentitySafeSchema,
 } from "@r6/schemas";
@@ -16,10 +15,9 @@ export async function createIdentityFn({
 	tenantSlug,
 	body,
 }: CreateIdentityParams): Promise<IdentitySafe> {
-	const parsed = CreateIdentitySchema.parse(body);
 	const { data } = await identityApi.post<unknown>(
 		`/tenants/${tenantSlug}/identities`,
-		parsed,
+		body,
 	);
 	return IdentitySafeSchema.parse(data);
 }

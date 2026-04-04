@@ -2,7 +2,6 @@ import {
 	type IdentitySafe,
 	IdentitySafeSchema,
 	type UpdateIdentityInput,
-	UpdateIdentitySchema,
 } from "@r6/schemas";
 import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
@@ -18,10 +17,9 @@ export async function updateIdentityFn({
 	id,
 	body,
 }: UpdateIdentityParams): Promise<IdentitySafe> {
-	const parsed = UpdateIdentitySchema.parse(body);
 	const { data } = await identityApi.patch<unknown>(
 		`/tenants/${tenantSlug}/identities/${id}`,
-		parsed,
+		body,
 	);
 	return IdentitySafeSchema.parse(data);
 }

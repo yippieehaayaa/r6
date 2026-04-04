@@ -1,9 +1,4 @@
-import {
-	type Policy,
-	PolicySchema,
-	type UpdatePolicyInput,
-	UpdatePolicySchema,
-} from "@r6/schemas";
+import { type Policy, PolicySchema, type UpdatePolicyInput } from "@r6/schemas";
 import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
@@ -18,10 +13,9 @@ export async function updatePolicyFn({
 	id,
 	body,
 }: UpdatePolicyParams): Promise<Policy> {
-	const parsed = UpdatePolicySchema.parse(body);
 	const { data } = await identityApi.patch<unknown>(
 		`/tenants/${tenantSlug}/policies/${id}`,
-		parsed,
+		body,
 	);
 	return PolicySchema.parse(data);
 }

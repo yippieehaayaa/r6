@@ -1,6 +1,5 @@
 import {
 	type LoginRequestInput,
-	LoginRequestSchema,
 	type LoginResponse,
 	LoginResponseSchema,
 } from "@r6/schemas";
@@ -10,8 +9,7 @@ import { identityApi } from "@/api/_app";
 export async function loginFn(
 	input: LoginRequestInput,
 ): Promise<LoginResponse> {
-	const body = LoginRequestSchema.parse(input);
-	const { data } = await identityApi.post<unknown>("/auth/login", body);
+	const { data } = await identityApi.post<unknown>("/auth/login", input);
 	return LoginResponseSchema.parse(data);
 }
 

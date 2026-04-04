@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseURL}}/tenants/{{tenantId}}/identities
+  url: {{baseURL}}/tenants/{{tenantSlug}}/identities
   body: json
   auth: bearer
 }
@@ -18,6 +18,6 @@ body:json {
   {
     "username": "johndoe",
     "plainPassword": "Password1!",
-    "email": "johndoe@example.com"
+    "email": "johndoe@exdsaom"
   }
 }

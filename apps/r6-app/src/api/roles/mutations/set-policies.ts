@@ -1,6 +1,5 @@
 import {
 	type AssignPoliciesToRoleInput,
-	AssignPoliciesToRoleSchema,
 	type Role,
 	RoleSchema,
 } from "@r6/schemas";
@@ -18,10 +17,9 @@ export async function setPoliciesFn({
 	id,
 	body,
 }: SetPoliciesParams): Promise<Role> {
-	const parsed = AssignPoliciesToRoleSchema.parse(body);
 	const { data } = await identityApi.put<unknown>(
 		`/tenants/${tenantSlug}/roles/${id}/policies`,
-		parsed,
+		body,
 	);
 	return RoleSchema.parse(data);
 }
