@@ -102,36 +102,36 @@ export function IdentitiesTable({
 								{new Date(identity.createdAt).toLocaleDateString()}
 							</TableCell>
 							<TableCell>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon-sm">
-											<MoreHorizontal />
-											<span className="sr-only">Open menu</span>
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onSelect={() => onEdit(identity)}>
-											<Pencil />
-											Edit
-										</DropdownMenuItem>
-										{identity.deletedAt ? (
-											isAdmin && (
+								{!isAdmin && (
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon-sm">
+												<MoreHorizontal />
+												<span className="sr-only">Open menu</span>
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											<DropdownMenuItem onSelect={() => onEdit(identity)}>
+												<Pencil />
+												Edit
+											</DropdownMenuItem>
+											{identity.deletedAt ? (
 												<DropdownMenuItem onSelect={() => onRestore(identity)}>
 													<RotateCcw />
 													Restore
 												</DropdownMenuItem>
-											)
-										) : (
-											<DropdownMenuItem
-												variant="destructive"
-												onSelect={() => onDelete(identity)}
-											>
-												<Trash2 />
-												Delete
-											</DropdownMenuItem>
-										)}
-									</DropdownMenuContent>
-								</DropdownMenu>
+											) : (
+												<DropdownMenuItem
+													variant="destructive"
+													onSelect={() => onDelete(identity)}
+												>
+													<Trash2 />
+													Delete
+												</DropdownMenuItem>
+											)}
+										</DropdownMenuContent>
+									</DropdownMenu>
+								)}
 							</TableCell>
 						</TableRow>
 					))

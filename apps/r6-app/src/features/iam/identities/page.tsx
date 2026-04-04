@@ -8,6 +8,7 @@ import {
 	useRemoveIdentityMutation,
 	useRestoreIdentityMutation,
 } from "@/api/identities";
+import { useListTenantsQuery } from "@/api/tenants";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,
@@ -20,6 +21,13 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { IdentitiesTable } from "./identities-table";
 import { IdentitySheet } from "./identity-sheet";
@@ -28,19 +36,29 @@ const PAGE_SIZE = 20;
 
 export default function IdentitiesPage() {
 	const { claims } = useAuth();
-	const tenantSlug = claims?.tenantSlug ?? "";
 	const isAdmin = claims?.kind === "ADMIN";
+	// For tenant-owners the slug comes from the JWT; for admins they pick a tenant.
+	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
+		claims?.tenantSlug ?? "",
+	);
+	const activeTenantSlug = isAdmin ? selectedTenantSlug : (claims?.tenantSlug ?? "");
 	const queryClient = useQueryClient();
+
+	const { data: tenantsData } = useListTenantsQuery(
+		{ limit: 100 },
+		{ staleTime: 5 * 60 * 1000 },
+	);
 
 	const [page, setPage] = useState(1);
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<IdentitySafe | null>(null);
 
-	const { data, isLoading } = useListIdentitiesQuery(tenantSlug, {
-		page,
-		limit: PAGE_SIZE,
-	});
+	const { data, isLoading } = useListIdentitiesQuery(
+		activeTenantSlug,
+		{ page, limit: PAGE_SIZE },
+		{ staleTime: 5 * 60 * 1000 },
+	);
 
 	const removeMutation = useRemoveIdentityMutation();
 	const restoreMutation = useRestoreIdentityMutation();
@@ -48,6 +66,7 @@ export default function IdentitiesPage() {
 	const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
 	function handleEdit(identity: IdentitySafe) {
+		if (isAdmin) return;
 		setEditTarget(identity);
 		setSheetOpen(true);
 	}
@@ -62,13 +81,13 @@ export default function IdentitiesPage() {
 	}
 
 	function confirmDelete() {
-		if (!deleteTarget) return;
+		if (!deleteTarget || isAdmin) return;
 		removeMutation.mutate(
-			{ tenantSlug, id: deleteTarget.id },
+			{ tenantSlug: activeTenantSlug, id: deleteTarget.id },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug],
+						queryKey: ["identities", activeTenantSlug],
 					});
 					toast.success("Identity deleted.");
 					setDeleteTarget(null);
@@ -79,12 +98,13 @@ export default function IdentitiesPage() {
 	}
 
 	function handleRestore(identity: IdentitySafe) {
+		if (isAdmin) return;
 		restoreMutation.mutate(
-			{ tenantSlug, id: identity.id },
+			{ tenantSlug: activeTenantSlug, id: identity.id },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug],
+						queryKey: ["identities", activeTenantSlug],
 					});
 					toast.success("Identity restored.");
 				},
@@ -102,11 +122,39 @@ export default function IdentitiesPage() {
 						Manage user and service accounts.
 					</p>
 				</div>
-				<Button onClick={() => setSheetOpen(true)}>
-					<Plus />
-					New Identity
-				</Button>
+				{!isAdmin && (
+					<Button onClick={() => setSheetOpen(true)}>
+						<Plus />
+						New Identity
+					</Button>
+				)}
 			</div>
+
+			{isAdmin && (
+				<div className="flex items-center gap-2">
+					<span className="text-sm text-muted-foreground whitespace-nowrap">
+						Viewing tenant:
+					</span>
+					<Select
+						value={selectedTenantSlug}
+						onValueChange={(v) => {
+							setSelectedTenantSlug(v);
+							setPage(1);
+						}}
+					>
+						<SelectTrigger className="w-52">
+							<SelectValue placeholder="Select a tenant…" />
+						</SelectTrigger>
+						<SelectContent>
+							{(tenantsData?.data ?? []).map((t) => (
+								<SelectItem key={t.slug} value={t.slug}>
+									{t.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+			)}
 
 			<div className="rounded-xl border bg-card overflow-hidden">
 				<IdentitiesTable
@@ -148,7 +196,7 @@ export default function IdentitiesPage() {
 			<IdentitySheet
 				open={sheetOpen}
 				onOpenChange={handleSheetOpenChange}
-				tenantSlug={tenantSlug}
+				tenantSlug={activeTenantSlug}
 				identity={editTarget}
 			/>
 

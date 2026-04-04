@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
-  requireAdmin,
+  requireNotAdmin,
   requirePermission,
   requireTenantScope,
 } from "../../middleware/guard";
@@ -17,27 +17,66 @@ import { updateIdentityHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
 
-router.use(authMiddleware(), requireTenantScope());
+// All identity routes require auth. Tenant scope is applied per-route so
+// that ADMIN (cross-tenant observer) can bypass it on reads but is blocked
+// from writes by requireNotAdmin().
+router.use(authMiddleware());
+
+// ── Reads (Admin can read any tenant; tenant members need permission) ────────
+router.get("/", requireTenantScope(), requirePermission("iam:identity:read"), list);
+router.get("/:id", requireTenantScope(), requirePermission("iam:identity:read"), getIdentity);
+
+// ── Writes (Admin blocked; tenant members need scope + permission) ────────────
 router.post(
   "/",
+  requireNotAdmin(),
+  requireTenantScope(),
   requirePermission("iam:identity:create"),
   createIdentityHandler,
 );
-router.get("/", requirePermission("iam:identity:read"), list);
-router.get("/:id", requirePermission("iam:identity:read"), getIdentity);
 router.patch(
   "/:id",
+  requireNotAdmin(),
+  requireTenantScope(),
   requirePermission("iam:identity:update"),
   updateIdentityHandler,
 );
-router.delete("/:id", requirePermission("iam:identity:delete"), remove);
-router.post("/:id/restore", requireAdmin(), restore);
-router.post("/:id/roles", requirePermission("iam:identity:update"), assignRole);
+router.delete(
+  "/:id",
+  requireNotAdmin(),
+  requireTenantScope(),
+  requirePermission("iam:identity:delete"),
+  remove,
+);
+router.post(
+  "/:id/restore",
+  requireNotAdmin(),
+  requireTenantScope(),
+  requirePermission("iam:identity:delete"),
+  restore,
+);
+
+// ── Role assignments (writes — admin blocked) ─────────────────────────────────
+router.post(
+  "/:id/roles",
+  requireNotAdmin(),
+  requireTenantScope(),
+  requirePermission("iam:identity:update"),
+  assignRole,
+);
 router.delete(
   "/:id/roles/:roleId",
+  requireNotAdmin(),
+  requireTenantScope(),
   requirePermission("iam:identity:update"),
   removeRole,
 );
-router.put("/:id/roles", requirePermission("iam:identity:update"), setRoles);
+router.put(
+  "/:id/roles",
+  requireNotAdmin(),
+  requireTenantScope(),
+  requirePermission("iam:identity:update"),
+  setRoles,
+);
 
 export default router;
