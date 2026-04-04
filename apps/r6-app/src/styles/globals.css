@@ -196,6 +196,15 @@
 	& > * > *:nth-child(5) { animation-delay: 240ms; }
 }
 
+@utility animate-select-content {
+	&[data-state="open"] {
+		animation: apple-enter 280ms var(--ease-apple) both;
+	}
+	&[data-state="closed"] {
+		animation: apple-enter 180ms var(--ease-apple) reverse both;
+	}
+}
+
 @utility animate-shimmer {
 	background: linear-gradient(
 		90deg,

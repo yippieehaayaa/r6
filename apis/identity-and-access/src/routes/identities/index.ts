@@ -23,8 +23,18 @@ const router: Router = Router({ mergeParams: true });
 router.use(authMiddleware());
 
 // ── Reads (Admin can read any tenant; tenant members need permission) ────────
-router.get("/", requireTenantScope(), requirePermission("iam:identity:read"), list);
-router.get("/:id", requireTenantScope(), requirePermission("iam:identity:read"), getIdentity);
+router.get(
+  "/",
+  requireTenantScope(),
+  requirePermission("iam:identity:read"),
+  list,
+);
+router.get(
+  "/:id",
+  requireTenantScope(),
+  requirePermission("iam:identity:read"),
+  getIdentity,
+);
 
 // ── Writes (Admin blocked; tenant members need scope + permission) ────────────
 router.post(

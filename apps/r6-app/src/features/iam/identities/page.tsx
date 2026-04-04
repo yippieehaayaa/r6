@@ -41,7 +41,9 @@ export default function IdentitiesPage() {
 	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
 		claims?.tenantSlug ?? "",
 	);
-	const activeTenantSlug = isAdmin ? selectedTenantSlug : (claims?.tenantSlug ?? "");
+	const activeTenantSlug = isAdmin
+		? selectedTenantSlug
+		: (claims?.tenantSlug ?? "");
 	const queryClient = useQueryClient();
 
 	const { data: tenantsData } = useListTenantsQuery(
@@ -130,47 +132,46 @@ export default function IdentitiesPage() {
 				)}
 			</div>
 
-
-
 			<div className="rounded-xl border bg-card overflow-hidden">
-			{isAdmin && !activeTenantSlug ? (
-				<div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-					<Building2 className="h-10 w-10 text-muted-foreground/50" />
-					<div>
-						<p className="font-medium">No tenant selected</p>
-						<p className="text-sm text-muted-foreground">
-							Choose a tenant to view its identities.
-						</p>
+				{isAdmin && !activeTenantSlug ? (
+					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
+						<Building2 className="h-10 w-10 text-muted-foreground/50" />
+						<div>
+							<p className="font-medium">No tenant selected</p>
+							<p className="text-sm text-muted-foreground">
+								Choose a tenant to view its identities.
+							</p>
+						</div>
+						<Select
+							value={selectedTenantSlug}
+							onValueChange={(v) => {
+								setSelectedTenantSlug(v);
+								setPage(1);
+							}}
+						>
+							<SelectTrigger className="w-64">
+								<SelectValue placeholder="Select a tenant…" />
+							</SelectTrigger>
+							<SelectContent>
+								{(tenantsData?.data ?? []).map((t) => (
+									<SelectItem key={t.slug} value={t.slug}>
+										{t.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
-					<Select
-						value={selectedTenantSlug}
-						onValueChange={(v) => {
-							setSelectedTenantSlug(v);
-							setPage(1);
-						}}
-					>
-						<SelectTrigger className="w-64">
-							<SelectValue placeholder="Select a tenant…" />
-						</SelectTrigger>
-						<SelectContent>
-							{(tenantsData?.data ?? []).map((t) => (
-								<SelectItem key={t.slug} value={t.slug}>
-									{t.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-			) : (
-				<IdentitiesTable
-					data={data?.data ?? []}
-					isLoading={isLoading}
-					onEdit={handleEdit}
-					onDelete={handleDelete}
-					onRestore={handleRestore}
-					isAdmin={isAdmin}
-				/>
-			)}
+				) : (
+					<IdentitiesTable
+						key={activeTenantSlug}
+						data={data?.data ?? []}
+						isLoading={isLoading}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+						onRestore={handleRestore}
+						isAdmin={isAdmin}
+					/>
+				)}
 			</div>
 
 			{(data?.total ?? 0) > PAGE_SIZE && (
