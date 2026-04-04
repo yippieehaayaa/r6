@@ -39,7 +39,8 @@ interface Props {
 	onEdit: (identity: IdentitySafe) => void;
 	onDelete: (identity: IdentitySafe) => void;
 	onRestore: (identity: IdentitySafe) => void;
-	isAdmin: boolean;
+	canUpdate: boolean;
+	canDelete: boolean;
 }
 
 export function IdentitiesTable({
@@ -48,7 +49,8 @@ export function IdentitiesTable({
 	onEdit,
 	onDelete,
 	onRestore,
-	isAdmin,
+	canUpdate,
+	canDelete,
 }: Props) {
 	return (
 		<Table className="animate-apple-enter">
@@ -107,7 +109,7 @@ export function IdentitiesTable({
 								{new Date(identity.createdAt).toLocaleDateString()}
 							</TableCell>
 							<TableCell>
-								{!isAdmin && (
+								{(canUpdate || canDelete) && (
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
 											<Button variant="ghost" size="icon-sm">
@@ -116,23 +118,27 @@ export function IdentitiesTable({
 											</Button>
 										</DropdownMenuTrigger>
 										<DropdownMenuContent align="end">
-											<DropdownMenuItem onSelect={() => onEdit(identity)}>
-												<Pencil />
-												Edit
-											</DropdownMenuItem>
-											{identity.deletedAt ? (
-												<DropdownMenuItem onSelect={() => onRestore(identity)}>
-													<RotateCcw />
-													Restore
+											{canUpdate && (
+												<DropdownMenuItem onSelect={() => onEdit(identity)}>
+													<Pencil />
+													Edit
 												</DropdownMenuItem>
-											) : (
-												<DropdownMenuItem
-													variant="destructive"
-													onSelect={() => onDelete(identity)}
-												>
-													<Trash2 />
-													Delete
-												</DropdownMenuItem>
+											)}
+											{canDelete && (
+												identity.deletedAt ? (
+													<DropdownMenuItem onSelect={() => onRestore(identity)}>
+														<RotateCcw />
+														Restore
+													</DropdownMenuItem>
+												) : (
+													<DropdownMenuItem
+														variant="destructive"
+														onSelect={() => onDelete(identity)}
+													>
+														<Trash2 />
+														Delete
+													</DropdownMenuItem>
+												)
 											)}
 										</DropdownMenuContent>
 									</DropdownMenu>

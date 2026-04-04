@@ -35,8 +35,11 @@ import { IdentitySheet } from "./identity-sheet";
 const PAGE_SIZE = 20;
 
 export default function IdentitiesPage() {
-	const { claims } = useAuth();
+	const { claims, hasPermission } = useAuth();
 	const isAdmin = claims?.kind === "ADMIN";
+	const canCreate = !isAdmin && hasPermission("iam:identity:create");
+	const canUpdate = !isAdmin && hasPermission("iam:identity:update");
+	const canDelete = !isAdmin && hasPermission("iam:identity:delete");
 	// For tenant-owners the slug comes from the JWT; for admins they pick a tenant.
 	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
 		claims?.tenantSlug ?? "",
@@ -68,7 +71,7 @@ export default function IdentitiesPage() {
 	const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
 	function handleEdit(identity: IdentitySafe) {
-		if (isAdmin) return;
+		if (!canUpdate) return;
 		setEditTarget(identity);
 		setSheetOpen(true);
 	}
@@ -83,7 +86,7 @@ export default function IdentitiesPage() {
 	}
 
 	function confirmDelete() {
-		if (!deleteTarget || isAdmin) return;
+		if (!deleteTarget || !canDelete) return;
 		removeMutation.mutate(
 			{ tenantSlug: activeTenantSlug, id: deleteTarget.id },
 			{
@@ -100,7 +103,7 @@ export default function IdentitiesPage() {
 	}
 
 	function handleRestore(identity: IdentitySafe) {
-		if (isAdmin) return;
+		if (!canDelete) return;
 		restoreMutation.mutate(
 			{ tenantSlug: activeTenantSlug, id: identity.id },
 			{
@@ -124,7 +127,7 @@ export default function IdentitiesPage() {
 						Manage user and service accounts.
 					</p>
 				</div>
-				{!isAdmin && (
+				{canCreate && (
 					<Button onClick={() => setSheetOpen(true)}>
 						<Plus />
 						New Identity
@@ -169,7 +172,8 @@ export default function IdentitiesPage() {
 						onEdit={handleEdit}
 						onDelete={handleDelete}
 						onRestore={handleRestore}
-						isAdmin={isAdmin}
+						canUpdate={canUpdate}
+						canDelete={canDelete}
 					/>
 				)}
 			</div>
