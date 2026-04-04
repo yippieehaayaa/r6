@@ -1,7 +1,7 @@
 /**
  * Seed: identity-and-access
  *
- * Idempotent — safe to run multiple times. Existing records are skipped.
+ * Destructive — wipes all existing data then re-creates from scratch.
  * Run with: pnpm db:seed  (from dbs/identity-and-access/)
  *
  * Permission format: {service}:{resource}:{action}
@@ -15,30 +15,51 @@
  * tenantId = uuid  → tenant-scoped  (USER identities, tenant roles/policies)
  *
  * Seeded identities
- * ┌──────────────────┬──────────────────┬─────────┬────────────┬──────────────────────────────────────────────────────────┐
- * │ login            │ password         │ kind    │ tenant     │ resolved permissions                                     │
- * ├──────────────────┼──────────────────┼─────────┼────────────┼──────────────────────────────────────────────────────────┤
- * │ admin            │ Admin@1234!      │ ADMIN   │ (none)     │ iam:*:*  (ADMIN kind — bypasses all permission guards)   │
- * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read │
- * │ iam-viewer       │ Viewer@1234!     │ USER    │ demo-corp  │ iam:identity:read  iam:role:read  iam:policy:read        │
- * │ identity-manager │ Identity@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/update/delete                  │
- * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*     │
- * └──────────────────┴──────────────────┴─────────┴────────────┴──────────────────────────────────────────────────────────┘
+ * ┌──────────────────────┬──────────────────┬─────────┬─────────────┬──────────────────────────────────────────────────────────┐
+ * │ login                │ password         │ kind    │ tenant      │ resolved permissions                                     │
+ * ├──────────────────────┼──────────────────┼─────────┼─────────────┼──────────────────────────────────────────────────────────┤
+ * │ admin                │ Password@1234!   │ ADMIN   │ (none)      │ iam:*:*  (ADMIN kind — bypasses all permission guards)   │
+ * ├──────────────────────┼──────────────────┼─────────┼─────────────┼──────────────────────────────────────────────────────────┤
+ * │ iam-manager          │ Password@1234!   │ USER    │ demo-corp   │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read │
+ * │ iam-viewer           │ Password@1234!   │ USER    │ demo-corp   │ iam:identity:read  iam:role:read  iam:policy:read        │
+ * │ identity-manager     │ Password@1234!   │ USER    │ demo-corp   │ iam:identity:read/create/update/delete                  │
+ * │ testuser             │ Password@1234!   │ USER    │ demo-corp   │ iam:identity:r/c/list  iam:role:read  iam:session:*     │
+ * ├──────────────────────┼──────────────────┼─────────┼─────────────┼──────────────────────────────────────────────────────────┤
+ * │ acme-admin           │ Password@1234!   │ USER    │ acme-inc    │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read │
+ * │ acme-auditor         │ Password@1234!   │ USER    │ acme-inc    │ iam:identity:read  iam:role:read  iam:policy:read        │
+ * │ acme-hr              │ Password@1234!   │ USER    │ acme-inc    │ iam:identity:read/create/update/delete                  │
+ * │ acme-dev             │ Password@1234!   │ USER    │ acme-inc    │ iam:identity:read  iam:session:read/write/delete        │
+ * ├──────────────────────┼──────────────────┼─────────┼─────────────┼──────────────────────────────────────────────────────────┤
+ * │ xyz-founder          │ Password@1234!   │ USER    │ startup-xyz │ iam:identity:create/read/list                           │
+ * │ xyz-devops           │ Password@1234!   │ USER    │ startup-xyz │ iam:identity:read  iam:role:read  iam:policy:read        │
+ * │ xyz-employee         │ Password@1234!   │ USER    │ startup-xyz │ iam:identity:read  iam:session:read/write/delete        │
+ * └──────────────────────┴──────────────────┴─────────┴─────────────┴──────────────────────────────────────────────────────────┘
  *
  * Sidebar visibility matrix (apps/r6-app sidebar-data):
- * ┌──────────────────┬────────────┬───────┬──────────┬──────────────────────────────────────────────────────┐
- * │ identity         │ Identities │ Roles │ Policies │ Tenants                                              │
- * ├──────────────────┼────────────┼───────┼──────────┼──────────────────────────────────────────────────────┤
- * │ admin            │ ✓          │ ✓     │ ✓        │ ✓  (adminOnly flag — kind=ADMIN, not permission)     │
- * │ iam-manager      │ ✓          │ ✓     │ ✓        │ ✗                                                    │
- * │ iam-viewer       │ ✓          │ ✓     │ ✓        │ ✗                                                    │
- * │ identity-manager │ ✓          │ ✗     │ ✗        │ ✗                                                    │
- * │ testuser         │ ✓          │ ✓     │ ✗        │ ✗                                                    │
- * └──────────────────┴────────────┴───────┴──────────┴──────────────────────────────────────────────────────┘
+ * ┌──────────────────────┬────────────┬───────┬──────────┬──────────────────────────────────────────────────────┐
+ * │ identity             │ Identities │ Roles │ Policies │ Tenants                                              │
+ * ├──────────────────────┼────────────┼───────┼──────────┼──────────────────────────────────────────────────────┤
+ * │ admin                │ ✓          │ ✓     │ ✓        │ ✓  (adminOnly flag — kind=ADMIN, not permission)     │
+ * ├──────────────────────┼────────────┼───────┼──────────┼──────────────────────────────────────────────────────┤
+ * │ iam-manager          │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ iam-viewer           │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ identity-manager     │ ✓          │ ✗     │ ✗        │ ✗                                                    │
+ * │ testuser             │ ✓          │ ✓     │ ✗        │ ✗                                                    │
+ * ├──────────────────────┼────────────┼───────┼──────────┼──────────────────────────────────────────────────────┤
+ * │ acme-admin           │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ acme-auditor         │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ acme-hr              │ ✓          │ ✗     │ ✗        │ ✗                                                    │
+ * │ acme-dev             │ ✓          │ ✗     │ ✗        │ ✗                                                    │
+ * ├──────────────────────┼────────────┼───────┼──────────┼──────────────────────────────────────────────────────┤
+ * │ xyz-founder          │ ✓          │ ✗     │ ✗        │ ✗                                                    │
+ * │ xyz-devops           │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ xyz-employee         │ ✓          │ ✗     │ ✗        │ ✗                                                    │
+ * └──────────────────────┴────────────┴───────┴──────────┴──────────────────────────────────────────────────────┘
  *
  * Policy visibility rule: audience ⊆ tenant.moduleAccess (strict subset).
  *   All policies are platform-level (tenantId = null), audience ["iam"].
- *   demo-corp moduleAccess ["iam"] → all IAM policies visible to its users.
+ *   demo-corp / startup-xyz moduleAccess ["iam"]       → all IAM policies visible to their users.
+ *   acme-inc moduleAccess ["iam", "inventory"]         → all IAM policies visible to its users.
  *   Tenant management is ADMIN-only (adminOnly sidebar flag + requireAdmin() routes).
  */
 
@@ -49,11 +70,35 @@ import { upsertRole, linkPolicyToRole } from "./role.js";
 import { upsertTenant } from "./tenant.js";
 
 async function main() {
+	console.log("\n── Cleanup ───────────────────────────────────");
+
+	await prisma.refreshToken.deleteMany();
+	await prisma.$executeRaw`DELETE FROM "_IdentityToRole"`;
+	await prisma.$executeRaw`DELETE FROM "_PolicyToRole"`;
+	await prisma.identity.deleteMany();
+	await prisma.role.deleteMany();
+	await prisma.policy.deleteMany();
+	await prisma.tenant.deleteMany();
+
+	console.log("  ✓ All existing data removed");
+
 	console.log("\n── Tenants ───────────────────────────────────");
 
 	const demoTenant = await upsertTenant({
 		name: "Demo Corp",
 		slug: "demo-corp",
+		moduleAccess: ["iam"],
+	});
+
+	const acmeTenant = await upsertTenant({
+		name: "Acme Inc",
+		slug: "acme-inc",
+		moduleAccess: ["iam", "inventory"],
+	});
+
+	const startupTenant = await upsertTenant({
+		name: "Startup XYZ",
+		slug: "startup-xyz",
 		moduleAccess: ["iam"],
 	});
 
@@ -184,128 +229,155 @@ async function main() {
 		null,
 	);
 
-	// ── Tenant-scoped: existing ───────────────────────────────────────────────
+	// ── demo-corp ─────────────────────────────────────────────────────────────
 
-	const userRole = await upsertRole(
+	const demoUserRole = await upsertRole(
 		"user",
 		"Standard self-service user access",
 		demoTenant.id,
 	);
 
-	const tenantOwnerRole = await upsertRole(
+	const demoTenantOwnerRole = await upsertRole(
 		"tenant-owner",
 		"Tenant owner — can manage identities within their own tenant",
 		demoTenant.id,
 	);
 
-	// ── Tenant-scoped: new ────────────────────────────────────────────────────
-
-	const iamManagerRole = await upsertRole(
+	const demoIamManagerRole = await upsertRole(
 		"iam-manager",
-		"Full IAM management: identities, roles, policies, and tenant read",
+		"Full IAM management: identities, roles, policies",
 		demoTenant.id,
 	);
 
-	const iamViewerRole = await upsertRole(
+	const demoIamViewerRole = await upsertRole(
 		"iam-viewer",
 		"Read-only access to all IAM resources",
 		demoTenant.id,
 	);
 
-	const identityManagerRole = await upsertRole(
+	const demoIdentityManagerRole = await upsertRole(
 		"identity-manager",
 		"Full CRUD access to identities only",
 		demoTenant.id,
 	);
 
-	const roleViewerRole = await upsertRole(
+	const demoRoleViewerRole = await upsertRole(
 		"role-viewer",
 		"Read-only access to roles",
 		demoTenant.id,
 	);
 
+	// ── acme-inc ──────────────────────────────────────────────────────────────
+
+	const acmeIamManagerRole = await upsertRole(
+		"iam-manager",
+		"Full IAM management: identities, roles, policies",
+		acmeTenant.id,
+	);
+
+	const acmeIamViewerRole = await upsertRole(
+		"iam-viewer",
+		"Read-only access to all IAM resources",
+		acmeTenant.id,
+	);
+
+	const acmeIdentityManagerRole = await upsertRole(
+		"identity-manager",
+		"Full CRUD access to identities only",
+		acmeTenant.id,
+	);
+
+	const acmeUserRole = await upsertRole(
+		"user",
+		"Standard self-service user access",
+		acmeTenant.id,
+	);
+
+	// ── startup-xyz ───────────────────────────────────────────────────────────
+
+	const xyzTenantOwnerRole = await upsertRole(
+		"tenant-owner",
+		"Tenant owner — can manage identities within their own tenant",
+		startupTenant.id,
+	);
+
+	const xyzIamViewerRole = await upsertRole(
+		"iam-viewer",
+		"Read-only access to all IAM resources",
+		startupTenant.id,
+	);
+
+	const xyzUserRole = await upsertRole(
+		"user",
+		"Standard self-service user access",
+		startupTenant.id,
+	);
+
 	console.log("\n── Role → Policy assignments ─────────────────");
 
 	// admin
-	await linkPolicyToRole(
-		adminRole.id,
-		adminPolicy.id,
-		"admin → iam:admin:full-access",
-	);
+	await linkPolicyToRole(adminRole.id, adminPolicy.id, "admin → iam:admin:full-access");
 
-	// user (existing)
-	await linkPolicyToRole(
-		userRole.id,
-		userIdentityPolicy.id,
-		"user → iam:user:identity",
-	);
-	await linkPolicyToRole(
-		userRole.id,
-		userSessionPolicy.id,
-		"user → iam:user:session",
-	);
+	// ── demo-corp ─────────────────────────────────────────────────────────────
 
-	// tenant-owner (existing)
-	await linkPolicyToRole(
-		tenantOwnerRole.id,
-		tenantOwnerIdentityPolicy.id,
-		"tenant-owner → iam:tenant-owner:identity-management",
-	);
+	await linkPolicyToRole(demoUserRole.id, userIdentityPolicy.id, "demo:user → iam:user:identity");
+	await linkPolicyToRole(demoUserRole.id, userSessionPolicy.id, "demo:user → iam:user:session");
+
+	await linkPolicyToRole(demoTenantOwnerRole.id, tenantOwnerIdentityPolicy.id, "demo:tenant-owner → iam:tenant-owner:identity-management");
 
 	// iam-manager: full CRUD on identity + role, plus policy read
 	// (Tenant management is ADMIN-only — no iam:tenant:read assigned)
-	await linkPolicyToRole(
-		iamManagerRole.id,
-		identityFullAccessPolicy.id,
-		"iam-manager → iam:identity:full-access",
-	);
-	await linkPolicyToRole(
-		iamManagerRole.id,
-		roleFullAccessPolicy.id,
-		"iam-manager → iam:role:full-access",
-	);
-	await linkPolicyToRole(
-		iamManagerRole.id,
-		policyReadPolicy.id,
-		"iam-manager → iam:policy:read-only",
-	);
+	await linkPolicyToRole(demoIamManagerRole.id, identityFullAccessPolicy.id, "demo:iam-manager → iam:identity:full-access");
+	await linkPolicyToRole(demoIamManagerRole.id, roleFullAccessPolicy.id, "demo:iam-manager → iam:role:full-access");
+	await linkPolicyToRole(demoIamManagerRole.id, policyReadPolicy.id, "demo:iam-manager → iam:policy:read-only");
 
-	// iam-viewer: read-only across all IAM resources
-	await linkPolicyToRole(
-		iamViewerRole.id,
-		iamReadOnlyPolicy.id,
-		"iam-viewer → iam:read-only",
-	);
+	await linkPolicyToRole(demoIamViewerRole.id, iamReadOnlyPolicy.id, "demo:iam-viewer → iam:read-only");
 
-	// identity-manager: identity CRUD only
-	await linkPolicyToRole(
-		identityManagerRole.id,
-		identityFullAccessPolicy.id,
-		"identity-manager → iam:identity:full-access",
-	);
+	await linkPolicyToRole(demoIdentityManagerRole.id, identityFullAccessPolicy.id, "demo:identity-manager → iam:identity:full-access");
 
-	// role-viewer: role read only
-	await linkPolicyToRole(
-		roleViewerRole.id,
-		roleReadOnlyPolicy.id,
-		"role-viewer → iam:role:read-only",
-	);
+	await linkPolicyToRole(demoRoleViewerRole.id, roleReadOnlyPolicy.id, "demo:role-viewer → iam:role:read-only");
+
+	// ── acme-inc ──────────────────────────────────────────────────────────────
+
+	await linkPolicyToRole(acmeIamManagerRole.id, identityFullAccessPolicy.id, "acme:iam-manager → iam:identity:full-access");
+	await linkPolicyToRole(acmeIamManagerRole.id, roleFullAccessPolicy.id, "acme:iam-manager → iam:role:full-access");
+	await linkPolicyToRole(acmeIamManagerRole.id, policyReadPolicy.id, "acme:iam-manager → iam:policy:read-only");
+
+	await linkPolicyToRole(acmeIamViewerRole.id, iamReadOnlyPolicy.id, "acme:iam-viewer → iam:read-only");
+
+	await linkPolicyToRole(acmeIdentityManagerRole.id, identityFullAccessPolicy.id, "acme:identity-manager → iam:identity:full-access");
+
+	await linkPolicyToRole(acmeUserRole.id, userIdentityPolicy.id, "acme:user → iam:user:identity");
+	await linkPolicyToRole(acmeUserRole.id, userSessionPolicy.id, "acme:user → iam:user:session");
+
+	// ── startup-xyz ───────────────────────────────────────────────────────────
+
+	await linkPolicyToRole(xyzTenantOwnerRole.id, tenantOwnerIdentityPolicy.id, "xyz:tenant-owner → iam:tenant-owner:identity-management");
+
+	await linkPolicyToRole(xyzIamViewerRole.id, iamReadOnlyPolicy.id, "xyz:iam-viewer → iam:read-only");
+
+	await linkPolicyToRole(xyzUserRole.id, userIdentityPolicy.id, "xyz:user → iam:user:identity");
+	await linkPolicyToRole(xyzUserRole.id, userSessionPolicy.id, "xyz:user → iam:user:session");
 
 	console.log("\n── Identities ────────────────────────────────");
+
+	// ── platform ──────────────────────────────────────────────────────────────
 
 	const adminIdentity = await upsertIdentity({
 		tenantId: null,
 		username: "admin",
 		email: "admin@example.com",
-		password: "Admin@1234!",
+		password: "Password@1234!",
 		kind: "ADMIN",
 	});
+
+	// ── demo-corp ─────────────────────────────────────────────────────────────
 
 	const testUser = await upsertIdentity({
 		tenantId: demoTenant.id,
 		username: "testuser",
 		email: "testuser@example.com",
-		password: "User@1234!",
+		password: "Password@1234!",
 		kind: "USER",
 	});
 
@@ -313,7 +385,7 @@ async function main() {
 		tenantId: demoTenant.id,
 		username: "iam-manager",
 		email: "iam-manager@example.com",
-		password: "Manager@1234!",
+		password: "Password@1234!",
 		kind: "USER",
 	});
 
@@ -321,7 +393,7 @@ async function main() {
 		tenantId: demoTenant.id,
 		username: "iam-viewer",
 		email: "iam-viewer@example.com",
-		password: "Viewer@1234!",
+		password: "Password@1234!",
 		kind: "USER",
 	});
 
@@ -329,71 +401,118 @@ async function main() {
 		tenantId: demoTenant.id,
 		username: "identity-manager",
 		email: "identity-manager@example.com",
-		password: "Identity@1234!",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	// ── acme-inc ──────────────────────────────────────────────────────────────
+
+	const acmeAdminUser = await upsertIdentity({
+		tenantId: acmeTenant.id,
+		username: "acme-admin",
+		email: "acme-admin@acme-inc.example.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	const acmeAuditorUser = await upsertIdentity({
+		tenantId: acmeTenant.id,
+		username: "acme-auditor",
+		email: "acme-auditor@acme-inc.example.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	const acmeHrUser = await upsertIdentity({
+		tenantId: acmeTenant.id,
+		username: "acme-hr",
+		email: "acme-hr@acme-inc.example.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	const acmeDevUser = await upsertIdentity({
+		tenantId: acmeTenant.id,
+		username: "acme-dev",
+		email: "acme-dev@acme-inc.example.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	// ── startup-xyz ───────────────────────────────────────────────────────────
+
+	const xyzFounderUser = await upsertIdentity({
+		tenantId: startupTenant.id,
+		username: "xyz-founder",
+		email: "xyz-founder@startup-xyz.example.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	const xyzDevopsUser = await upsertIdentity({
+		tenantId: startupTenant.id,
+		username: "xyz-devops",
+		email: "xyz-devops@startup-xyz.example.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	const xyzEmployeeUser = await upsertIdentity({
+		tenantId: startupTenant.id,
+		username: "xyz-employee",
+		email: "xyz-employee@startup-xyz.example.com",
+		password: "Password@1234!",
 		kind: "USER",
 	});
 
 	console.log("\n── Identity → Role assignments ───────────────");
 
 	// admin
-	await linkRoleToIdentity(
-		adminRole.id,
-		adminIdentity.id,
-		"admin → role:admin",
-	);
+	await linkRoleToIdentity(adminRole.id, adminIdentity.id, "admin → role:admin");
 
-	// testuser: existing roles + new role-viewer (Identities ✓, Roles ✓, Policies ✗, Tenants ✗)
-	await linkRoleToIdentity(userRole.id, testUser.id, "testuser → role:user");
-	await linkRoleToIdentity(
-		tenantOwnerRole.id,
-		testUser.id,
-		"testuser → role:tenant-owner",
-	);
-	await linkRoleToIdentity(
-		roleViewerRole.id,
-		testUser.id,
-		"testuser → role:role-viewer",
-	);
+	// ── demo-corp ─────────────────────────────────────────────────────────────
 
-	// dedicated identities
-	await linkRoleToIdentity(
-		iamManagerRole.id,
-		iamManagerUser.id,
-		"iam-manager → role:iam-manager",
-	);
-	await linkRoleToIdentity(
-		iamViewerRole.id,
-		iamViewerUser.id,
-		"iam-viewer → role:iam-viewer",
-	);
-	await linkRoleToIdentity(
-		identityManagerRole.id,
-		identityManagerUser.id,
-		"identity-manager → role:identity-manager",
-	);
+	// testuser: user + tenant-owner + role-viewer (Identities ✓, Roles ✓, Policies ✗, Tenants ✗)
+	await linkRoleToIdentity(demoUserRole.id, testUser.id, "testuser → role:user");
+	await linkRoleToIdentity(demoTenantOwnerRole.id, testUser.id, "testuser → role:tenant-owner");
+	await linkRoleToIdentity(demoRoleViewerRole.id, testUser.id, "testuser → role:role-viewer");
+
+	await linkRoleToIdentity(demoIamManagerRole.id, iamManagerUser.id, "iam-manager → role:iam-manager");
+	await linkRoleToIdentity(demoIamViewerRole.id, iamViewerUser.id, "iam-viewer → role:iam-viewer");
+	await linkRoleToIdentity(demoIdentityManagerRole.id, identityManagerUser.id, "identity-manager → role:identity-manager");
+
+	// ── acme-inc ──────────────────────────────────────────────────────────────
+
+	await linkRoleToIdentity(acmeIamManagerRole.id, acmeAdminUser.id, "acme-admin → role:iam-manager");
+	await linkRoleToIdentity(acmeIamViewerRole.id, acmeAuditorUser.id, "acme-auditor → role:iam-viewer");
+	await linkRoleToIdentity(acmeIdentityManagerRole.id, acmeHrUser.id, "acme-hr → role:identity-manager");
+	await linkRoleToIdentity(acmeUserRole.id, acmeDevUser.id, "acme-dev → role:user");
+
+	// ── startup-xyz ───────────────────────────────────────────────────────────
+
+	await linkRoleToIdentity(xyzTenantOwnerRole.id, xyzFounderUser.id, "xyz-founder → role:tenant-owner");
+	await linkRoleToIdentity(xyzIamViewerRole.id, xyzDevopsUser.id, "xyz-devops → role:iam-viewer");
+	await linkRoleToIdentity(xyzUserRole.id, xyzEmployeeUser.id, "xyz-employee → role:user");
 
 	console.log("\n── Done ──────────────────────────────────────\n");
-	console.log("Test credentials and sidebar access:");
-	console.log(
-		"  admin             (Admin@1234!)    → all IAM sections  [ADMIN bypass]",
-	);
-	console.log(
-		"  iam-manager       (Manager@1234!)  → Identities+Roles+Policies (write) — no Tenants",
-	);
-	console.log(
-		"  iam-viewer        (Viewer@1234!)   → Identities+Roles+Policies (read)  — no Tenants",
-	);
-	console.log(
-		"  identity-manager  (Identity@1234!) → Identities only   + write",
-	);
-	console.log(
-		"  testuser          (User@1234!)     → Identities + Roles only",
-	);
-	console.log();
-	console.log(
-		"Login format: username@tenant-slug  (e.g. iam-manager@demo-corp)",
-	);
-	console.log("Admin login:  username only         (e.g. admin)");
+	console.log("Test credentials — login format: username@tenant-slug");
+	console.log("Admin login: username only (e.g. admin)\n");
+	console.log("Platform:");
+	console.log("  admin             (Password@1234!)  → all IAM sections  [ADMIN bypass]");
+	console.log("\ndemo-corp:");
+	console.log("  iam-manager       (Password@1234!)  → Identities+Roles+Policies (write) — no Tenants");
+	console.log("  iam-viewer        (Password@1234!)  → Identities+Roles+Policies (read)  — no Tenants");
+	console.log("  identity-manager  (Password@1234!)  → Identities only (write)");
+	console.log("  testuser          (Password@1234!)  → Identities + Roles only");
+	console.log("\nacme-inc  [modules: iam, inventory]:");
+	console.log("  acme-admin        (Password@1234!)  → Identities+Roles+Policies (write) — no Tenants");
+	console.log("  acme-auditor      (Password@1234!)  → Identities+Roles+Policies (read)  — no Tenants");
+	console.log("  acme-hr           (Password@1234!)  → Identities only (write)");
+	console.log("  acme-dev          (Password@1234!)  → Identities only (self-service)");
+	console.log("\nstartup-xyz  [modules: iam]:");
+	console.log("  xyz-founder       (Password@1234!)  → Identities (create/read/list)");
+	console.log("  xyz-devops        (Password@1234!)  → Identities+Roles+Policies (read)  — no Tenants");
+	console.log("  xyz-employee      (Password@1234!)  → Identities only (self-service)");
 	console.log();
 }
 
