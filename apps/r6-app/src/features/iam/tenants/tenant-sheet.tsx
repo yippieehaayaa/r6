@@ -19,7 +19,7 @@ export function TenantSheet({ open, onOpenChange, tenant }: Props) {
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent className="sm:max-w-md overflow-y-auto">
+			<SheetContent className="sm:max-w-md overflow-y-auto animate-stagger-children">
 				<SheetHeader>
 					<SheetTitle>{isEdit ? "Edit Tenant" : "New Tenant"}</SheetTitle>
 				</SheetHeader>

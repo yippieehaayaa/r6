@@ -31,16 +31,19 @@ export function NavMain({
 			title: string;
 			url: string;
 			permission?: string;
+			adminOnly?: boolean;
 		}[];
 	}[];
 }) {
-	const { hasPermission } = useAuth();
+	const { hasPermission, claims } = useAuth();
 
 	const visibleItems = items
 		.map((item) => ({
 			...item,
 			items: item.items?.filter(
-				(sub) => !sub.permission || hasPermission(sub.permission),
+				(sub) =>
+					(!sub.adminOnly || claims?.kind === "ADMIN") &&
+					(!sub.permission || hasPermission(sub.permission)),
 			),
 		}))
 		.filter((item) => !item.items || item.items.length > 0);

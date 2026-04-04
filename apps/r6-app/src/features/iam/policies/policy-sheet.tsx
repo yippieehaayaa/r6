@@ -19,7 +19,7 @@ export function PolicySheet({ open, onOpenChange, policy }: Props) {
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent className="sm:max-w-md overflow-y-auto">
+			<SheetContent className="sm:max-w-md overflow-y-auto animate-stagger-children">
 				<SheetHeader>
 					<SheetTitle>{isEdit ? "Edit Policy" : "New Policy"}</SheetTitle>
 				</SheetHeader>

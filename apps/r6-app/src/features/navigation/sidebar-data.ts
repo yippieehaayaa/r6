@@ -169,7 +169,7 @@ export const data = {
 				{
 					title: "Tenants",
 					url: "/iam/tenants",
-					permission: "iam:tenant:read",
+					adminOnly: true,
 				},
 			],
 		},

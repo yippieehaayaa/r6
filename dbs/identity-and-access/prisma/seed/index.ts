@@ -15,26 +15,31 @@
  * tenantId = uuid  → tenant-scoped  (USER identities, tenant roles/policies)
  *
  * Seeded identities
- * ┌──────────────────┬──────────────────┬─────────┬────────────┬─────────────────────────────────────────────────────────────────────────────┐
- * │ login            │ password         │ kind    │ tenant     │ resolved permissions                                                        │
- * ├──────────────────┼──────────────────┼─────────┼────────────┼─────────────────────────────────────────────────────────────────────────────┤
- * │ admin            │ Admin@1234!      │ ADMIN   │ (none)     │ iam:*:*                                                                     │
- * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read  iam:tenant:read  │
- * │ iam-viewer       │ Viewer@1234!     │ USER    │ demo-corp  │ iam:identity:read  iam:role:read  iam:policy:read  iam:tenant:read           │
- * │ identity-manager │ Identity@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/update/delete                                      │
- * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*                        │
- * └──────────────────┴──────────────────┴─────────┴────────────┴─────────────────────────────────────────────────────────────────────────────┘
+ * ┌──────────────────┬──────────────────┬─────────┬────────────┬──────────────────────────────────────────────────────────┐
+ * │ login            │ password         │ kind    │ tenant     │ resolved permissions                                     │
+ * ├──────────────────┼──────────────────┼─────────┼────────────┼──────────────────────────────────────────────────────────┤
+ * │ admin            │ Admin@1234!      │ ADMIN   │ (none)     │ iam:*:*  (ADMIN kind — bypasses all permission guards)   │
+ * │ iam-manager      │ Manager@1234!    │ USER    │ demo-corp  │ iam:identity:r/c/u/d  iam:role:r/c/u/d  iam:policy:read │
+ * │ iam-viewer       │ Viewer@1234!     │ USER    │ demo-corp  │ iam:identity:read  iam:role:read  iam:policy:read        │
+ * │ identity-manager │ Identity@1234!   │ USER    │ demo-corp  │ iam:identity:read/create/update/delete                  │
+ * │ testuser         │ User@1234!       │ USER    │ demo-corp  │ iam:identity:r/c/list  iam:role:read  iam:session:*     │
+ * └──────────────────┴──────────────────┴─────────┴────────────┴──────────────────────────────────────────────────────────┘
  *
- * Sidebar visibility matrix (apps/r6-app sidebar-data permissions):
- * ┌──────────────────┬────────────┬───────┬──────────┬─────────┐
- * │ identity         │ Identities │ Roles │ Policies │ Tenants │
- * ├──────────────────┼────────────┼───────┼──────────┼─────────┤
- * │ admin            │ ✓          │ ✓     │ ✓        │ ✓       │
- * │ iam-manager      │ ✓          │ ✓     │ ✓        │ ✓       │
- * │ iam-viewer       │ ✓          │ ✓     │ ✓        │ ✓       │
- * │ identity-manager │ ✓          │ ✗     │ ✗        │ ✗       │
- * │ testuser         │ ✓          │ ✓     │ ✗        │ ✗       │
- * └──────────────────┴────────────┴───────┴──────────┴─────────┘
+ * Sidebar visibility matrix (apps/r6-app sidebar-data):
+ * ┌──────────────────┬────────────┬───────┬──────────┬──────────────────────────────────────────────────────┐
+ * │ identity         │ Identities │ Roles │ Policies │ Tenants                                              │
+ * ├──────────────────┼────────────┼───────┼──────────┼──────────────────────────────────────────────────────┤
+ * │ admin            │ ✓          │ ✓     │ ✓        │ ✓  (adminOnly flag — kind=ADMIN, not permission)     │
+ * │ iam-manager      │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ iam-viewer       │ ✓          │ ✓     │ ✓        │ ✗                                                    │
+ * │ identity-manager │ ✓          │ ✗     │ ✗        │ ✗                                                    │
+ * │ testuser         │ ✓          │ ✓     │ ✗        │ ✗                                                    │
+ * └──────────────────┴────────────┴───────┴──────────┴──────────────────────────────────────────────────────┘
+ *
+ * Policy visibility rule: audience ⊆ tenant.moduleAccess (strict subset).
+ *   All policies are platform-level (tenantId = null), audience ["iam"].
+ *   demo-corp moduleAccess ["iam"] → all IAM policies visible to its users.
+ *   Tenant management is ADMIN-only (adminOnly sidebar flag + requireAdmin() routes).
  */
 
 import { prisma } from "../../src/client.js";
@@ -62,22 +67,22 @@ async function main() {
 		description: "Grants full access to all IAM resources and actions",
 		effect: "ALLOW",
 		permissions: ["iam:*:*"],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	// ── Tenant-scoped: existing user policies ────────────────────────────────
 
 	const userIdentityPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:user:identity",
 		description: "Read own identity",
 		effect: "ALLOW",
 		permissions: ["iam:identity:read"],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	const userSessionPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:user:session",
 		description: "Manage own sessions (login, refresh, logout)",
 		effect: "ALLOW",
@@ -86,11 +91,11 @@ async function main() {
 			"iam:session:write",
 			"iam:session:delete",
 		],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	const tenantOwnerIdentityPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:tenant-owner:identity-management",
 		description:
 			"Allows tenant owners to create, read, and list identities within their own tenant",
@@ -100,13 +105,13 @@ async function main() {
 			"iam:identity:read",
 			"iam:identity:list",
 		],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	// ── Tenant-scoped: granular resource policies ─────────────────────────────
 
 	const identityFullAccessPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:identity:full-access",
 		description: "Full CRUD access to identities",
 		effect: "ALLOW",
@@ -116,11 +121,11 @@ async function main() {
 			"iam:identity:update",
 			"iam:identity:delete",
 		],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	const roleFullAccessPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:role:full-access",
 		description: "Full CRUD access to roles",
 		effect: "ALLOW",
@@ -130,49 +135,43 @@ async function main() {
 			"iam:role:update",
 			"iam:role:delete",
 		],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	const policyReadPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:policy:read-only",
 		description: "Read-only access to policies (writes are ADMIN-only at the API level)",
 		effect: "ALLOW",
 		permissions: ["iam:policy:read"],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
-	const tenantReadPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
-		name: "iam:tenant:read-only",
-		description: "Read-only access to tenant information",
-		effect: "ALLOW",
-		permissions: ["iam:tenant:read"],
-		audience: ["iam-api"],
-	});
+	// NOTE: iam:tenant:read-only is intentionally omitted.
+	// Tenant management is ADMIN-only — the Tenants sidebar item uses adminOnly,
+	// not a permission string. No tenant-scoped role receives iam:tenant:read.
 
 	const iamReadOnlyPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:read-only",
 		description:
-			"Read-only access to all IAM resources (identities, roles, policies, tenants)",
+			"Read-only access to IAM resources visible to tenants (identities, roles, policies)",
 		effect: "ALLOW",
 		permissions: [
 			"iam:identity:read",
 			"iam:role:read",
 			"iam:policy:read",
-			"iam:tenant:read",
 		],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	const roleReadOnlyPolicy = await upsertPolicy({
-		tenantId: demoTenant.id,
+		tenantId: null,
 		name: "iam:role:read-only",
 		description: "Read-only access to roles",
 		effect: "ALLOW",
 		permissions: ["iam:role:read"],
-		audience: ["iam-api"],
+		audience: ["iam"],
 	});
 
 	console.log("\n── Roles ─────────────────────────────────────");
@@ -253,7 +252,8 @@ async function main() {
 		"tenant-owner → iam:tenant-owner:identity-management",
 	);
 
-	// iam-manager: full CRUD on identity + role + policy, plus tenant read
+	// iam-manager: full CRUD on identity + role, plus policy read
+	// (Tenant management is ADMIN-only — no iam:tenant:read assigned)
 	await linkPolicyToRole(
 		iamManagerRole.id,
 		identityFullAccessPolicy.id,
@@ -268,11 +268,6 @@ async function main() {
 		iamManagerRole.id,
 		policyReadPolicy.id,
 		"iam-manager → iam:policy:read-only",
-	);
-	await linkPolicyToRole(
-		iamManagerRole.id,
-		tenantReadPolicy.id,
-		"iam-manager → iam:tenant:read-only",
 	);
 
 	// iam-viewer: read-only across all IAM resources
@@ -383,10 +378,10 @@ async function main() {
 		"  admin             (Admin@1234!)    → all IAM sections  [ADMIN bypass]",
 	);
 	console.log(
-		"  iam-manager       (Manager@1234!)  → all IAM sections  + write",
+		"  iam-manager       (Manager@1234!)  → Identities+Roles+Policies (write) — no Tenants",
 	);
 	console.log(
-		"  iam-viewer        (Viewer@1234!)   → all IAM sections  read-only",
+		"  iam-viewer        (Viewer@1234!)   → Identities+Roles+Policies (read)  — no Tenants",
 	);
 	console.log(
 		"  identity-manager  (Identity@1234!) → Identities only   + write",

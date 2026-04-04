@@ -20,7 +20,7 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
-			<SheetContent className="sm:max-w-md overflow-y-auto">
+			<SheetContent className="sm:max-w-md overflow-y-auto animate-stagger-children">
 				<SheetHeader>
 					<SheetTitle>{isEdit ? "Edit Role" : "New Role"}</SheetTitle>
 				</SheetHeader>

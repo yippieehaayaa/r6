@@ -33,7 +33,7 @@ export function PoliciesTable({
 	onRestore,
 }: Props) {
 	return (
-		<Table>
+		<Table className="animate-apple-enter">
 			<TableHeader>
 				<TableRow>
 					<TableHead>Name</TableHead>
@@ -44,7 +44,12 @@ export function PoliciesTable({
 					<TableHead className="w-10" />
 				</TableRow>
 			</TableHeader>
-			<TableBody>
+			<TableBody
+				key={isLoading ? "loading" : "data"}
+				className={
+					!isLoading && data.length > 0 ? "animate-stagger-children" : undefined
+				}
+			>
 				{isLoading ? (
 					<TableRow>
 						<TableCell
