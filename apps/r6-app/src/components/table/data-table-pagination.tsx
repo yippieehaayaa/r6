@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	Select,
@@ -17,7 +18,7 @@ interface DataTablePaginationProps<TData> {
 	rangeEnd: number;
 }
 
-export function DataTablePagination<TData>({
+function DataTablePaginationInner<TData>({
 	table,
 	pageSizeOptions,
 	totalRows,
@@ -78,3 +79,7 @@ export function DataTablePagination<TData>({
 		</div>
 	);
 }
+
+export const DataTablePagination = memo(
+	DataTablePaginationInner,
+) as typeof DataTablePaginationInner;
