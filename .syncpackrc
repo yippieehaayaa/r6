@@ -54,7 +54,7 @@
 		{
 			"label": "Pin prisma to exact version",
 			"dependencies": ["prisma", "@prisma/client"],
-			"pinVersion": "7.5.0"
+			"pinVersion": "7.6.0"
 		},
 		{
 			"label": "Pin pg to exact version",
