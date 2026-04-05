@@ -9,6 +9,7 @@ import { identityApi } from "@/api/_app";
 export interface ListIdentitiesParams {
 	page?: number;
 	limit?: number;
+	search?: string;
 }
 
 const ListIdentitiesResponseSchema =

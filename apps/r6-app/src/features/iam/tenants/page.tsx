@@ -1,7 +1,8 @@
 import type { Tenant } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useState } from "react";
+import type { PaginationState } from "@tanstack/react-table";
+import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
 	useListTenantsQuery,
@@ -28,20 +29,32 @@ const PAGE_SIZE = 20;
 export default function TenantsPage() {
 	const queryClient = useQueryClient();
 
-	const [page, setPage] = useState(1);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: PAGE_SIZE,
+	});
+	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<Tenant | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Tenant | null>(null);
 
+	useEffect(() => {
+		const id = setTimeout(() => setDebouncedSearch(search), 300);
+		return () => clearTimeout(id);
+	}, [search]);
+
 	const { data, isLoading } = useListTenantsQuery(
-		{ page, limit: PAGE_SIZE },
+		{
+			page: pagination.pageIndex + 1,
+			limit: pagination.pageSize,
+			search: debouncedSearch || undefined,
+		},
 		{ staleTime: 10 * 60 * 1000 },
 	);
 
 	const removeMutation = useRemoveTenantMutation();
 	const restoreMutation = useRestoreTenantMutation();
-
-	const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
 	function handleEdit(tenant: Tenant) {
 		setEditTarget(tenant);
@@ -94,41 +107,23 @@ export default function TenantsPage() {
 				</Button>
 			</div>
 
-			<div className="rounded-xl border bg-card overflow-hidden">
+			<div className="rounded-xl border bg-card p-4">
 				<TenantsTable
 					data={data?.data ?? []}
 					isLoading={isLoading}
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 					onRestore={handleRestore}
+					rowCount={data?.total}
+					paginationState={pagination}
+					onPaginationChange={setPagination}
+					filterValue={search}
+					onFilterChange={(v) => {
+						setSearch(v);
+						setPagination((p) => ({ ...p, pageIndex: 0 }));
+					}}
 				/>
 			</div>
-
-			{(data?.total ?? 0) > PAGE_SIZE && (
-				<div className="flex items-center justify-between text-sm text-muted-foreground">
-					<span>
-						Page {page} of {totalPages}
-					</span>
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="icon-sm"
-							disabled={page <= 1}
-							onClick={() => setPage((p) => p - 1)}
-						>
-							<ChevronLeft />
-						</Button>
-						<Button
-							variant="outline"
-							size="icon-sm"
-							disabled={page >= totalPages}
-							onClick={() => setPage((p) => p + 1)}
-						>
-							<ChevronRight />
-						</Button>
-					</div>
-				</div>
-			)}
 
 			<TenantSheet
 				open={sheetOpen}

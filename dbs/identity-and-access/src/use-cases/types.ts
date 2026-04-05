@@ -66,9 +66,11 @@ export type PaginationInput = {
 // Filters for listTenants. All optional — omitting all returns every
 // non-deleted tenant. @@index([isActive]) and @@index([deletedAt])
 // back these filters.
+// search performs a case-insensitive OR match on name and slug.
 export type ListTenantsInput = PaginationInput & {
   isActive?: boolean; // filter by active/inactive
   includeDeleted?: boolean; // when true, includes soft-deleted rows
+  search?: string; // case-insensitive OR filter on name + slug
 };
 
 // ─── Identity list ────────────────────────────────────────────
@@ -76,27 +78,33 @@ export type ListTenantsInput = PaginationInput & {
 // Filters for listIdentities. tenantId is required — identities are
 // always scoped to a tenant. @@index([tenantId, status]) and
 // @@index([tenantId, kind]) back the optional filters.
+// search performs a case-insensitive OR match on username and email.
 export type ListIdentitiesInput = PaginationInput & {
   tenantId: string; // required — identities are tenant-scoped
   status?: IdentityStatus; // @@index([tenantId, status])
   kind?: IdentityKind; // @@index([tenantId, kind])
+  search?: string; // case-insensitive OR filter on username + email
 };
 
 // ─── Role list ────────────────────────────────────────────────
 
 // Filters for listRoles. tenantId required.
 // @@index([tenantId, isActive]) backs the isActive filter.
+// search performs a case-insensitive OR match on name and description.
 export type ListRolesInput = PaginationInput & {
   tenantId: string;
   isActive?: boolean;
+  search?: string; // case-insensitive OR filter on name + description
 };
 
 // ─── Policy list ──────────────────────────────────────────────
 
 // Filters for listPolicies. Policies are global (tenantId = null).
 // audience filter uses Postgres array containment: { has: service }.
+// search performs a case-insensitive OR match on name and description.
 export type ListPoliciesInput = PaginationInput & {
   audience?: string; // match policies whose audience array contains this value
+  search?: string; // case-insensitive OR filter on name + description
 };
 
 // ─── Identity ─────────────────────────────────────────────────

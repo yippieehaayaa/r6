@@ -131,6 +131,13 @@ const buildWhere = (
   deletedAt: null,
   ...(input.status !== undefined && { status: input.status }),
   ...(input.kind !== undefined && { kind: input.kind }),
+  ...(input.search !== undefined &&
+    input.search.length > 0 && {
+      OR: [
+        { username: { contains: input.search, mode: "insensitive" } },
+        { email: { contains: input.search, mode: "insensitive" } },
+      ],
+    }),
 });
 
 // Returns a paginated list of identities for a tenant.

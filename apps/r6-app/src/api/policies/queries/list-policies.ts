@@ -9,6 +9,7 @@ import { identityApi } from "@/api/_app";
 export interface ListPoliciesParams {
 	page?: number;
 	limit?: number;
+	search?: string;
 }
 
 const ListPoliciesResponseSchema = PaginatedResponseSchema(PolicySchema);

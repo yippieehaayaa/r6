@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   emailRegex,
+  ListQuerySchema,
   NullableTimestampSchema,
   TenantScopedSchema,
 } from "../base.schema";
@@ -196,3 +197,9 @@ export const ChangePasswordSchema = z
   });
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+
+// ── List query params ───────────────────────────────────────
+
+export const ListIdentitiesQuerySchema = ListQuerySchema;
+
+export type ListIdentitiesQuery = z.infer<typeof ListIdentitiesQuerySchema>;

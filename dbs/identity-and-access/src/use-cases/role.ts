@@ -92,6 +92,13 @@ const buildWhere = (
   tenantId: input.tenantId,
   deletedAt: null,
   ...(input.isActive !== undefined && { isActive: input.isActive }),
+  ...(input.search !== undefined &&
+    input.search.length > 0 && {
+      OR: [
+        { name: { contains: input.search, mode: "insensitive" } },
+        { description: { contains: input.search, mode: "insensitive" } },
+      ],
+    }),
 });
 
 // Returns a paginated list of roles for a tenant.

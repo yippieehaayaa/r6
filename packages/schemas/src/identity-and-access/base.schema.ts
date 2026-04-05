@@ -129,3 +129,17 @@ export type PaginatedResponse<T> = {
   limit: number;
   total: number;
 };
+
+// ============================================================
+//  LIST QUERY SCHEMA
+//  Shared base for all paginated list endpoint query params.
+//  Entity-specific schemas extend this with additional filters.
+// ============================================================
+
+export const ListQuerySchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+  search: z.string().trim().max(100).optional(),
+});
+
+export type ListQuery = z.infer<typeof ListQuerySchema>;

@@ -1,5 +1,12 @@
 import type { Role } from "@r6/schemas";
+import type {
+	ColumnDef,
+	OnChangeFn,
+	PaginationState,
+} from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { useMemo } from "react";
+import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,14 +15,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 
 interface Props {
 	data: Role[];
@@ -26,6 +25,11 @@ interface Props {
 	canUpdate: boolean;
 	canDelete: boolean;
 	canRestore: boolean;
+	rowCount?: number;
+	paginationState?: PaginationState;
+	onPaginationChange?: OnChangeFn<PaginationState>;
+	filterValue?: string;
+	onFilterChange?: (value: string) => void;
 }
 
 export function RolesTable({
@@ -37,96 +41,106 @@ export function RolesTable({
 	canUpdate,
 	canDelete,
 	canRestore,
+	rowCount,
+	paginationState,
+	onPaginationChange,
+	filterValue,
+	onFilterChange,
 }: Props) {
-	return (
-		<Table className="animate-apple-enter">
-			<TableHeader>
-				<TableRow>
-					<TableHead>Name</TableHead>
-					<TableHead>Description</TableHead>
-					<TableHead>Status</TableHead>
-					<TableHead>Created</TableHead>
-					<TableHead className="w-10" />
-				</TableRow>
-			</TableHeader>
-			<TableBody
-				key={isLoading ? "loading" : "data"}
-				className={
-					!isLoading && data.length > 0 ? "animate-stagger-children" : undefined
-				}
-			>
-				{isLoading ? (
-					<TableRow>
-						<TableCell
-							colSpan={5}
-							className="text-center text-muted-foreground py-8"
-						>
-							Loading…
-						</TableCell>
-					</TableRow>
-				) : data.length === 0 ? (
-					<TableRow>
-						<TableCell
-							colSpan={5}
-							className="text-center text-muted-foreground py-8"
-						>
-							No roles found.
-						</TableCell>
-					</TableRow>
-				) : (
-					data.map((role) => (
-						<TableRow key={role.id} data-deleted={!!role.deletedAt}>
-							<TableCell className="font-medium">{role.name}</TableCell>
-							<TableCell className="text-muted-foreground">
-								{role.description ?? "—"}
-							</TableCell>
-							<TableCell>
-								<Badge variant={role.isActive ? "default" : "secondary"}>
-									{role.isActive ? "Active" : "Inactive"}
-								</Badge>
-							</TableCell>
-							<TableCell className="text-muted-foreground text-xs">
-								{new Date(role.createdAt).toLocaleDateString()}
-							</TableCell>
-							<TableCell>
-								{(canUpdate || canDelete || canRestore) && (
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="icon-sm">
-												<MoreHorizontal />
-												<span className="sr-only">Open menu</span>
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											{canUpdate && (
-												<DropdownMenuItem onSelect={() => onEdit(role)}>
-													<Pencil />
-													Edit
-												</DropdownMenuItem>
-											)}
-											{canDelete && !role.deletedAt && (
-												<DropdownMenuItem
-													variant="destructive"
-													onSelect={() => onDelete(role)}
-												>
-													<Trash2 />
-													Delete
-												</DropdownMenuItem>
-											)}
-											{canRestore && role.deletedAt && (
-												<DropdownMenuItem onSelect={() => onRestore(role)}>
-													<RotateCcw />
-													Restore
-												</DropdownMenuItem>
-											)}
-										</DropdownMenuContent>
-									</DropdownMenu>
+	const columns = useMemo<ColumnDef<Role>[]>(
+		() => [
+			{
+				accessorKey: "name",
+				header: "Name",
+				cell: ({ row }) => (
+					<span className="font-medium">{row.original.name}</span>
+				),
+			},
+			{
+				accessorKey: "description",
+				header: "Description",
+				cell: ({ row }) => (
+					<span className="text-muted-foreground">
+						{row.original.description ?? "—"}
+					</span>
+				),
+			},
+			{
+				accessorKey: "isActive",
+				header: "Status",
+				cell: ({ row }) => (
+					<Badge variant={row.original.isActive ? "default" : "secondary"}>
+						{row.original.isActive ? "Active" : "Inactive"}
+					</Badge>
+				),
+			},
+			{
+				accessorKey: "createdAt",
+				header: "Created",
+				cell: ({ row }) => (
+					<span className="text-muted-foreground text-xs">
+						{new Date(row.original.createdAt).toLocaleDateString()}
+					</span>
+				),
+			},
+			{
+				id: "actions",
+				header: "",
+				enableHiding: false,
+				enableSorting: false,
+				cell: ({ row }) => {
+					const role = row.original;
+					if (!canUpdate && !canDelete && !canRestore) return null;
+					return (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="icon-sm">
+									<MoreHorizontal />
+									<span className="sr-only">Open menu</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{canUpdate && (
+									<DropdownMenuItem onSelect={() => onEdit(role)}>
+										<Pencil />
+										Edit
+									</DropdownMenuItem>
 								)}
-							</TableCell>
-						</TableRow>
-					))
-				)}
-			</TableBody>
-		</Table>
+								{canDelete && !role.deletedAt && (
+									<DropdownMenuItem
+										variant="destructive"
+										onSelect={() => onDelete(role)}
+									>
+										<Trash2 />
+										Delete
+									</DropdownMenuItem>
+								)}
+								{canRestore && role.deletedAt && (
+									<DropdownMenuItem onSelect={() => onRestore(role)}>
+										<RotateCcw />
+										Restore
+									</DropdownMenuItem>
+								)}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					);
+				},
+			},
+		],
+		[canUpdate, canDelete, canRestore, onEdit, onDelete, onRestore],
+	);
+
+	return (
+		<DataTable
+			columns={columns}
+			data={data}
+			isLoading={isLoading}
+			rowCount={rowCount}
+			paginationState={paginationState}
+			onPaginationChange={onPaginationChange}
+			globalFilterValue={filterValue}
+			onGlobalFilterChange={onFilterChange}
+			filterPlaceholder="Search roles…"
+		/>
 	);
 }

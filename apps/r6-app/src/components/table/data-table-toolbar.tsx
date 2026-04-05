@@ -1,5 +1,6 @@
 import type { Table } from "@tanstack/react-table";
 import { Search, SlidersHorizontal } from "lucide-react";
+import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -18,7 +19,7 @@ interface DataTableToolbarProps<TData> {
 	filterPlaceholder: string;
 }
 
-export function DataTableToolbar<TData>({
+function DataTableToolbarInner<TData>({
 	table,
 	filterValue,
 	onFilterChange,
@@ -36,33 +37,39 @@ export function DataTableToolbar<TData>({
 				/>
 			</div>
 
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="outline" size="default">
-						<SlidersHorizontal />
-						Columns
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="w-40">
-					<DropdownMenuLabel>Columns</DropdownMenuLabel>
-					<DropdownMenuSeparator />
-					{table
-						.getAllColumns()
-						.filter((col) => col.getCanHide())
-						.map((col) => (
-							<DropdownMenuCheckboxItem
-								key={col.id}
-								checked={col.getIsVisible()}
-								onCheckedChange={(value) => col.toggleVisibility(!!value)}
-								className="capitalize"
-							>
-								{typeof col.columnDef.header === "string"
-									? col.columnDef.header
-									: col.id}
-							</DropdownMenuCheckboxItem>
-						))}
-				</DropdownMenuContent>
-			</DropdownMenu>
+			<div className="ml-auto">
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="outline" size="default">
+							<SlidersHorizontal />
+							Columns
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end" className="w-40">
+						<DropdownMenuLabel>Columns</DropdownMenuLabel>
+						<DropdownMenuSeparator />
+						{table
+							.getAllColumns()
+							.filter((col) => col.getCanHide())
+							.map((col) => (
+								<DropdownMenuCheckboxItem
+									key={col.id}
+									checked={col.getIsVisible()}
+									onCheckedChange={(value) => col.toggleVisibility(!!value)}
+									className="capitalize"
+								>
+									{typeof col.columnDef.header === "string"
+										? col.columnDef.header
+										: col.id}
+								</DropdownMenuCheckboxItem>
+							))}
+					</DropdownMenuContent>
+				</DropdownMenu>
+			</div>
 		</div>
 	);
 }
+
+export const DataTableToolbar = memo(
+	DataTableToolbarInner,
+) as typeof DataTableToolbarInner;

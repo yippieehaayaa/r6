@@ -11,6 +11,12 @@ import {
 	type VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
+
+const paginationRowModel = getPaginationRowModel();
+const sortedRowModel = getSortedRowModel();
+const filteredRowModel = getFilteredRowModel();
+const coreRowModel = getCoreRowModel();
+
 import { DataTableBody } from "./data-table-body";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
@@ -93,19 +99,21 @@ export function DataTable<TData, TValue>({
 		onPaginationChange: isManualPagination
 			? onPaginationChange
 			: setInternalPagination,
-		getPaginationRowModel: getPaginationRowModel(),
+		getPaginationRowModel: paginationRowModel,
 		// Sorting
 		manualSorting: isManualSorting,
+		sortDescFirst: true,
+		enableSortingRemoval: false,
 		onSortingChange: isManualSorting ? onSortingChange : setInternalSorting,
-		getSortedRowModel: getSortedRowModel(),
+		getSortedRowModel: sortedRowModel,
 		// Filtering
 		manualFiltering: isManualFiltering,
 		onGlobalFilterChange: isManualFiltering
 			? onGlobalFilterChange
 			: setInternalFilter,
-		getFilteredRowModel: getFilteredRowModel(),
+		getFilteredRowModel: filteredRowModel,
 		// Core
-		getCoreRowModel: getCoreRowModel(),
+		getCoreRowModel: coreRowModel,
 		onColumnVisibilityChange: setColumnVisibility,
 	});
 

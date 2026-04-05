@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { TenantScopedSchema, UuidSchema } from "../base.schema";
+import {
+  ListQuerySchema,
+  TenantScopedSchema,
+  UuidSchema,
+} from "../base.schema";
 
 // ============================================================
 //  ROLE SCHEMA
@@ -69,3 +73,9 @@ export const AssignPoliciesToRoleSchema = z.object({
 export type AssignPoliciesToRoleInput = z.infer<
   typeof AssignPoliciesToRoleSchema
 >;
+
+// ── List query params ───────────────────────────────────────
+
+export const ListRolesQuerySchema = ListQuerySchema;
+
+export type ListRolesQuery = z.infer<typeof ListRolesQuerySchema>;
