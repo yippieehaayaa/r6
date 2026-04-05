@@ -11,14 +11,14 @@
 	},
 	"dependencies": {
 		"express-oauth2-jwt-bearer": "^1.7.4",
-		"express-openid-connect": "^2.19.4"
+		"express-openid-connect": "^2.20.1"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
 		"@r6/typescript-config": "*",
 		"@types/express": "^5.0.6",
 		"tsup": "8.5.1",
-		"typescript": "5.9.3"
+		"typescript": "6.0.2"
 	},
 	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
 	"description": "Shared Auth0 (Okta) middleware helpers for Express services",
