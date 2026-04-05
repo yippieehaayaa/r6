@@ -1,5 +1,12 @@
 import type { IdentitySafe } from "@r6/schemas";
+import type {
+	ColumnDef,
+	OnChangeFn,
+	PaginationState,
+} from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { useMemo } from "react";
+import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,14 +15,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 
 const kindVariant: Record<string, "default" | "secondary" | "outline"> = {
 	USER: "default",
@@ -41,6 +40,9 @@ interface Props {
 	onRestore: (identity: IdentitySafe) => void;
 	canUpdate: boolean;
 	canDelete: boolean;
+	rowCount?: number;
+	paginationState?: PaginationState;
+	onPaginationChange?: OnChangeFn<PaginationState>;
 }
 
 export function IdentitiesTable({
@@ -51,104 +53,111 @@ export function IdentitiesTable({
 	onRestore,
 	canUpdate,
 	canDelete,
+	rowCount,
+	paginationState,
+	onPaginationChange,
 }: Props) {
-	return (
-		<Table className="animate-apple-enter">
-			<TableHeader>
-				<TableRow>
-					<TableHead>Username</TableHead>
-					<TableHead>Email</TableHead>
-					<TableHead>Kind</TableHead>
-					<TableHead>Status</TableHead>
-					<TableHead>Created</TableHead>
-					<TableHead className="w-10" />
-				</TableRow>
-			</TableHeader>
-			<TableBody
-				key={isLoading ? "loading" : "data"}
-				className={
-					!isLoading && data.length > 0 ? "animate-stagger-children" : undefined
-				}
-			>
-				{isLoading ? (
-					<TableRow>
-						<TableCell
-							colSpan={6}
-							className="text-center text-muted-foreground py-8"
-						>
-							Loading…
-						</TableCell>
-					</TableRow>
-				) : data.length === 0 ? (
-					<TableRow>
-						<TableCell
-							colSpan={6}
-							className="text-center text-muted-foreground py-8"
-						>
-							No identities found.
-						</TableCell>
-					</TableRow>
-				) : (
-					data.map((identity) => (
-						<TableRow key={identity.id} data-deleted={!!identity.deletedAt}>
-							<TableCell className="font-medium">{identity.username}</TableCell>
-							<TableCell className="text-muted-foreground">
-								{identity.email ?? "—"}
-							</TableCell>
-							<TableCell>
-								<Badge variant={kindVariant[identity.kind] ?? "outline"}>
-									{identity.kind}
-								</Badge>
-							</TableCell>
-							<TableCell>
-								<Badge variant={statusVariant[identity.status] ?? "outline"}>
-									{identity.status.replace("_", " ")}
-								</Badge>
-							</TableCell>
-							<TableCell className="text-muted-foreground text-xs">
-								{new Date(identity.createdAt).toLocaleDateString()}
-							</TableCell>
-							<TableCell>
-								{(canUpdate || canDelete) && (
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="icon-sm">
-												<MoreHorizontal />
-												<span className="sr-only">Open menu</span>
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											{canUpdate && (
-												<DropdownMenuItem onSelect={() => onEdit(identity)}>
-													<Pencil />
-													Edit
-												</DropdownMenuItem>
-											)}
-											{canDelete &&
-												(identity.deletedAt ? (
-													<DropdownMenuItem
-														onSelect={() => onRestore(identity)}
-													>
-														<RotateCcw />
-														Restore
-													</DropdownMenuItem>
-												) : (
-													<DropdownMenuItem
-														variant="destructive"
-														onSelect={() => onDelete(identity)}
-													>
-														<Trash2 />
-														Delete
-													</DropdownMenuItem>
-												))}
-										</DropdownMenuContent>
-									</DropdownMenu>
+	const columns = useMemo<ColumnDef<IdentitySafe>[]>(
+		() => [
+			{
+				accessorKey: "username",
+				header: "Username",
+				cell: ({ row }) => (
+					<span className="font-medium">{row.original.username}</span>
+				),
+			},
+			{
+				accessorKey: "email",
+				header: "Email",
+				cell: ({ row }) => (
+					<span className="text-muted-foreground">
+						{row.original.email ?? "—"}
+					</span>
+				),
+			},
+			{
+				accessorKey: "kind",
+				header: "Kind",
+				cell: ({ row }) => (
+					<Badge variant={kindVariant[row.original.kind] ?? "outline"}>
+						{row.original.kind}
+					</Badge>
+				),
+			},
+			{
+				accessorKey: "status",
+				header: "Status",
+				cell: ({ row }) => (
+					<Badge variant={statusVariant[row.original.status] ?? "outline"}>
+						{row.original.status.replace("_", " ")}
+					</Badge>
+				),
+			},
+			{
+				accessorKey: "createdAt",
+				header: "Created",
+				cell: ({ row }) => (
+					<span className="text-muted-foreground text-xs">
+						{new Date(row.original.createdAt).toLocaleDateString()}
+					</span>
+				),
+			},
+			{
+				id: "actions",
+				header: "",
+				enableHiding: false,
+				enableSorting: false,
+				cell: ({ row }) => {
+					const identity = row.original;
+					if (!canUpdate && !canDelete) return null;
+					return (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="icon-sm">
+									<MoreHorizontal />
+									<span className="sr-only">Open menu</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{canUpdate && (
+									<DropdownMenuItem onSelect={() => onEdit(identity)}>
+										<Pencil />
+										Edit
+									</DropdownMenuItem>
 								)}
-							</TableCell>
-						</TableRow>
-					))
-				)}
-			</TableBody>
-		</Table>
+								{canDelete &&
+									(identity.deletedAt ? (
+										<DropdownMenuItem onSelect={() => onRestore(identity)}>
+											<RotateCcw />
+											Restore
+										</DropdownMenuItem>
+									) : (
+										<DropdownMenuItem
+											variant="destructive"
+											onSelect={() => onDelete(identity)}
+										>
+											<Trash2 />
+											Delete
+										</DropdownMenuItem>
+									))}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					);
+				},
+			},
+		],
+		[canUpdate, canDelete, onEdit, onDelete, onRestore],
+	);
+
+	return (
+		<DataTable
+			columns={columns}
+			data={data}
+			isLoading={isLoading}
+			rowCount={rowCount}
+			paginationState={paginationState}
+			onPaginationChange={onPaginationChange}
+			filterPlaceholder="Search identities…"
+		/>
 	);
 }

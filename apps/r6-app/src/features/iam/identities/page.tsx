@@ -1,6 +1,7 @@
 import type { IdentitySafe } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Building2, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import type { PaginationState } from "@tanstack/react-table";
+import { Building2, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -54,21 +55,22 @@ export default function IdentitiesPage() {
 		{ staleTime: 5 * 60 * 1000, enabled: isAdmin },
 	);
 
-	const [page, setPage] = useState(1);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: PAGE_SIZE,
+	});
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<IdentitySafe | null>(null);
 
 	const { data, isLoading } = useListIdentitiesQuery(
 		activeTenantSlug,
-		{ page, limit: PAGE_SIZE },
+		{ page: pagination.pageIndex + 1, limit: pagination.pageSize },
 		{ staleTime: 5 * 60 * 1000 },
 	);
 
 	const removeMutation = useRemoveIdentityMutation();
 	const restoreMutation = useRestoreIdentityMutation();
-
-	const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
 	function handleEdit(identity: IdentitySafe) {
 		if (!canUpdate) return;
@@ -135,7 +137,7 @@ export default function IdentitiesPage() {
 				)}
 			</div>
 
-			<div className="rounded-xl border bg-card overflow-hidden">
+			<div className="rounded-xl border bg-card p-4">
 				{isAdmin && !activeTenantSlug ? (
 					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
 						<Building2 className="h-10 w-10 text-muted-foreground/50" />
@@ -149,7 +151,7 @@ export default function IdentitiesPage() {
 							value={selectedTenantSlug}
 							onValueChange={(v) => {
 								setSelectedTenantSlug(v);
-								setPage(1);
+								setPagination((p) => ({ ...p, pageIndex: 0 }));
 							}}
 						>
 							<SelectTrigger className="w-64">
@@ -174,35 +176,12 @@ export default function IdentitiesPage() {
 						onRestore={handleRestore}
 						canUpdate={canUpdate}
 						canDelete={canDelete}
+						rowCount={data?.total}
+						paginationState={pagination}
+						onPaginationChange={setPagination}
 					/>
 				)}
 			</div>
-
-			{(data?.total ?? 0) > PAGE_SIZE && (
-				<div className="flex items-center justify-between text-sm text-muted-foreground">
-					<span>
-						Page {page} of {totalPages}
-					</span>
-					<div className="flex gap-2">
-						<Button
-							variant="outline"
-							size="icon-sm"
-							disabled={page <= 1}
-							onClick={() => setPage((p) => p - 1)}
-						>
-							<ChevronLeft />
-						</Button>
-						<Button
-							variant="outline"
-							size="icon-sm"
-							disabled={page >= totalPages}
-							onClick={() => setPage((p) => p + 1)}
-						>
-							<ChevronRight />
-						</Button>
-					</div>
-				</div>
-			)}
 
 			<IdentitySheet
 				open={sheetOpen}
