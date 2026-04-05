@@ -20,6 +20,7 @@
 		"@tanstack/react-query-devtools": "^5.95.2",
 		"@tanstack/react-router": "latest",
 		"@tanstack/react-router-devtools": "latest",
+		"@tanstack/react-table": "^8.21.3",
 		"@tanstack/router-plugin": "^1.167.3",
 		"axios": "^1.13.6",
 		"class-variance-authority": "^0.7.1",
