@@ -103,6 +103,73 @@ async function main() {
 		moduleAccess: ["iam"],
 	});
 
+	console.log("\n── Additional Tenants ────────────────────────");
+
+	const extraTenantDefs = [
+		// Tech / SaaS — iam only
+		{ name: "Cloud Verse",    slug: "cloud-verse",    moduleAccess: ["iam"] },
+		{ name: "Pixel Studio",   slug: "pixel-studio",   moduleAccess: ["iam"] },
+		{ name: "Code Labs",      slug: "code-labs",      moduleAccess: ["iam"] },
+		{ name: "Dev Stream",     slug: "dev-stream",     moduleAccess: ["iam"] },
+		{ name: "API Hub",        slug: "api-hub",        moduleAccess: ["iam"] },
+		{ name: "Byte Works",     slug: "byte-works",     moduleAccess: ["iam"] },
+		{ name: "Net Craft",      slug: "net-craft",      moduleAccess: ["iam"] },
+		{ name: "Web Forge",      slug: "web-forge",      moduleAccess: ["iam"] },
+		// Finance — iam only
+		{ name: "Fintech Global", slug: "fintech-global", moduleAccess: ["iam"] },
+		{ name: "Pay Secure",     slug: "pay-secure",     moduleAccess: ["iam"] },
+		{ name: "Wealth Track",   slug: "wealth-track",   moduleAccess: ["iam"] },
+		{ name: "Credit Hub",     slug: "credit-hub",     moduleAccess: ["iam"] },
+		{ name: "Invest Pro",     slug: "invest-pro",     moduleAccess: ["iam"] },
+		{ name: "Trade Vault",    slug: "trade-vault",    moduleAccess: ["iam"] },
+		{ name: "Asset Guard",    slug: "asset-guard",    moduleAccess: ["iam"] },
+		{ name: "Fund Flow",      slug: "fund-flow",      moduleAccess: ["iam"] },
+		{ name: "Capital Edge",   slug: "capital-edge",   moduleAccess: ["iam"] },
+		{ name: "Money Bridge",   slug: "money-bridge",   moduleAccess: ["iam"] },
+		// Education — iam only
+		{ name: "Edu Platform",  slug: "edu-platform",  moduleAccess: ["iam"] },
+		{ name: "Learn Hub",     slug: "learn-hub",     moduleAccess: ["iam"] },
+		{ name: "Skill Forge",   slug: "skill-forge",   moduleAccess: ["iam"] },
+		{ name: "Campus Net",    slug: "campus-net",    moduleAccess: ["iam"] },
+		{ name: "Course Stream", slug: "course-stream", moduleAccess: ["iam"] },
+		// Media — iam only
+		{ name: "Media Stream",  slug: "media-stream",  moduleAccess: ["iam"] },
+		{ name: "Content Hub",   slug: "content-hub",   moduleAccess: ["iam"] },
+		{ name: "Publish Pro",   slug: "publish-pro",   moduleAccess: ["iam"] },
+		{ name: "Broadcast Net", slug: "broadcast-net", moduleAccess: ["iam"] },
+		// Tech — iam + inventory
+		{ name: "Tech Nexus",    slug: "tech-nexus",    moduleAccess: ["iam", "inventory"] },
+		{ name: "Data Forge",    slug: "data-forge",    moduleAccess: ["iam", "inventory"] },
+		// Health / Pharma — iam + inventory
+		{ name: "Health Connect", slug: "health-connect", moduleAccess: ["iam", "inventory"] },
+		{ name: "Med Track",      slug: "med-track",      moduleAccess: ["iam", "inventory"] },
+		{ name: "Care Plus",      slug: "care-plus",      moduleAccess: ["iam", "inventory"] },
+		{ name: "Bio Systems",    slug: "bio-systems",    moduleAccess: ["iam", "inventory"] },
+		{ name: "Pharm Direct",   slug: "pharm-direct",   moduleAccess: ["iam", "inventory"] },
+		// Retail / E-commerce — iam + inventory
+		{ name: "Retail Chain",  slug: "retail-chain",  moduleAccess: ["iam", "inventory"] },
+		{ name: "Shop Sphere",   slug: "shop-sphere",   moduleAccess: ["iam", "inventory"] },
+		{ name: "Market Hub",    slug: "market-hub",    moduleAccess: ["iam", "inventory"] },
+		{ name: "Commerce Plus", slug: "commerce-plus", moduleAccess: ["iam", "inventory"] },
+		{ name: "Store World",   slug: "store-world",   moduleAccess: ["iam", "inventory"] },
+		{ name: "Cart Pro",      slug: "cart-pro",      moduleAccess: ["iam", "inventory"] },
+		{ name: "Merch Net",     slug: "merch-net",     moduleAccess: ["iam", "inventory"] },
+		{ name: "Goods Hub",     slug: "goods-hub",     moduleAccess: ["iam", "inventory"] },
+		{ name: "Vendor Link",   slug: "vendor-link",   moduleAccess: ["iam", "inventory"] },
+		{ name: "Supply Bridge", slug: "supply-bridge", moduleAccess: ["iam", "inventory"] },
+		// Logistics — iam + inventory
+		{ name: "Logistics Pro", slug: "logistics-pro", moduleAccess: ["iam", "inventory"] },
+		{ name: "Ship Track",    slug: "ship-track",    moduleAccess: ["iam", "inventory"] },
+		{ name: "Fleet Hub",     slug: "fleet-hub",     moduleAccess: ["iam", "inventory"] },
+		{ name: "Cargo Net",     slug: "cargo-net",     moduleAccess: ["iam", "inventory"] },
+		{ name: "Route Master",  slug: "route-master",  moduleAccess: ["iam", "inventory"] },
+		// Energy — iam + inventory
+		{ name: "Energy Grid",   slug: "energy-grid",   moduleAccess: ["iam", "inventory"] },
+		{ name: "Power Systems", slug: "power-systems", moduleAccess: ["iam", "inventory"] },
+	];
+
+	const extraTenants = await Promise.all(extraTenantDefs.map(upsertTenant));
+
 	console.log("\n── Policies ──────────────────────────────────");
 
 	// ── Platform-level (tenantId: null) ──────────────────────────────────────
@@ -220,6 +287,632 @@ async function main() {
 		audience: ["iam"],
 	});
 
+	console.log("\n── Additional Policies ───────────────────────");
+
+	// ── IAM identity — granular single-action ──────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:identity:create-only",
+		description: "Create new identities only",
+		effect: "ALLOW",
+		permissions: ["iam:identity:create"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:identity:update-only",
+		description: "Update existing identities only",
+		effect: "ALLOW",
+		permissions: ["iam:identity:update"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:identity:delete-only",
+		description: "Delete identities only",
+		effect: "ALLOW",
+		permissions: ["iam:identity:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:identity:list-only",
+		description: "List identities only",
+		effect: "ALLOW",
+		permissions: ["iam:identity:list"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:identity:read-create",
+		description: "Read and create identities",
+		effect: "ALLOW",
+		permissions: ["iam:identity:read", "iam:identity:create"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:identity:read-update",
+		description: "Read and update identities",
+		effect: "ALLOW",
+		permissions: ["iam:identity:read", "iam:identity:update"],
+		audience: ["iam"],
+	});
+
+	// ── IAM role — granular single-action ─────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:role:create-only",
+		description: "Create new roles only",
+		effect: "ALLOW",
+		permissions: ["iam:role:create"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:role:update-only",
+		description: "Update existing roles only",
+		effect: "ALLOW",
+		permissions: ["iam:role:update"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:role:delete-only",
+		description: "Delete roles only",
+		effect: "ALLOW",
+		permissions: ["iam:role:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:role:list-only",
+		description: "List roles only",
+		effect: "ALLOW",
+		permissions: ["iam:role:list"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:role:read-create",
+		description: "Read and create roles",
+		effect: "ALLOW",
+		permissions: ["iam:role:read", "iam:role:create"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:role:read-update",
+		description: "Read and update roles",
+		effect: "ALLOW",
+		permissions: ["iam:role:read", "iam:role:update"],
+		audience: ["iam"],
+	});
+
+	// ── IAM policy — granular ─────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:policy:full-access",
+		description: "Full CRUD access to policies",
+		effect: "ALLOW",
+		permissions: ["iam:policy:read", "iam:policy:create", "iam:policy:update", "iam:policy:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:policy:create-only",
+		description: "Create new policies only",
+		effect: "ALLOW",
+		permissions: ["iam:policy:create"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:policy:update-only",
+		description: "Update existing policies only",
+		effect: "ALLOW",
+		permissions: ["iam:policy:update"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:policy:delete-only",
+		description: "Delete policies only",
+		effect: "ALLOW",
+		permissions: ["iam:policy:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:policy:list-only",
+		description: "List policies only",
+		effect: "ALLOW",
+		permissions: ["iam:policy:list"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:policy:read-create",
+		description: "Read and create policies",
+		effect: "ALLOW",
+		permissions: ["iam:policy:read", "iam:policy:create"],
+		audience: ["iam"],
+	});
+
+	// ── IAM session — granular ────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:session:read-only",
+		description: "Read-only access to sessions",
+		effect: "ALLOW",
+		permissions: ["iam:session:read"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:session:write-only",
+		description: "Write sessions only",
+		effect: "ALLOW",
+		permissions: ["iam:session:write"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:session:delete-only",
+		description: "Delete sessions only",
+		effect: "ALLOW",
+		permissions: ["iam:session:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:session:full-access",
+		description: "Full access to sessions (read, write, delete)",
+		effect: "ALLOW",
+		permissions: ["iam:session:read", "iam:session:write", "iam:session:delete"],
+		audience: ["iam"],
+	});
+
+	// ── IAM tenant — granular ─────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:tenant:read-only",
+		description: "Read-only access to tenants",
+		effect: "ALLOW",
+		permissions: ["iam:tenant:read"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:tenant:create-only",
+		description: "Create tenants only",
+		effect: "ALLOW",
+		permissions: ["iam:tenant:create"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:tenant:update-only",
+		description: "Update tenants only",
+		effect: "ALLOW",
+		permissions: ["iam:tenant:update"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:tenant:delete-only",
+		description: "Delete tenants only",
+		effect: "ALLOW",
+		permissions: ["iam:tenant:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:tenant:full-access",
+		description: "Full CRUD access to tenants",
+		effect: "ALLOW",
+		permissions: ["iam:tenant:read", "iam:tenant:create", "iam:tenant:update", "iam:tenant:delete"],
+		audience: ["iam"],
+	});
+
+	// ── IAM composite ─────────────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:auditor:full-read",
+		description: "Read-only across all IAM resources including sessions and tenants",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:role:read",
+			"iam:policy:read",
+			"iam:session:read",
+			"iam:tenant:read",
+		],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:developer:self-service",
+		description: "Developer self-service: own identity plus full session management",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:session:read",
+			"iam:session:write",
+			"iam:session:delete",
+		],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:operator:identity-role",
+		description: "Full identity and role management with policy read-only",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:identity:create",
+			"iam:identity:update",
+			"iam:identity:delete",
+			"iam:role:read",
+			"iam:role:create",
+			"iam:role:update",
+			"iam:role:delete",
+			"iam:policy:read",
+		],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:support:read-all",
+		description: "Support staff read-all: identities, roles, policies, sessions",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:role:read",
+			"iam:policy:read",
+			"iam:session:read",
+		],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:support:identity-assist",
+		description: "Support staff can read and update identities",
+		effect: "ALLOW",
+		permissions: ["iam:identity:read", "iam:identity:update"],
+		audience: ["iam"],
+	});
+
+	// ── IAM DENY policies ─────────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:deny:identity-delete",
+		description: "Deny deletion of identities",
+		effect: "DENY",
+		permissions: ["iam:identity:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:deny:role-delete",
+		description: "Deny deletion of roles",
+		effect: "DENY",
+		permissions: ["iam:role:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:deny:policy-write",
+		description: "Deny create, update, and delete on policies",
+		effect: "DENY",
+		permissions: ["iam:policy:create", "iam:policy:update", "iam:policy:delete"],
+		audience: ["iam"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam:deny:tenant-delete",
+		description: "Deny deletion of tenants",
+		effect: "DENY",
+		permissions: ["iam:tenant:delete"],
+		audience: ["iam"],
+	});
+
+	// ── Inventory — product ───────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:product:read-only",
+		description: "Read-only access to products",
+		effect: "ALLOW",
+		permissions: ["inventory:product:read"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:product:create-only",
+		description: "Create products only",
+		effect: "ALLOW",
+		permissions: ["inventory:product:create"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:product:update-only",
+		description: "Update products only",
+		effect: "ALLOW",
+		permissions: ["inventory:product:update"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:product:delete-only",
+		description: "Delete products only",
+		effect: "ALLOW",
+		permissions: ["inventory:product:delete"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:product:full-access",
+		description: "Full CRUD access to products",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:product:read",
+			"inventory:product:create",
+			"inventory:product:update",
+			"inventory:product:delete",
+		],
+		audience: ["inventory"],
+	});
+
+	// ── Inventory — catalog ───────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:catalog:read-only",
+		description: "Read-only access to catalog",
+		effect: "ALLOW",
+		permissions: ["inventory:catalog:read"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:catalog:full-access",
+		description: "Full CRUD access to catalog",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:catalog:read",
+			"inventory:catalog:create",
+			"inventory:catalog:update",
+			"inventory:catalog:delete",
+		],
+		audience: ["inventory"],
+	});
+
+	// ── Inventory — stock ─────────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:stock:read-only",
+		description: "Read-only access to stock levels",
+		effect: "ALLOW",
+		permissions: ["inventory:stock:read"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:stock:update-only",
+		description: "Update stock levels only",
+		effect: "ALLOW",
+		permissions: ["inventory:stock:update"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:stock:full-access",
+		description: "Full CRUD access to stock",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:stock:read",
+			"inventory:stock:create",
+			"inventory:stock:update",
+			"inventory:stock:delete",
+		],
+		audience: ["inventory"],
+	});
+
+	// ── Inventory — procurement ───────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:procurement:read-only",
+		description: "Read-only access to procurement orders",
+		effect: "ALLOW",
+		permissions: ["inventory:procurement:read"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:procurement:full-access",
+		description: "Full CRUD access to procurement orders",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:procurement:read",
+			"inventory:procurement:create",
+			"inventory:procurement:update",
+			"inventory:procurement:delete",
+		],
+		audience: ["inventory"],
+	});
+
+	// ── Inventory — season ────────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:season:read-only",
+		description: "Read-only access to seasons",
+		effect: "ALLOW",
+		permissions: ["inventory:season:read"],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:season:full-access",
+		description: "Full CRUD access to seasons",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:season:read",
+			"inventory:season:create",
+			"inventory:season:update",
+			"inventory:season:delete",
+		],
+		audience: ["inventory"],
+	});
+
+	// ── Inventory — analytics ─────────────────────────────────────────────────
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:analytics:read-only",
+		description: "Read-only access to inventory analytics",
+		effect: "ALLOW",
+		permissions: ["inventory:analytics:read"],
+		audience: ["inventory"],
+	});
+
+	// ── Inventory — composite ─────────────────────────────────────────────────
+
+	const inventoryReadOnlyPolicy = await upsertPolicy({
+		tenantId: null,
+		name: "inventory:read-only",
+		description: "Read-only access to all inventory resources",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:product:read",
+			"inventory:catalog:read",
+			"inventory:stock:read",
+			"inventory:procurement:read",
+			"inventory:season:read",
+			"inventory:analytics:read",
+		],
+		audience: ["inventory"],
+	});
+
+	const inventoryFullAccessPolicy = await upsertPolicy({
+		tenantId: null,
+		name: "inventory:full-access",
+		description: "Full access to all inventory resources",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:product:*",
+			"inventory:catalog:*",
+			"inventory:stock:*",
+			"inventory:procurement:*",
+			"inventory:season:*",
+			"inventory:analytics:*",
+		],
+		audience: ["inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "inventory:manager:operations",
+		description: "Inventory operations manager: stock, procurement, product, and catalog access",
+		effect: "ALLOW",
+		permissions: [
+			"inventory:product:read",
+			"inventory:catalog:read",
+			"inventory:stock:read",
+			"inventory:stock:update",
+			"inventory:procurement:read",
+			"inventory:procurement:create",
+			"inventory:procurement:update",
+		],
+		audience: ["inventory"],
+	});
+
+	// ── Cross-service composite ───────────────────────────────────────────────
+
+	const crossServiceReadOnlyPolicy = await upsertPolicy({
+		tenantId: null,
+		name: "iam+inventory:read-only",
+		description: "Read-only access across IAM and inventory services",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:role:read",
+			"iam:policy:read",
+			"inventory:product:read",
+			"inventory:catalog:read",
+			"inventory:stock:read",
+		],
+		audience: ["iam", "inventory"],
+	});
+
+	await upsertPolicy({
+		tenantId: null,
+		name: "iam+inventory:manager",
+		description: "IAM user management combined with inventory management",
+		effect: "ALLOW",
+		permissions: [
+			"iam:identity:read",
+			"iam:identity:create",
+			"iam:identity:update",
+			"iam:role:read",
+			"inventory:product:read",
+			"inventory:product:create",
+			"inventory:product:update",
+			"inventory:stock:read",
+			"inventory:stock:update",
+		],
+		audience: ["iam", "inventory"],
+	});
+
 	console.log("\n── Roles ─────────────────────────────────────");
 
 	// ── Platform-level ────────────────────────────────────────────────────────
@@ -314,6 +1007,42 @@ async function main() {
 		startupTenant.id,
 	);
 
+	console.log("\n── Additional Roles ──────────────────────────");
+
+	// ── Platform-level additional roles ───────────────────────────────────────
+
+	const inventoryManagerPlatformRole = await upsertRole(
+		"inventory-manager",
+		"Platform-level full inventory administration",
+		null,
+	);
+
+	const platformViewerRole = await upsertRole(
+		"platform-viewer",
+		"Platform-level read-only access across IAM and inventory services",
+		null,
+	);
+
+	// ── user role for every extra tenant (basic self-service) ─────────────────
+
+	const extraTenantUserRoles = await Promise.all(
+		extraTenants.map((t) =>
+			upsertRole("user", "Standard self-service user access", t.id),
+		),
+	);
+
+	// ── inventory-viewer role for tenants that include the inventory module ───
+
+	const inventoryTenants = extraTenants.filter((t) =>
+		t.moduleAccess.includes("inventory"),
+	);
+
+	const extraTenantInventoryViewerRoles = await Promise.all(
+		inventoryTenants.map((t) =>
+			upsertRole("inventory-viewer", "Read-only access to all inventory resources", t.id),
+		),
+	);
+
 	console.log("\n── Role → Policy assignments ─────────────────");
 
 	// admin
@@ -359,6 +1088,29 @@ async function main() {
 
 	await linkPolicyToRole(xyzUserRole.id, userIdentityPolicy.id, "xyz:user → iam:user:identity");
 	await linkPolicyToRole(xyzUserRole.id, userSessionPolicy.id, "xyz:user → iam:user:session");
+
+	console.log("\n── Additional Role → Policy Assignments ─────");
+
+	// Platform additional roles
+	await linkPolicyToRole(inventoryManagerPlatformRole.id, inventoryFullAccessPolicy.id, "platform:inventory-manager → inventory:full-access");
+	await linkPolicyToRole(platformViewerRole.id, crossServiceReadOnlyPolicy.id, "platform:platform-viewer → iam+inventory:read-only");
+
+	// user role for each extra tenant: iam:user:identity + iam:user:session
+	await Promise.all(
+		extraTenantUserRoles.map((role, i) =>
+			Promise.all([
+				linkPolicyToRole(role.id, userIdentityPolicy.id, `${extraTenants[i]?.slug ?? ""}:user → iam:user:identity`),
+				linkPolicyToRole(role.id, userSessionPolicy.id, `${extraTenants[i]?.slug ?? ""}:user → iam:user:session`),
+			]),
+		),
+	);
+
+	// inventory-viewer role for inventory tenants
+	await Promise.all(
+		extraTenantInventoryViewerRoles.map((role, i) =>
+			linkPolicyToRole(role.id, inventoryReadOnlyPolicy.id, `${inventoryTenants[i]?.slug ?? ""}:inventory-viewer → inventory:read-only`),
+		),
+	);
 
 	console.log("\n── Identities ────────────────────────────────");
 
