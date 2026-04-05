@@ -90,6 +90,61 @@ export const PolicySchema = TenantScopedSchema.extend({
 
 export type Policy = z.infer<typeof PolicySchema>;
 
+// ============================================================
+//  PERMISSION HIERARCHY: Read-as-Baseline
+//
+//  Rule: within the same "service:resource" namespace, each of
+//  create / update / delete independently requires "read" to
+//  also appear in the same permissions list.
+//
+//  Wildcards (*) implicitly cover read and bypass the check.
+//  e.g. "inventory:stock:*" or "inventory:*:*" → always valid.
+//
+//  Applied at the *payload* level (Create / Update) so that
+//  PolicySchema itself stays a clean data-shape with no
+//  cross-field side effects. All violations are collected
+//  before returning so every missing read surfaces at once.
+// ============================================================
+
+const WRITE_ACTIONS = new Set(["create", "update", "delete"]);
+
+function enforceReadBaseline(
+  permissions: string[],
+  ctx: z.RefinementCtx,
+): void {
+  // Wildcards implicitly include read — exclude them from the check.
+  const concrete = permissions.filter((p) => !p.includes("*"));
+
+  // Group actions by their "service:resource" namespace.
+  const byNamespace = new Map<string, Set<string>>();
+  for (const perm of concrete) {
+    const parts = perm.split(":");
+    if (parts.length !== 3) continue; // format violations caught by PermissionSchema
+    const ns = `${parts[0]}:${parts[1]}`;
+    const action = parts[2];
+    if (!action) continue;
+    const existing = byNamespace.get(ns);
+    if (existing) {
+      existing.add(action);
+    } else {
+      byNamespace.set(ns, new Set([action]));
+    }
+  }
+
+  // Emit one issue per write action missing its read baseline.
+  for (const [ns, actions] of byNamespace) {
+    if (actions.has("read")) continue;
+    for (const action of actions) {
+      if (!WRITE_ACTIONS.has(action)) continue;
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["permissions"],
+        message: `"${ns}:read" must be included when granting write access to "${ns}"`,
+      });
+    }
+  }
+}
+
 // ── Create payload ──────────────────────────────────────────
 
 export const CreatePolicySchema = PolicySchema.omit({
@@ -97,6 +152,8 @@ export const CreatePolicySchema = PolicySchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+}).superRefine((data, ctx) => {
+  enforceReadBaseline(data.permissions, ctx);
 });
 
 export type CreatePolicyInput = z.infer<typeof CreatePolicySchema>;
@@ -109,6 +166,11 @@ export const UpdatePolicySchema = PolicySchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-}).partial();
+})
+  .partial()
+  .superRefine((data, ctx) => {
+    // Only run when permissions are explicitly included in the patch.
+    if (data.permissions) enforceReadBaseline(data.permissions, ctx);
+  });
 
 export type UpdatePolicyInput = z.infer<typeof UpdatePolicySchema>;

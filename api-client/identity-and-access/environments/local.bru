@@ -1,12 +1,11 @@
 vars {
-  baseURL: http://localhost:3000
+  baseURL: http://localhost:3000/identity-and-access
   tenantSlug: demo-corp
-  tenantId: demo-corp
+  tenantId: 0694c162-7152-494e-b3e9-b3bb366dcbb9
   identityId: 1dbb4539-d833-4698-8562-5388cd60e8a8
   roleId: 
-  policyId: 
+  policyId: iam:policy:read-only
 }
 vars:secret [
-  accessToken,
-  refreshToken
+  accessToken
 ]

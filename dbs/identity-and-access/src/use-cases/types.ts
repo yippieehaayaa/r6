@@ -93,10 +93,9 @@ export type ListRolesInput = PaginationInput & {
 
 // ─── Policy list ──────────────────────────────────────────────
 
-// Filters for listPolicies. tenantId required.
+// Filters for listPolicies. Policies are global (tenantId = null).
 // audience filter uses Postgres array containment: { has: service }.
 export type ListPoliciesInput = PaginationInput & {
-  tenantId: string;
   audience?: string; // match policies whose audience array contains this value
 };
 
@@ -118,7 +117,6 @@ export type VerifyIdentityInput = {
   tenantId?: string | null;
   tenantSlug?: string | null;
   username?: string;
-  email?: string;
   password: string;
 };
 

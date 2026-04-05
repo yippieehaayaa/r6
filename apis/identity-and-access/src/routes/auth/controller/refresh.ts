@@ -75,11 +75,7 @@ export async function refresh(
     const full = await getIdentityWithRolesAndPolicies(payload.sub);
     if (!full) throw new AppError(401, "invalid_token", "Identity not found");
     if (full.status !== "ACTIVE") {
-      throw new AppError(
-        403,
-        "account_inactive",
-        `Account status is ${full.status}`,
-      );
+      throw new AppError(403, "account_inactive", "Account is not active");
     }
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
@@ -106,10 +102,11 @@ export async function refresh(
       expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_MS),
     });
 
+    const isProd = env.NODE_ENV === "production";
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: env.JWT_REFRESH_TTL_MS,
     });
 

@@ -23,7 +23,10 @@ export function errorHandler(
       error: {
         message: "Validation failed",
         code: "VALIDATION_ERROR",
-        details: err.issues,
+        details: err.issues.map((issue) => ({
+          path: issue.path.join("."),
+          message: issue.message,
+        })),
       },
     });
     return;

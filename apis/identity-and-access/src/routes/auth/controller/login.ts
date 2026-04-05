@@ -19,49 +19,56 @@ export async function login(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { username, email, password, tenantId, tenantSlug } = req.body as {
-      username?: string;
-      email?: string;
-      password: string;
-      tenantId?: string;
-      tenantSlug?: string;
+    const { login, password } = req.body as {
+      login?: string;
+      password?: string;
     };
 
     if (!password)
       throw new AppError(400, "validation_error", "password is required");
-    if (!username && !email)
-      throw new AppError(
-        400,
-        "validation_error",
-        "username or email is required",
-      );
+    if (!login)
+      throw new AppError(400, "validation_error", "login is required");
+
+    // Parse combined identifier: "username@tenant-slug" or plain "username" (ADMIN)
+    const atIndex = login.lastIndexOf("@");
+    const username = atIndex === -1 ? login : login.slice(0, atIndex);
+    const tenantSlug =
+      atIndex === -1 ? undefined : login.slice(atIndex + 1) || undefined;
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
       full = await verifyIdentity({
-        tenantId: tenantId ?? null,
         tenantSlug,
         username,
-        email,
         password,
       });
     } catch (e) {
       const msg = (e as Error).message;
       if (msg === "invalid_credentials")
         throw new AppError(401, "invalid_credentials", "Invalid credentials");
-      if (msg === "account_locked")
+      if (msg.startsWith("account_locked")) {
+        const lockedUntil = msg.split(":").slice(1).join(":") || undefined;
         throw new AppError(
           423,
           "account_locked",
           "Account is temporarily locked due to too many failed login attempts",
+          lockedUntil ? { lockedUntil } : undefined,
         );
-      if (msg.startsWith("account_inactive"))
+      }
+      if (msg.startsWith("account_inactive")) {
+        const status = msg.split(":")[1] || undefined;
         throw new AppError(
           403,
           "account_inactive",
-          `Account status is ${msg.split(":")[1]}`,
+          "Account is not active",
+          status ? { status } : undefined,
         );
-      throw e;
+      }
+      throw new AppError(
+        500,
+        "internal_server_error",
+        "An unexpected error occurred",
+      );
     }
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
@@ -93,10 +100,11 @@ export async function login(
       expiresAt: new Date(Date.now() + env.JWT_REFRESH_TTL_MS),
     });
 
+    const isProd = env.NODE_ENV === "production";
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: env.JWT_REFRESH_TTL_MS,
     });
 

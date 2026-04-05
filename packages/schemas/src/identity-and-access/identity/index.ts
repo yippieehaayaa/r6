@@ -47,8 +47,8 @@ export const IdentitySchema = TenantScopedSchema.extend({
       usernameRegex,
       "Username must be 3–64 alphanumeric characters (., _, - allowed; must start with a letter or digit)",
     )
-    .min(3)
-    .max(64),
+    .min(3, "Username must be at least 3 characters")
+    .max(64, "Username must not exceed 64 characters"),
 
   /**
    * Optional e-mail address.

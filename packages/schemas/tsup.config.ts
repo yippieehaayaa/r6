@@ -5,7 +5,6 @@ export default defineConfig({
     "src/index.ts",
     "src/identity-and-access/index.ts",
     "src/inventory-and-catalog/index.ts",
-    "src/dynamic-qr/index.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

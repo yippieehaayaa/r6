@@ -1,31 +1,31 @@
 {
-  "name": "@r6/redis",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "build": "tsup src",
-    "watch": "tsup src --watch"
-  },
-  "dependencies": {
-    "redis": "^5.10.0"
-  },
-  "devDependencies": {
-    "@r6/typescript-config": "*",
-    "@types/node": "^25.5.0",
-    "tsup": "^8.5.1",
-    "typescript": "5.9.2"
-  },
-  "author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
-  "description": "Shared Redis client and utilities",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
-  },
-  "license": "MIT",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts"
+	"name": "@r6/redis",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"build": "tsup src",
+		"watch": "tsup src --watch"
+	},
+	"dependencies": {
+		"redis": "^5.11.0"
+	},
+	"devDependencies": {
+		"@r6/typescript-config": "*",
+		"@types/node": "^25.5.2",
+		"tsup": "8.5.1",
+		"typescript": "6.0.2"
+	},
+	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
+	"description": "Shared Redis client and utilities",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.js"
+		}
+	},
+	"license": "MIT",
+	"main": "./dist/index.js",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.ts"
 }

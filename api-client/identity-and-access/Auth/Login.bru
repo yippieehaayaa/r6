@@ -12,9 +12,8 @@ post {
 
 body:json {
   {
-    "tenantSlug": "demo-corp",
-    "username": "testuser",
-    "password": "User@1234!"
+    "login": "admin",
+    "password": "Admin@1234!"
   }
 }
 
@@ -22,7 +21,7 @@ script:post-response {
   if (res.status === 200) {
     bru.setEnvVar("accessToken", res.body.accessToken);
     bru.setEnvVar("refreshToken", res.body.refreshToken);
-
+  
     // Decode JWT payload and auto-populate tenantSlug.
     // Tenant users: tenantSlug is set for use in URL params.
     // ADMIN: tenantSlug is null \u2014 set manually in env to target a specific tenant.

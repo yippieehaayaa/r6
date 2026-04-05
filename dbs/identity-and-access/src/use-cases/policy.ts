@@ -95,7 +95,6 @@ const getPolicyWithRoles = async (
 const buildWhere = (
   input: Omit<ListPoliciesInput, "page" | "limit">,
 ): Prisma.PolicyWhereInput => ({
-  tenantId: input.tenantId,
   deletedAt: null,
   // audience filter uses Postgres array containment: { has: value }
   ...(input.audience !== undefined && {
@@ -103,7 +102,7 @@ const buildWhere = (
   }),
 });
 
-// Returns a paginated list of policies for a tenant.
+// Returns a paginated list of all policies.
 // audience filter uses Postgres array containment (has).
 // Runs findMany + count in parallel — same pattern as listMovements.
 const listPolicies = async (
@@ -145,6 +144,55 @@ const listPlatformPolicies = async (input: {
   ]);
 
   return { data, total, page: input.page, limit: input.limit };
+};
+
+// ─── Tenant-scoped paginated list ───────────────────────────
+
+// Returns a paginated list of policies visible to a specific tenant.
+// Visibility rule: policy.audience ⊆ tenant.moduleAccess (strict subset).
+// Only policies whose entire audience is within the tenant's availed services
+// are returned — policies with any out-of-scope service are hidden.
+//
+// Prisma has no built-in "contained-by" operator for arrays.
+// The Postgres <@ operator (array contained-by) is used via $queryRaw.
+// Parameters are passed through Prisma.sql to prevent SQL injection.
+const listPoliciesForTenant = async (
+  moduleAccess: string[],
+  input: { page: number; limit: number },
+): Promise<PaginatedResult<Policy>> => {
+  const skip = (input.page - 1) * input.limit;
+
+  // Use Prisma.sql for parameterised queries — moduleAccess is a user-derived
+  // value from the DB (tenant.moduleAccess) so it must not be interpolated raw.
+  const [rows, countRows] = await Promise.all([
+    prisma.$queryRaw<Policy[]>(
+      Prisma.sql`
+    SELECT * FROM policies
+    WHERE "deletedAt" IS NULL
+      AND audience <@ ARRAY[${Prisma.join(moduleAccess)}]::text[]
+    ORDER BY name ASC
+    LIMIT ${input.limit} OFFSET ${skip}
+  `,
+    ),
+    prisma.$queryRaw<[{ count: bigint }]>(
+      Prisma.sql`
+    SELECT COUNT(*) FROM policies
+    WHERE "deletedAt" IS NULL
+      AND audience <@ ARRAY[${Prisma.join(moduleAccess)}]::text[]
+  `,
+    ),
+  ]);
+
+  const total = Number(countRows[0]?.count ?? 0);
+  return { data: rows, total, page: input.page, limit: input.limit };
+};
+
+// Returns multiple non-deleted policies by their IDs in a single query.
+// Used for batch module-scope validation before bulk policy assignment.
+const getPoliciesByIds = async (ids: string[]): Promise<Policy[]> => {
+  return prisma.policy.findMany({
+    where: { id: { in: ids }, deletedAt: null },
+  });
 };
 
 // ─── Update ──────────────────────────────────────────────────
@@ -208,7 +256,9 @@ export {
   getPolicyById,
   getPolicyByName,
   getPolicyWithRoles,
+  getPoliciesByIds,
   listPolicies,
+  listPoliciesForTenant,
   listPlatformPolicies,
   updatePolicy,
   softDeletePolicy,

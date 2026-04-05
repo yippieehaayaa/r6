@@ -38,7 +38,7 @@ export const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
  * e.g. "inventory:stock:read", "inventory:*:*"
  */
 export const permissionRegex =
-  /^[a-z][a-z0-9-]*:[a-z][a-z0-9-]*(?::[a-z][a-z0-9-]*|\*)*$|^\*$/;
+  /^([a-z][a-z0-9-]*|\*):([a-z][a-z0-9-]*|\*):([a-z][a-z0-9-]*|\*)$|^\*$/;
 
 /**
  * Audience / service name: lowercase letters, digits, hyphens.
@@ -107,3 +107,25 @@ export const TenantScopedSchema = BaseRecordSchema.extend({
 });
 
 export type TenantScoped = z.infer<typeof TenantScopedSchema>;
+
+// ============================================================
+//  PAGINATED RESPONSE SCHEMA
+//  Generic factory for paginated list endpoints.
+// ============================================================
+
+export const PaginatedResponseSchema = <T extends z.ZodTypeAny>(
+  itemSchema: T,
+) =>
+  z.object({
+    data: z.array(itemSchema),
+    page: z.number().int().positive(),
+    limit: z.number().int().nonnegative(),
+    total: z.number().int().nonnegative(),
+  });
+
+export type PaginatedResponse<T> = {
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
+};

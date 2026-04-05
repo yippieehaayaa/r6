@@ -1,6 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
-import { ensureTenantExistsBySlug } from "../../tenants/helpers";
-import { ensurePolicyBelongsToTenant } from "../helpers";
+import {
+  ensurePolicyExists,
+  ensurePolicyInModuleScope,
+  resolveTenantModuleAccess,
+} from "../helpers";
 
 export async function getPolicy(
   req: Request,
@@ -8,10 +11,18 @@ export async function getPolicy(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const tenantSlug = req.params.tenantSlug as string;
-    const tenant = await ensureTenantExistsBySlug(tenantSlug);
     const id = req.params.id as string;
-    const policy = await ensurePolicyBelongsToTenant(id, tenant.id);
+    const policy = await ensurePolicyExists(id);
+    const payload = req.jwtPayload;
+
+    if (payload?.kind !== "ADMIN") {
+      // Non-Admin callers may only fetch policies within their module scope.
+      const moduleAccess = await resolveTenantModuleAccess(
+        payload?.tenantSlug as string,
+      );
+      ensurePolicyInModuleScope(policy, moduleAccess);
+    }
+
     res.status(200).json(policy);
   } catch (error) {
     next(error);

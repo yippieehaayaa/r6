@@ -17,7 +17,7 @@
 		"@r6/typescript-config": "*",
 		"@types/bcrypt": "^6.0.0",
 		"tsup": "8.5.1",
-		"typescript": "5.9.3"
+		"typescript": "6.0.2"
 	},
 	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
 	"description": "Password hashing and verification",
