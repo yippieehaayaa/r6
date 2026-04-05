@@ -23,6 +23,9 @@ interface Props {
 	onEdit: (role: Role) => void;
 	onDelete: (role: Role) => void;
 	onRestore: (role: Role) => void;
+	canUpdate: boolean;
+	canDelete: boolean;
+	canRestore: boolean;
 }
 
 export function RolesTable({
@@ -31,6 +34,9 @@ export function RolesTable({
 	onEdit,
 	onDelete,
 	onRestore,
+	canUpdate,
+	canDelete,
+	canRestore,
 }: Props) {
 	return (
 		<Table className="animate-apple-enter">
@@ -83,34 +89,39 @@ export function RolesTable({
 								{new Date(role.createdAt).toLocaleDateString()}
 							</TableCell>
 							<TableCell>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon-sm">
-											<MoreHorizontal />
-											<span className="sr-only">Open menu</span>
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onSelect={() => onEdit(role)}>
-											<Pencil />
-											Edit
-										</DropdownMenuItem>
-										{role.deletedAt ? (
-											<DropdownMenuItem onSelect={() => onRestore(role)}>
-												<RotateCcw />
-												Restore
-											</DropdownMenuItem>
-										) : (
-											<DropdownMenuItem
-												variant="destructive"
-												onSelect={() => onDelete(role)}
-											>
-												<Trash2 />
-												Delete
-											</DropdownMenuItem>
-										)}
-									</DropdownMenuContent>
-								</DropdownMenu>
+								{(canUpdate || canDelete || canRestore) && (
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon-sm">
+												<MoreHorizontal />
+												<span className="sr-only">Open menu</span>
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											{canUpdate && (
+												<DropdownMenuItem onSelect={() => onEdit(role)}>
+													<Pencil />
+													Edit
+												</DropdownMenuItem>
+											)}
+											{canDelete && !role.deletedAt && (
+												<DropdownMenuItem
+													variant="destructive"
+													onSelect={() => onDelete(role)}
+												>
+													<Trash2 />
+													Delete
+												</DropdownMenuItem>
+											)}
+											{canRestore && role.deletedAt && (
+												<DropdownMenuItem onSelect={() => onRestore(role)}>
+													<RotateCcw />
+													Restore
+												</DropdownMenuItem>
+											)}
+										</DropdownMenuContent>
+									</DropdownMenu>
+								)}
 							</TableCell>
 						</TableRow>
 					))

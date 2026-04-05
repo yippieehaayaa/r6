@@ -124,9 +124,11 @@ export function IdentitiesTable({
 													Edit
 												</DropdownMenuItem>
 											)}
-											{canDelete && (
-												identity.deletedAt ? (
-													<DropdownMenuItem onSelect={() => onRestore(identity)}>
+											{canDelete &&
+												(identity.deletedAt ? (
+													<DropdownMenuItem
+														onSelect={() => onRestore(identity)}
+													>
 														<RotateCcw />
 														Restore
 													</DropdownMenuItem>
@@ -138,8 +140,7 @@ export function IdentitiesTable({
 														<Trash2 />
 														Delete
 													</DropdownMenuItem>
-												)
-											)}
+												))}
 										</DropdownMenuContent>
 									</DropdownMenu>
 								)}

@@ -27,7 +27,12 @@ import { RolesTable } from "./roles-table";
 const PAGE_SIZE = 20;
 
 export default function RolesPage() {
-	const { claims } = useAuth();
+	const { claims, hasPermission } = useAuth();
+	const isAdmin = claims?.kind === "ADMIN";
+	const canCreate = !isAdmin && hasPermission("iam:role:create");
+	const canUpdate = !isAdmin && hasPermission("iam:role:update");
+	const canDelete = !isAdmin && hasPermission("iam:role:delete");
+	const canRestore = isAdmin;
 	const tenantSlug = claims?.tenantSlug ?? "";
 	const queryClient = useQueryClient();
 
@@ -48,6 +53,7 @@ export default function RolesPage() {
 	const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
 	function handleEdit(role: Role) {
+		if (!canUpdate) return;
 		setEditTarget(role);
 		setSheetOpen(true);
 	}
@@ -62,7 +68,7 @@ export default function RolesPage() {
 	}
 
 	function confirmDelete() {
-		if (!deleteTarget) return;
+		if (!deleteTarget || !canDelete) return;
 		removeMutation.mutate(
 			{ tenantSlug, id: deleteTarget.id },
 			{
@@ -77,6 +83,7 @@ export default function RolesPage() {
 	}
 
 	function handleRestore(role: Role) {
+		if (!canRestore) return;
 		restoreMutation.mutate(
 			{ tenantSlug, id: role.id },
 			{
@@ -98,10 +105,12 @@ export default function RolesPage() {
 						Named permission groups assigned to identities.
 					</p>
 				</div>
-				<Button onClick={() => setSheetOpen(true)}>
-					<Plus />
-					New Role
-				</Button>
+				{canCreate && (
+					<Button onClick={() => setSheetOpen(true)}>
+						<Plus />
+						New Role
+					</Button>
+				)}
 			</div>
 
 			<div className="rounded-xl border bg-card overflow-hidden">
@@ -111,6 +120,9 @@ export default function RolesPage() {
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 					onRestore={handleRestore}
+					canUpdate={canUpdate}
+					canDelete={canDelete}
+					canRestore={canRestore}
 				/>
 			</div>
 
