@@ -8,6 +8,7 @@ import {
 	useRemovePolicyMutation,
 	useRestorePolicyMutation,
 } from "@/api/policies";
+import { useAuth } from "@/auth";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -28,6 +29,13 @@ const PAGE_SIZE = 20;
 export default function PoliciesPage() {
 	const queryClient = useQueryClient();
 
+	const { claims } = useAuth();
+	const isAdmin = claims?.kind === "ADMIN";
+	const canCreate = isAdmin;
+	const canUpdate = isAdmin;
+	const canDelete = isAdmin;
+	const canRestore = isAdmin;
+
 	const [page, setPage] = useState(1);
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<Policy | null>(null);
@@ -44,6 +52,7 @@ export default function PoliciesPage() {
 	const totalPages = data ? Math.ceil(data.total / PAGE_SIZE) : 1;
 
 	function handleEdit(policy: Policy) {
+		if (!canUpdate) return;
 		setEditTarget(policy);
 		setSheetOpen(true);
 	}
@@ -58,7 +67,7 @@ export default function PoliciesPage() {
 	}
 
 	function confirmDelete() {
-		if (!deleteTarget) return;
+		if (!deleteTarget || !canDelete) return;
 		removeMutation.mutate(
 			{ id: deleteTarget.id },
 			{
@@ -73,6 +82,7 @@ export default function PoliciesPage() {
 	}
 
 	function handleRestore(policy: Policy) {
+		if (!canRestore) return;
 		restoreMutation.mutate(
 			{ id: policy.id },
 			{
@@ -94,10 +104,12 @@ export default function PoliciesPage() {
 						Allow / Deny rules that are attached to roles.
 					</p>
 				</div>
-				<Button onClick={() => setSheetOpen(true)}>
-					<Plus />
-					New Policy
-				</Button>
+				{canCreate && (
+					<Button onClick={() => setSheetOpen(true)}>
+						<Plus />
+						New Policy
+					</Button>
+				)}
 			</div>
 
 			<div className="rounded-xl border bg-card overflow-hidden">
@@ -107,6 +119,9 @@ export default function PoliciesPage() {
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 					onRestore={handleRestore}
+					canUpdate={canUpdate}
+					canDelete={canDelete}
+					canRestore={canRestore}
 				/>
 			</div>
 

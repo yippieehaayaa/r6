@@ -167,19 +167,19 @@ const listPoliciesForTenant = async (
   const [rows, countRows] = await Promise.all([
     prisma.$queryRaw<Policy[]>(
       Prisma.sql`
-        SELECT * FROM policies
-        WHERE deleted_at IS NULL
-          AND audience <@ ${moduleAccess}::text[]
-        ORDER BY name ASC
-        LIMIT ${input.limit} OFFSET ${skip}
-      `,
+    SELECT * FROM policies
+    WHERE "deletedAt" IS NULL
+      AND audience <@ ARRAY[${Prisma.join(moduleAccess)}]::text[]
+    ORDER BY name ASC
+    LIMIT ${input.limit} OFFSET ${skip}
+  `,
     ),
     prisma.$queryRaw<[{ count: bigint }]>(
       Prisma.sql`
-        SELECT COUNT(*) FROM policies
-        WHERE deleted_at IS NULL
-          AND audience <@ ${moduleAccess}::text[]
-      `,
+    SELECT COUNT(*) FROM policies
+    WHERE "deletedAt" IS NULL
+      AND audience <@ ARRAY[${Prisma.join(moduleAccess)}]::text[]
+  `,
     ),
   ]);
 

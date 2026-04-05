@@ -23,6 +23,9 @@ interface Props {
 	onEdit: (policy: Policy) => void;
 	onDelete: (policy: Policy) => void;
 	onRestore: (policy: Policy) => void;
+	canUpdate: boolean;
+	canDelete: boolean;
+	canRestore: boolean;
 }
 
 export function PoliciesTable({
@@ -31,6 +34,9 @@ export function PoliciesTable({
 	onEdit,
 	onDelete,
 	onRestore,
+	canUpdate,
+	canDelete,
+	canRestore,
 }: Props) {
 	return (
 		<Table className="animate-apple-enter">
@@ -97,36 +103,41 @@ export function PoliciesTable({
 							<TableCell className="text-muted-foreground text-xs">
 								{new Date(policy.createdAt).toLocaleDateString()}
 							</TableCell>
-							<TableCell>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size="icon-sm">
-											<MoreHorizontal />
-											<span className="sr-only">Open menu</span>
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onSelect={() => onEdit(policy)}>
-											<Pencil />
-											Edit
-										</DropdownMenuItem>
-										{policy.deletedAt ? (
-											<DropdownMenuItem onSelect={() => onRestore(policy)}>
-												<RotateCcw />
-												Restore
-											</DropdownMenuItem>
-										) : (
-											<DropdownMenuItem
-												variant="destructive"
-												onSelect={() => onDelete(policy)}
-											>
-												<Trash2 />
-												Delete
-											</DropdownMenuItem>
-										)}
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</TableCell>
+							{(canUpdate || canDelete || canRestore) && (
+								<TableCell>
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="ghost" size="icon-sm">
+												<MoreHorizontal />
+												<span className="sr-only">Open menu</span>
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent align="end">
+											{canUpdate && (
+												<DropdownMenuItem onSelect={() => onEdit(policy)}>
+													<Pencil />
+													Edit
+												</DropdownMenuItem>
+											)}
+											{canDelete && !policy.deletedAt && (
+												<DropdownMenuItem
+													variant="destructive"
+													onSelect={() => onDelete(policy)}
+												>
+													<Trash2 />
+													Delete
+												</DropdownMenuItem>
+											)}
+											{canRestore && policy.deletedAt && (
+												<DropdownMenuItem onSelect={() => onRestore(policy)}>
+													<RotateCcw />
+													Restore
+												</DropdownMenuItem>
+											)}
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</TableCell>
+							)}
 						</TableRow>
 					))
 				)}
