@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { BaseRecordSchema, serviceNameRegex, slugRegex } from "../base.schema";
+import {
+  BaseRecordSchema,
+  ListQuerySchema,
+  serviceNameRegex,
+  slugRegex,
+} from "../base.schema";
 
 // ============================================================
 //  TENANT SCHEMA
@@ -79,3 +84,9 @@ export const UpdateTenantSchema = TenantSchema.omit({
 }).partial();
 
 export type UpdateTenantInput = z.infer<typeof UpdateTenantSchema>;
+
+// ── List query params ───────────────────────────────────────
+
+export const ListTenantsQuerySchema = ListQuerySchema;
+
+export type ListTenantsQuery = z.infer<typeof ListTenantsQuerySchema>;

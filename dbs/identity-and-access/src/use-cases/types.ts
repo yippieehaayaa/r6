@@ -76,10 +76,12 @@ export type ListTenantsInput = PaginationInput & {
 // Filters for listIdentities. tenantId is required — identities are
 // always scoped to a tenant. @@index([tenantId, status]) and
 // @@index([tenantId, kind]) back the optional filters.
+// search performs a case-insensitive OR match on username and email.
 export type ListIdentitiesInput = PaginationInput & {
   tenantId: string; // required — identities are tenant-scoped
   status?: IdentityStatus; // @@index([tenantId, status])
   kind?: IdentityKind; // @@index([tenantId, kind])
+  search?: string; // case-insensitive OR filter on username + email
 };
 
 // ─── Role list ────────────────────────────────────────────────

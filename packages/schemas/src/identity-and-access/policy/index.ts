@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  ListQuerySchema,
   permissionRegex,
   serviceNameRegex,
   TenantScopedSchema,
@@ -174,3 +175,9 @@ export const UpdatePolicySchema = PolicySchema.omit({
   });
 
 export type UpdatePolicyInput = z.infer<typeof UpdatePolicySchema>;
+
+// ── List query params ───────────────────────────────────────
+
+export const ListPoliciesQuerySchema = ListQuerySchema;
+
+export type ListPoliciesQuery = z.infer<typeof ListPoliciesQuerySchema>;
