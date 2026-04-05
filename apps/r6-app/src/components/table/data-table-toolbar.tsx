@@ -36,7 +36,8 @@ export function DataTableToolbar<TData>({
 				/>
 			</div>
 
-			<DropdownMenu>
+			<div className="ml-auto">
+				<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="outline" size="default">
 						<SlidersHorizontal />
@@ -63,6 +64,7 @@ export function DataTableToolbar<TData>({
 						))}
 				</DropdownMenuContent>
 			</DropdownMenu>
+			</div>
 		</div>
 	);
 }
