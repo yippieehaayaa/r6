@@ -102,6 +102,8 @@ export function DataTable<TData, TValue>({
 		getPaginationRowModel: paginationRowModel,
 		// Sorting
 		manualSorting: isManualSorting,
+		sortDescFirst: true,
+		enableSortingRemoval: false,
 		onSortingChange: isManualSorting ? onSortingChange : setInternalSorting,
 		getSortedRowModel: sortedRowModel,
 		// Filtering
