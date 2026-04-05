@@ -100,6 +100,13 @@ const buildWhere = (
   ...(input.audience !== undefined && {
     audience: { has: input.audience },
   }),
+  ...(input.search !== undefined &&
+    input.search.length > 0 && {
+      OR: [
+        { name: { contains: input.search, mode: "insensitive" } },
+        { description: { contains: input.search, mode: "insensitive" } },
+      ],
+    }),
 });
 
 // Returns a paginated list of all policies.
@@ -158,9 +165,11 @@ const listPlatformPolicies = async (input: {
 // Parameters are passed through Prisma.sql to prevent SQL injection.
 const listPoliciesForTenant = async (
   moduleAccess: string[],
-  input: { page: number; limit: number },
+  input: { page: number; limit: number; search?: string },
 ): Promise<PaginatedResult<Policy>> => {
   const skip = (input.page - 1) * input.limit;
+  const hasSearch = input.search !== undefined && input.search.length > 0;
+  const likeParam = hasSearch ? `%${input.search}%` : null;
 
   // Use Prisma.sql for parameterised queries — moduleAccess is a user-derived
   // value from the DB (tenant.moduleAccess) so it must not be interpolated raw.
@@ -170,6 +179,7 @@ const listPoliciesForTenant = async (
     SELECT * FROM policies
     WHERE "deletedAt" IS NULL
       AND audience <@ ARRAY[${Prisma.join(moduleAccess)}]::text[]
+      ${hasSearch ? Prisma.sql`AND (name ILIKE ${likeParam} OR description ILIKE ${likeParam})` : Prisma.empty}
     ORDER BY name ASC
     LIMIT ${input.limit} OFFSET ${skip}
   `,
@@ -179,6 +189,7 @@ const listPoliciesForTenant = async (
     SELECT COUNT(*) FROM policies
     WHERE "deletedAt" IS NULL
       AND audience <@ ARRAY[${Prisma.join(moduleAccess)}]::text[]
+      ${hasSearch ? Prisma.sql`AND (name ILIKE ${likeParam} OR description ILIKE ${likeParam})` : Prisma.empty}
   `,
     ),
   ]);

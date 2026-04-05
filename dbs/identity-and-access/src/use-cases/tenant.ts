@@ -30,6 +30,13 @@ const buildWhere = (
 ): import("../../generated/prisma/client.js").Prisma.TenantWhereInput => ({
   ...(input.isActive !== undefined && { isActive: input.isActive }),
   ...(!input.includeDeleted && { deletedAt: null }),
+  ...(input.search !== undefined &&
+    input.search.length > 0 && {
+      OR: [
+        { name: { contains: input.search, mode: "insensitive" } },
+        { slug: { contains: input.search, mode: "insensitive" } },
+      ],
+    }),
 });
 
 // ─── Create ──────────────────────────────────────────────────

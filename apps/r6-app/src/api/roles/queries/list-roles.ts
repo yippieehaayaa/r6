@@ -5,6 +5,7 @@ import { identityApi } from "@/api/_app";
 export interface ListRolesParams {
 	page?: number;
 	limit?: number;
+	search?: string;
 }
 
 const ListRolesResponseSchema = PaginatedResponseSchema(RoleSchema);

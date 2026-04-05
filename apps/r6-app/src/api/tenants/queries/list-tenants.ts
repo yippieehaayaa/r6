@@ -10,6 +10,7 @@ export interface ListTenantsParams {
 	page?: number;
 	limit?: number;
 	isActive?: boolean;
+	search?: string;
 }
 
 const ListTenantsResponseSchema = PaginatedResponseSchema(TenantSchema);

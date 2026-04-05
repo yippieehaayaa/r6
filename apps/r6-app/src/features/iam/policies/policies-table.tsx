@@ -1,5 +1,12 @@
 import type { Policy } from "@r6/schemas";
+import type {
+	ColumnDef,
+	OnChangeFn,
+	PaginationState,
+} from "@tanstack/react-table";
 import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { useMemo } from "react";
+import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,14 +15,6 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 
 interface Props {
 	data: Policy[];
@@ -26,6 +25,11 @@ interface Props {
 	canUpdate: boolean;
 	canDelete: boolean;
 	canRestore: boolean;
+	rowCount?: number;
+	paginationState?: PaginationState;
+	onPaginationChange?: OnChangeFn<PaginationState>;
+	filterValue?: string;
+	onFilterChange?: (value: string) => void;
 }
 
 export function PoliciesTable({
@@ -37,111 +41,124 @@ export function PoliciesTable({
 	canUpdate,
 	canDelete,
 	canRestore,
+	rowCount,
+	paginationState,
+	onPaginationChange,
+	filterValue,
+	onFilterChange,
 }: Props) {
+	const columns = useMemo<ColumnDef<Policy>[]>(
+		() => [
+			{
+				accessorKey: "name",
+				header: "Name",
+				cell: ({ row }) => (
+					<span className="font-medium">{row.original.name}</span>
+				),
+			},
+			{
+				accessorKey: "effect",
+				header: "Effect",
+				cell: ({ row }) => (
+					<Badge
+						variant={
+							row.original.effect === "ALLOW" ? "default" : "destructive"
+						}
+					>
+						{row.original.effect}
+					</Badge>
+				),
+			},
+			{
+				accessorKey: "permissions",
+				header: "Permissions",
+				cell: ({ row }) => (
+					<span className="text-muted-foreground text-xs">
+						{row.original.permissions.length} permission
+						{row.original.permissions.length !== 1 ? "s" : ""}
+					</span>
+				),
+			},
+			{
+				accessorKey: "audience",
+				header: "Audience",
+				cell: ({ row }) => (
+					<div className="flex flex-wrap gap-1">
+						{row.original.audience.map((a) => (
+							<Badge key={a} variant="outline">
+								{a}
+							</Badge>
+						))}
+					</div>
+				),
+			},
+			{
+				accessorKey: "createdAt",
+				header: "Created",
+				cell: ({ row }) => (
+					<span className="text-muted-foreground text-xs">
+						{new Date(row.original.createdAt).toLocaleDateString()}
+					</span>
+				),
+			},
+			{
+				id: "actions",
+				header: "",
+				enableHiding: false,
+				enableSorting: false,
+				cell: ({ row }) => {
+					const policy = row.original;
+					if (!canUpdate && !canDelete && !canRestore) return null;
+					return (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" size="icon-sm">
+									<MoreHorizontal />
+									<span className="sr-only">Open menu</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{canUpdate && (
+									<DropdownMenuItem onSelect={() => onEdit(policy)}>
+										<Pencil />
+										Edit
+									</DropdownMenuItem>
+								)}
+								{canDelete && !policy.deletedAt && (
+									<DropdownMenuItem
+										variant="destructive"
+										onSelect={() => onDelete(policy)}
+									>
+										<Trash2 />
+										Delete
+									</DropdownMenuItem>
+								)}
+								{canRestore && policy.deletedAt && (
+									<DropdownMenuItem onSelect={() => onRestore(policy)}>
+										<RotateCcw />
+										Restore
+									</DropdownMenuItem>
+								)}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					);
+				},
+			},
+		],
+		[canUpdate, canDelete, canRestore, onEdit, onDelete, onRestore],
+	);
+
 	return (
-		<Table className="animate-apple-enter">
-			<TableHeader>
-				<TableRow>
-					<TableHead>Name</TableHead>
-					<TableHead>Effect</TableHead>
-					<TableHead>Permissions</TableHead>
-					<TableHead>Audience</TableHead>
-					<TableHead>Created</TableHead>
-					<TableHead className="w-10" />
-				</TableRow>
-			</TableHeader>
-			<TableBody
-				key={isLoading ? "loading" : "data"}
-				className={
-					!isLoading && data.length > 0 ? "animate-stagger-children" : undefined
-				}
-			>
-				{isLoading ? (
-					<TableRow>
-						<TableCell
-							colSpan={6}
-							className="text-center text-muted-foreground py-8"
-						>
-							Loading…
-						</TableCell>
-					</TableRow>
-				) : data.length === 0 ? (
-					<TableRow>
-						<TableCell
-							colSpan={6}
-							className="text-center text-muted-foreground py-8"
-						>
-							No policies found.
-						</TableCell>
-					</TableRow>
-				) : (
-					data.map((policy) => (
-						<TableRow key={policy.id} data-deleted={!!policy.deletedAt}>
-							<TableCell className="font-medium">{policy.name}</TableCell>
-							<TableCell>
-								<Badge
-									variant={
-										policy.effect === "ALLOW" ? "default" : "destructive"
-									}
-								>
-									{policy.effect}
-								</Badge>
-							</TableCell>
-							<TableCell className="text-muted-foreground text-xs">
-								{policy.permissions.length} permission
-								{policy.permissions.length !== 1 ? "s" : ""}
-							</TableCell>
-							<TableCell>
-								<div className="flex flex-wrap gap-1">
-									{policy.audience.map((a) => (
-										<Badge key={a} variant="outline">
-											{a}
-										</Badge>
-									))}
-								</div>
-							</TableCell>
-							<TableCell className="text-muted-foreground text-xs">
-								{new Date(policy.createdAt).toLocaleDateString()}
-							</TableCell>
-							{(canUpdate || canDelete || canRestore) && (
-								<TableCell>
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="icon-sm">
-												<MoreHorizontal />
-												<span className="sr-only">Open menu</span>
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											{canUpdate && (
-												<DropdownMenuItem onSelect={() => onEdit(policy)}>
-													<Pencil />
-													Edit
-												</DropdownMenuItem>
-											)}
-											{canDelete && !policy.deletedAt && (
-												<DropdownMenuItem
-													variant="destructive"
-													onSelect={() => onDelete(policy)}
-												>
-													<Trash2 />
-													Delete
-												</DropdownMenuItem>
-											)}
-											{canRestore && policy.deletedAt && (
-												<DropdownMenuItem onSelect={() => onRestore(policy)}>
-													<RotateCcw />
-													Restore
-												</DropdownMenuItem>
-											)}
-										</DropdownMenuContent>
-									</DropdownMenu>
-								</TableCell>
-							)}
-						</TableRow>
-					))
-				)}
-			</TableBody>
-		</Table>
+		<DataTable
+			columns={columns}
+			data={data}
+			isLoading={isLoading}
+			rowCount={rowCount}
+			paginationState={paginationState}
+			onPaginationChange={onPaginationChange}
+			globalFilterValue={filterValue}
+			onGlobalFilterChange={onFilterChange}
+			filterPlaceholder="Search policies…"
+		/>
 	);
 }
