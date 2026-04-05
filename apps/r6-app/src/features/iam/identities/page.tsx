@@ -2,7 +2,7 @@ import type { IdentitySafe } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { Building2, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
 	useListIdentitiesQuery,
@@ -59,13 +59,24 @@ export default function IdentitiesPage() {
 		pageIndex: 0,
 		pageSize: PAGE_SIZE,
 	});
+	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<IdentitySafe | null>(null);
 
+	useEffect(() => {
+		const id = setTimeout(() => setDebouncedSearch(search), 300);
+		return () => clearTimeout(id);
+	}, [search]);
+
 	const { data, isLoading } = useListIdentitiesQuery(
 		activeTenantSlug,
-		{ page: pagination.pageIndex + 1, limit: pagination.pageSize },
+		{
+			page: pagination.pageIndex + 1,
+			limit: pagination.pageSize,
+			search: debouncedSearch || undefined,
+		},
 		{ staleTime: 5 * 60 * 1000 },
 	);
 
@@ -179,6 +190,11 @@ export default function IdentitiesPage() {
 						rowCount={data?.total}
 						paginationState={pagination}
 						onPaginationChange={setPagination}
+						filterValue={search}
+						onFilterChange={(v) => {
+							setSearch(v);
+							setPagination((p) => ({ ...p, pageIndex: 0 }));
+						}}
 					/>
 				)}
 			</div>

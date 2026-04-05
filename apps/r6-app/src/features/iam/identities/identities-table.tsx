@@ -43,6 +43,8 @@ interface Props {
 	rowCount?: number;
 	paginationState?: PaginationState;
 	onPaginationChange?: OnChangeFn<PaginationState>;
+	filterValue?: string;
+	onFilterChange?: (value: string) => void;
 }
 
 export function IdentitiesTable({
@@ -56,6 +58,8 @@ export function IdentitiesTable({
 	rowCount,
 	paginationState,
 	onPaginationChange,
+	filterValue,
+	onFilterChange,
 }: Props) {
 	const columns = useMemo<ColumnDef<IdentitySafe>[]>(
 		() => [
@@ -157,6 +161,8 @@ export function IdentitiesTable({
 			rowCount={rowCount}
 			paginationState={paginationState}
 			onPaginationChange={onPaginationChange}
+			globalFilterValue={filterValue}
+			onGlobalFilterChange={onFilterChange}
 			filterPlaceholder="Search identities…"
 		/>
 	);

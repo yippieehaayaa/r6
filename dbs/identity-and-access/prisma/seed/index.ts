@@ -406,6 +406,79 @@ async function main() {
 		kind: "USER",
 	});
 
+	// ── demo-corp: bulk identities (53 users across 6 departments) ────────────
+
+	const demoDeveloperUsers = await Promise.all([
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-alice",   email: "dev-alice@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-bob",     email: "dev-bob@demo-corp.example.com",     password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-charlie", email: "dev-charlie@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-diana",   email: "dev-diana@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-evan",    email: "dev-evan@demo-corp.example.com",    password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-fiona",   email: "dev-fiona@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-george",  email: "dev-george@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-hannah",  email: "dev-hannah@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-ivan",    email: "dev-ivan@demo-corp.example.com",    password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-julia",   email: "dev-julia@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-kevin",   email: "dev-kevin@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "dev-laura",   email: "dev-laura@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+	]);
+
+	const demoHrUsers = await Promise.all([
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-alex",  email: "hr-alex@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-beth",  email: "hr-beth@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-carl",  email: "hr-carl@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-dana",  email: "hr-dana@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-eric",  email: "hr-eric@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-faye",  email: "hr-faye@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-gary",  email: "hr-gary@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-helen", email: "hr-helen@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-ian",   email: "hr-ian@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "hr-jane",  email: "hr-jane@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+	]);
+
+	const demoAnalystUsers = await Promise.all([
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-01", email: "analyst-01@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-02", email: "analyst-02@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-03", email: "analyst-03@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-04", email: "analyst-04@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-05", email: "analyst-05@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-06", email: "analyst-06@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-07", email: "analyst-07@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-08", email: "analyst-08@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-09", email: "analyst-09@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "analyst-10", email: "analyst-10@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+	]);
+
+	const demoManagerUsers = await Promise.all([
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-alice",   email: "mgr-alice@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-bob",     email: "mgr-bob@demo-corp.example.com",     password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-charlie", email: "mgr-charlie@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-diana",   email: "mgr-diana@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-evan",    email: "mgr-evan@demo-corp.example.com",    password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-fiona",   email: "mgr-fiona@demo-corp.example.com",   password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-george",  email: "mgr-george@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "mgr-hannah",  email: "mgr-hannah@demo-corp.example.com",  password: "Password@1234!", kind: "USER" }),
+	]);
+
+	const demoAuditorUsers = await Promise.all([
+		upsertIdentity({ tenantId: demoTenant.id, username: "auditor-01", email: "auditor-01@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "auditor-02", email: "auditor-02@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "auditor-03", email: "auditor-03@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "auditor-04", email: "auditor-04@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "auditor-05", email: "auditor-05@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "auditor-06", email: "auditor-06@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+	]);
+
+	const demoSupportUsers = await Promise.all([
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-01", email: "support-01@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-02", email: "support-02@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-03", email: "support-03@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-04", email: "support-04@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-05", email: "support-05@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-06", email: "support-06@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+		upsertIdentity({ tenantId: demoTenant.id, username: "support-07", email: "support-07@demo-corp.example.com", password: "Password@1234!", kind: "USER" }),
+	]);
+
 	// ── acme-inc ──────────────────────────────────────────────────────────────
 
 	const acmeAdminUser = await upsertIdentity({
@@ -482,6 +555,27 @@ async function main() {
 	await linkRoleToIdentity(demoIamViewerRole.id, iamViewerUser.id, "iam-viewer → role:iam-viewer");
 	await linkRoleToIdentity(demoIdentityManagerRole.id, identityManagerUser.id, "identity-manager → role:identity-manager");
 
+	// ── demo-corp: bulk role assignments ─────────────────────────────────────
+
+	for (const u of demoDeveloperUsers) {
+		await linkRoleToIdentity(demoUserRole.id, u.id, `${u.username} → role:user`);
+	}
+	for (const u of demoHrUsers) {
+		await linkRoleToIdentity(demoIdentityManagerRole.id, u.id, `${u.username} → role:identity-manager`);
+	}
+	for (const u of demoAnalystUsers) {
+		await linkRoleToIdentity(demoIamViewerRole.id, u.id, `${u.username} → role:iam-viewer`);
+	}
+	for (const u of demoManagerUsers) {
+		await linkRoleToIdentity(demoIamManagerRole.id, u.id, `${u.username} → role:iam-manager`);
+	}
+	for (const u of demoAuditorUsers) {
+		await linkRoleToIdentity(demoIamViewerRole.id, u.id, `${u.username} → role:iam-viewer`);
+	}
+	for (const u of demoSupportUsers) {
+		await linkRoleToIdentity(demoUserRole.id, u.id, `${u.username} → role:user`);
+	}
+
 	// ── acme-inc ──────────────────────────────────────────────────────────────
 
 	await linkRoleToIdentity(acmeIamManagerRole.id, acmeAdminUser.id, "acme-admin → role:iam-manager");
@@ -505,6 +599,7 @@ async function main() {
 	console.log("  iam-viewer        (Password@1234!)  → Identities+Roles+Policies (read)  — no Tenants");
 	console.log("  identity-manager  (Password@1234!)  → Identities only (write)");
 	console.log("  testuser          (Password@1234!)  → Identities + Roles only");
+	console.log("  + 53 bulk users   (Password@1234!)  → dev-* (user) | hr-* (identity-manager) | analyst-* (iam-viewer) | mgr-* (iam-manager) | auditor-* (iam-viewer) | support-* (user)");
 	console.log("\nacme-inc  [modules: iam, inventory]:");
 	console.log("  acme-admin        (Password@1234!)  → Identities+Roles+Policies (write) — no Tenants");
 	console.log("  acme-auditor      (Password@1234!)  → Identities+Roles+Policies (read)  — no Tenants");
