@@ -56,6 +56,14 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 
 // ─── Create with defaults ─────────────────────────────────────────────────────
 
+// Platform-level policies automatically connected to the tenant-admin role
+// on every new tenant. Names must match the seed (tenantId = null).
+const TENANT_ADMIN_DEFAULT_POLICIES = [
+  "iam:identity:full-access",
+  "iam:role:full-access",
+  "iam:policy:read-only",
+] as const;
+
 // Atomically creates a Tenant, its two standard protected roles
 // (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
 // identity using the pre-computed password hash/salt.
@@ -81,8 +89,8 @@ const createTenantWithDefaults = async (
       },
     });
 
-    // Both roles only depend on tenant.id — create them in parallel.
-    const [ownerRole] = await Promise.all([
+    // Roles + default policy lookup are independent — run in parallel.
+    const [ownerRole, adminRole, defaultPolicies] = await Promise.all([
       tx.role.create({
         data: {
           tenantId: tenant.id,
@@ -98,23 +106,39 @@ const createTenantWithDefaults = async (
           description: "Tenant administrator — full IAM management access.",
         },
       }),
+      tx.policy.findMany({
+        where: {
+          tenantId: null,
+          name: { in: [...TENANT_ADMIN_DEFAULT_POLICIES] },
+        },
+        select: { id: true },
+      }),
     ]);
 
     const ownerUsername = `${tenant.slug.slice(0, 58)}-owner`;
 
-    await tx.identity.create({
-      data: {
-        tenantId: tenant.id,
-        username: ownerUsername,
-        email: null,
-        hash: ownerHash,
-        salt: ownerSalt,
-        kind: "USER",
-        status: "ACTIVE",
-        mustChangePassword: true,
-        roles: { connect: { id: ownerRole.id } },
-      },
-    });
+    // Owner identity creation and admin role policy assignment are independent.
+    await Promise.all([
+      tx.identity.create({
+        data: {
+          tenantId: tenant.id,
+          username: ownerUsername,
+          email: null,
+          hash: ownerHash,
+          salt: ownerSalt,
+          kind: "USER",
+          status: "ACTIVE",
+          mustChangePassword: true,
+          roles: { connect: { id: ownerRole.id } },
+        },
+      }),
+      defaultPolicies.length > 0
+        ? tx.role.update({
+            where: { id: adminRole.id },
+            data: { policies: { connect: defaultPolicies } },
+          })
+        : Promise.resolve(),
+    ]);
 
     return { tenant, ownerUsername };
   });

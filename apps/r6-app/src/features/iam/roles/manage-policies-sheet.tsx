@@ -49,7 +49,7 @@ export function ManagePoliciesSheet({
 
 	const { data: allPolicies, isLoading: isLoadingPolicies } =
 		useListPoliciesQuery(
-			{ limit: 200 },
+			{ limit: 100 },
 			{ staleTime: 10 * 60 * 1000, enabled: open && !!role },
 		);
 
