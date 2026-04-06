@@ -24,7 +24,7 @@ export async function listRolesFn(
 export function useListRolesQuery(
 	tenantSlug: string,
 	params: ListRolesParams = {},
-	options?: { staleTime?: number; gcTime?: number },
+	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
 		queryKey: ["roles", tenantSlug, params],

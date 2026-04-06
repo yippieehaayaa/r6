@@ -1,7 +1,7 @@
-import type { IdentitySafe } from "@r6/schemas";
+import type { IdentitySafe, Role } from "@r6/schemas";
 import { PROTECTED_ROLES } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -38,77 +38,89 @@ export function ManageRolesSheet({
 	const queryClient = useQueryClient();
 	const mutation = useSetRolesMutation();
 
-	const [search, setSearch] = useState("");
-	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+	const [assignedRoles, setAssignedRoles] = useState<Map<string, Role>>(
+		new Map(),
+	);
 	const [initialIds, setInitialIds] = useState<Set<string>>(new Set());
+	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedQuery, setDebouncedQuery] = useState("");
 
 	const { data: identityWithRoles, isLoading: isLoadingCurrent } =
 		useGetIdentityWithRolesQuery(tenantSlug, identity?.id ?? "", {
 			enabled: open && !!identity,
 		});
 
-	const { data: allRoles, isLoading: isLoadingRoles } = useListRolesQuery(
+	// Debounce search input
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 300);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	// Server-side search — only fires when there's a query
+	const { data: searchResults, isFetching: isSearching } = useListRolesQuery(
 		tenantSlug,
-		{ limit: 100 },
-		{ staleTime: 5 * 60 * 1000 },
+		{ search: debouncedQuery, limit: 20 },
+		{ staleTime: 30 * 1000, enabled: open && !!debouncedQuery },
 	);
 
-	// Initialise selection once current roles load
+	// Initialise from current roles
 	useEffect(() => {
 		if (!identityWithRoles) return;
-		const ids = new Set(identityWithRoles.roles.map((r) => r.id));
-		setSelectedIds(ids);
-		setInitialIds(ids);
+		const map = new Map(identityWithRoles.roles.map((r) => [r.id, r]));
+		setAssignedRoles(map);
+		setInitialIds(new Set(map.keys()));
 	}, [identityWithRoles]);
 
 	// Reset on close
 	useEffect(() => {
 		if (!open) {
-			setSearch("");
-			setSelectedIds(new Set());
+			setSearchQuery("");
+			setDebouncedQuery("");
+			setAssignedRoles(new Map());
 			setInitialIds(new Set());
 		}
 	}, [open]);
 
-	const isLoading = isLoadingCurrent || isLoadingRoles;
-
-	const filteredRoles = useMemo(() => {
-		const q = search.trim().toLowerCase();
-		const assignable = (allRoles?.data ?? []).filter(
-			(r) => !(PROTECTED_ROLES as readonly string[]).includes(r.name),
-		);
-		if (!q) return assignable;
-		return assignable.filter(
-			(r) =>
-				r.name.toLowerCase().includes(q) ||
-				r.description?.toLowerCase().includes(q),
-		);
-	}, [allRoles, search]);
-
-	// Protected roles already assigned to this identity (read-only display)
-	const lockedRoles = useMemo(
+	const lockedChips = useMemo(
 		() =>
-			(allRoles?.data ?? []).filter(
-				(r) =>
-					(PROTECTED_ROLES as readonly string[]).includes(r.name) &&
-					initialIds.has(r.id),
+			[...assignedRoles.values()].filter((r) =>
+				(PROTECTED_ROLES as readonly string[]).includes(r.name),
 			),
-		[allRoles, initialIds],
+		[assignedRoles],
+	);
+
+	const removableChips = useMemo(
+		() =>
+			[...assignedRoles.values()].filter(
+				(r) => !(PROTECTED_ROLES as readonly string[]).includes(r.name),
+			),
+		[assignedRoles],
+	);
+
+	// Exclude already-assigned roles from search results
+	const filteredSearchResults = useMemo(
+		() => (searchResults?.data ?? []).filter((r) => !assignedRoles.has(r.id)),
+		[searchResults, assignedRoles],
 	);
 
 	const hasChanged = useMemo(() => {
-		if (selectedIds.size !== initialIds.size) return true;
-		for (const id of selectedIds) {
+		const current = new Set(assignedRoles.keys());
+		if (current.size !== initialIds.size) return true;
+		for (const id of current) {
 			if (!initialIds.has(id)) return true;
 		}
 		return false;
-	}, [selectedIds, initialIds]);
+	}, [assignedRoles, initialIds]);
 
-	function toggleRole(id: string) {
-		setSelectedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+	function addRole(role: Role) {
+		setAssignedRoles((prev) => new Map([...prev, [role.id, role]]));
+		setSearchQuery("");
+	}
+
+	function removeRole(id: string) {
+		setAssignedRoles((prev) => {
+			const next = new Map(prev);
+			next.delete(id);
 			return next;
 		});
 	}
@@ -116,7 +128,7 @@ export function ManageRolesSheet({
 	function handleSubmit() {
 		if (!identity) return;
 		mutation.mutate(
-			{ tenantSlug, id: identity.id, roleIds: [...selectedIds] },
+			{ tenantSlug, id: identity.id, roleIds: [...assignedRoles.keys()] },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
@@ -143,24 +155,26 @@ export function ManageRolesSheet({
 					</p>
 				</SheetHeader>
 
-				<div className="flex flex-col gap-3 px-4 flex-1 overflow-hidden">
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-						<Input
-							placeholder="Search roles…"
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							className="pl-9"
-						/>
-					</div>
-
-					{lockedRoles.length > 0 && (
-						<div className="flex flex-col gap-1">
-							<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-								Protected (read-only)
-							</span>
+				<div className="flex flex-col gap-4 px-4 flex-1 overflow-hidden">
+					{/* Assigned chips */}
+					<div className="flex flex-col gap-2">
+						<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+							Assigned ({assignedRoles.size})
+						</span>
+						{isLoadingCurrent ? (
 							<div className="flex flex-wrap gap-1.5">
-								{lockedRoles.map((role) => (
+								{Array.from({ length: 4 }).map((_, i) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+									<Skeleton key={i} className="h-6 w-20 rounded-full" />
+								))}
+							</div>
+						) : assignedRoles.size === 0 ? (
+							<p className="text-sm text-muted-foreground">
+								No roles assigned. Search below to add.
+							</p>
+						) : (
+							<div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+								{lockedChips.map((role) => (
 									<span
 										key={role.id}
 										className="inline-flex items-center gap-1 rounded-full border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground select-none"
@@ -168,61 +182,76 @@ export function ManageRolesSheet({
 										{role.name}
 									</span>
 								))}
+								{removableChips.map((role) => (
+									<span
+										key={role.id}
+										className="inline-flex items-center gap-1 rounded-full border bg-secondary px-2.5 py-0.5 text-xs font-medium"
+									>
+										{role.name}
+										<button
+											type="button"
+											onClick={() => removeRole(role.id)}
+											className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5 transition-colors"
+											aria-label={`Remove ${role.name}`}
+										>
+											<X className="size-3" />
+										</button>
+									</span>
+								))}
 							</div>
-							<Separator className="mt-1" />
-						</div>
-					)}
-
-					<div className="flex items-center justify-between">
-						<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-							{selectedIds.size} selected
-						</span>
-						<span className="text-xs text-muted-foreground">
-							{filteredRoles.length} role
-							{filteredRoles.length !== 1 ? "s" : ""}
-						</span>
+						)}
 					</div>
 
 					<Separator />
 
-					<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
-						{isLoading ? (
-							Array.from({ length: 5 }).map((_, i) => (
-								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-								<Skeleton key={i} className="h-14 w-full rounded-lg" />
-							))
-						) : filteredRoles.length === 0 ? (
-							<p className="text-sm text-muted-foreground py-6 text-center">
-								{search ? "No roles match your search." : "No roles available."}
-							</p>
-						) : (
-							filteredRoles.map((role) => {
-								const checked = selectedIds.has(role.id);
-								return (
-									<label
+					{/* Search to add */}
+					<div className="flex flex-col gap-2 flex-1 overflow-hidden">
+						<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+							Add roles
+						</span>
+						<div className="relative">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+							<Input
+								placeholder="Search roles…"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="pl-9"
+							/>
+						</div>
+						<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
+							{!debouncedQuery ? (
+								<p className="text-sm text-muted-foreground py-4 text-center">
+									Type to search for roles to add.
+								</p>
+							) : isSearching ? (
+								Array.from({ length: 3 }).map((_, i) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+									<Skeleton key={i} className="h-12 w-full rounded-lg" />
+								))
+							) : filteredSearchResults.length === 0 ? (
+								<p className="text-sm text-muted-foreground py-4 text-center">
+									No roles found.
+								</p>
+							) : (
+								filteredSearchResults.map((role) => (
+									<button
 										key={role.id}
-										className="flex items-start gap-3 rounded-lg px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
+										type="button"
+										onClick={() => addRole(role)}
+										className="flex flex-col items-start gap-0.5 rounded-lg px-3 py-2.5 text-left hover:bg-muted/50 transition-colors w-full"
 									>
-										<input
-											type="checkbox"
-											className="mt-0.5 size-4 rounded border-input accent-primary shrink-0"
-											checked={checked}
-											onChange={() => toggleRole(role.id)}
-										/>
-										<div className="flex flex-col gap-0.5 min-w-0">
-											<span className="text-sm font-medium leading-tight">
-												{role.name}
+										<span className="text-sm font-medium leading-tight">
+											{role.name}
+										</span>
+										{role.description && (
+											<span className="text-xs text-muted-foreground truncate w-full">
+												{role.description}
 											</span>
-											{role.description && (
-												<span className="text-xs text-muted-foreground truncate">
-													{role.description}
-												</span>
-											)}
-										</div>
-									</label>
-								);
-							})
-						)}
+										)}
+									</button>
+								))
+							)}
+						</div>
 					</div>
 				</div>
 

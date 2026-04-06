@@ -1,6 +1,6 @@
-import type { Role } from "@r6/schemas";
+import type { Policy, Role } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useListPoliciesQuery } from "@/api/policies";
@@ -38,65 +38,74 @@ export function ManagePoliciesSheet({
 	const queryClient = useQueryClient();
 	const mutation = useSetPoliciesMutation();
 
-	const [search, setSearch] = useState("");
-	const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+	const [assignedPolicies, setAssignedPolicies] = useState<Map<string, Policy>>(
+		new Map(),
+	);
 	const [initialIds, setInitialIds] = useState<Set<string>>(new Set());
+	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedQuery, setDebouncedQuery] = useState("");
 
 	const { data: roleWithPolicies, isLoading: isLoadingCurrent } =
 		useGetRoleWithPoliciesQuery(tenantSlug, role?.id ?? "", {
 			enabled: open && !!role,
 		});
 
-	const { data: allPolicies, isLoading: isLoadingPolicies } =
-		useListPoliciesQuery(
-			{ limit: 100 },
-			{ staleTime: 10 * 60 * 1000, enabled: open && !!role },
-		);
+	// Debounce search input
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 300);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
 
-	// Initialise selection once current policies load
+	// Server-side search — only fires when there's a query
+	const { data: searchResults, isFetching: isSearching } = useListPoliciesQuery(
+		{ search: debouncedQuery, limit: 20 },
+		{ staleTime: 30 * 1000, enabled: open && !!role && !!debouncedQuery },
+	);
+
+	// Initialise from current policies
 	useEffect(() => {
 		if (!roleWithPolicies) return;
-		const ids = new Set(roleWithPolicies.policies.map((p) => p.id));
-		setSelectedIds(ids);
-		setInitialIds(ids);
+		const map = new Map(roleWithPolicies.policies.map((p) => [p.id, p]));
+		setAssignedPolicies(map);
+		setInitialIds(new Set(map.keys()));
 	}, [roleWithPolicies]);
 
 	// Reset on close
 	useEffect(() => {
 		if (!open) {
-			setSearch("");
-			setSelectedIds(new Set());
+			setSearchQuery("");
+			setDebouncedQuery("");
+			setAssignedPolicies(new Map());
 			setInitialIds(new Set());
 		}
 	}, [open]);
 
-	const isLoading = isLoadingCurrent || isLoadingPolicies;
-
-	const filteredPolicies = useMemo(() => {
-		const q = search.trim().toLowerCase();
-		if (!q) return allPolicies?.data ?? [];
-		return (allPolicies?.data ?? []).filter(
-			(p) =>
-				p.name.toLowerCase().includes(q) ||
-				p.description?.toLowerCase().includes(q),
-		);
-	}, [allPolicies, search]);
+	// Exclude already-assigned policies from search results
+	const filteredSearchResults = useMemo(
+		() => (searchResults?.data ?? []).filter((p) => !assignedPolicies.has(p.id)),
+		[searchResults, assignedPolicies],
+	);
 
 	const hasChanged = useMemo(() => {
-		if (selectedIds.size !== initialIds.size) return true;
-		for (const id of selectedIds) {
+		const current = new Set(assignedPolicies.keys());
+		if (current.size !== initialIds.size) return true;
+		for (const id of current) {
 			if (!initialIds.has(id)) return true;
 		}
 		return false;
-	}, [selectedIds, initialIds]);
+	}, [assignedPolicies, initialIds]);
 
-	const isEmpty = selectedIds.size === 0;
+	const isEmpty = assignedPolicies.size === 0;
 
-	function togglePolicy(id: string) {
-		setSelectedIds((prev) => {
-			const next = new Set(prev);
-			if (next.has(id)) next.delete(id);
-			else next.add(id);
+	function addPolicy(policy: Policy) {
+		setAssignedPolicies((prev) => new Map([...prev, [policy.id, policy]]));
+		setSearchQuery("");
+	}
+
+	function removePolicy(id: string) {
+		setAssignedPolicies((prev) => {
+			const next = new Map(prev);
+			next.delete(id);
 			return next;
 		});
 	}
@@ -104,7 +113,7 @@ export function ManagePoliciesSheet({
 	function handleSubmit() {
 		if (!role || isEmpty) return;
 		mutation.mutate(
-			{ tenantSlug, id: role.id, body: { policyIds: [...selectedIds] } },
+			{ tenantSlug, id: role.id, body: { policyIds: [...assignedPolicies.keys()] } },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
@@ -131,87 +140,118 @@ export function ManagePoliciesSheet({
 					</p>
 				</SheetHeader>
 
-				<div className="flex flex-col gap-3 px-4 flex-1 overflow-hidden">
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-						<Input
-							placeholder="Search policies…"
-							value={search}
-							onChange={(e) => setSearch(e.target.value)}
-							className="pl-9"
-						/>
-					</div>
-
-					<div className="flex items-center justify-between">
+				<div className="flex flex-col gap-4 px-4 flex-1 overflow-hidden">
+					{/* Assigned chips */}
+					<div className="flex flex-col gap-2">
 						<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
-							{selectedIds.size} selected
+							Assigned ({assignedPolicies.size})
 						</span>
-						<span className="text-xs text-muted-foreground">
-							{filteredPolicies.length} polic
-							{filteredPolicies.length !== 1 ? "ies" : "y"}
-						</span>
+						{isLoadingCurrent ? (
+							<div className="flex flex-wrap gap-1.5">
+								{Array.from({ length: 4 }).map((_, i) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+									<Skeleton key={i} className="h-6 w-24 rounded-full" />
+								))}
+							</div>
+						) : assignedPolicies.size === 0 ? (
+							<p className="text-sm text-muted-foreground">
+								No policies assigned. Search below to add.
+							</p>
+						) : (
+							<div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+								{[...assignedPolicies.values()].map((policy) => (
+									<span
+										key={policy.id}
+										className="inline-flex items-center gap-1.5 rounded-full border bg-secondary px-2.5 py-0.5 text-xs font-medium"
+									>
+										<Badge
+											variant={
+												policy.effect === "ALLOW" ? "default" : "destructive"
+											}
+											className="shrink-0 text-[10px] px-1 py-0 h-4"
+										>
+											{policy.effect}
+										</Badge>
+										{policy.name}
+										<button
+											type="button"
+											onClick={() => removePolicy(policy.id)}
+											className="ml-0.5 rounded-full hover:bg-muted-foreground/20 p-0.5 transition-colors"
+											aria-label={`Remove ${policy.name}`}
+										>
+											<X className="size-3" />
+										</button>
+									</span>
+								))}
+							</div>
+						)}
+						{isEmpty && hasChanged && (
+							<p className="text-xs text-destructive">
+								At least 1 policy is required.
+							</p>
+						)}
 					</div>
-
-					{isEmpty && hasChanged && (
-						<p className="text-xs text-destructive -mt-1">
-							At least 1 policy is required.
-						</p>
-					)}
 
 					<Separator />
 
-					<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
-						{isLoading ? (
-							Array.from({ length: 5 }).map((_, i) => (
-								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-								<Skeleton key={i} className="h-16 w-full rounded-lg" />
-							))
-						) : filteredPolicies.length === 0 ? (
-							<p className="text-sm text-muted-foreground py-6 text-center">
-								{search
-									? "No policies match your search."
-									: "No policies available."}
-							</p>
-						) : (
-							filteredPolicies.map((policy) => {
-								const checked = selectedIds.has(policy.id);
-								return (
-									<label
+					{/* Search to add */}
+					<div className="flex flex-col gap-2 flex-1 overflow-hidden">
+						<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+							Add policies
+						</span>
+						<div className="relative">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+							<Input
+								placeholder="Search policies…"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="pl-9"
+							/>
+						</div>
+						<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
+							{!debouncedQuery ? (
+								<p className="text-sm text-muted-foreground py-4 text-center">
+									Type to search for policies to add.
+								</p>
+							) : isSearching ? (
+								Array.from({ length: 3 }).map((_, i) => (
+									// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+									<Skeleton key={i} className="h-12 w-full rounded-lg" />
+								))
+							) : filteredSearchResults.length === 0 ? (
+								<p className="text-sm text-muted-foreground py-4 text-center">
+									No policies found.
+								</p>
+							) : (
+								filteredSearchResults.map((policy) => (
+									<button
 										key={policy.id}
-										className="flex items-start gap-3 rounded-lg px-3 py-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
+										type="button"
+										onClick={() => addPolicy(policy)}
+										className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-left hover:bg-muted/50 transition-colors w-full"
 									>
-										<input
-											type="checkbox"
-											className="mt-0.5 size-4 rounded border-input accent-primary shrink-0"
-											checked={checked}
-											onChange={() => togglePolicy(policy.id)}
-										/>
-										<div className="flex flex-col gap-1 min-w-0 flex-1">
-											<div className="flex items-center gap-2">
-												<span className="text-sm font-medium leading-tight truncate">
-													{policy.name}
-												</span>
-												<Badge
-													variant={
-														policy.effect === "ALLOW"
-															? "default"
-															: "destructive"
-													}
-													className="shrink-0 text-[10px] px-1.5 py-0"
-												>
-													{policy.effect}
-												</Badge>
-											</div>
+										<Badge
+											variant={
+												policy.effect === "ALLOW" ? "default" : "destructive"
+											}
+											className="shrink-0 text-[10px] px-1.5 py-0 mt-0.5"
+										>
+											{policy.effect}
+										</Badge>
+										<div className="flex flex-col gap-0.5 min-w-0">
+											<span className="text-sm font-medium leading-tight">
+												{policy.name}
+											</span>
 											{policy.description && (
-												<span className="text-xs text-muted-foreground truncate">
+												<span className="text-xs text-muted-foreground truncate w-full">
 													{policy.description}
 												</span>
 											)}
 										</div>
-									</label>
-								);
-							})
-						)}
+									</button>
+								))
+							)}
+						</div>
 					</div>
 				</div>
 
