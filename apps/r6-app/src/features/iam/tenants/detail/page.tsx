@@ -2,7 +2,7 @@ import type { IdentitySafe, Role } from "@r6/schemas";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { ChevronLeft } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useListIdentitiesQuery } from "@/api/identities";
 import { useListRolesQuery } from "@/api/roles";
 import { useGetTenantQuery } from "@/api/tenants";
@@ -100,34 +100,51 @@ export default function TenantDetailPage() {
 		{ pageIndex: 0, pageSize: PAGE_SIZE },
 	);
 	const [identitySearch, setIdentitySearch] = useState("");
+	const [debouncedIdentitySearch, setDebouncedIdentitySearch] = useState("");
 
 	const [rolePagination, setRolePagination] = useState<PaginationState>({
 		pageIndex: 0,
 		pageSize: PAGE_SIZE,
 	});
 	const [roleSearch, setRoleSearch] = useState("");
+	const [debouncedRoleSearch, setDebouncedRoleSearch] = useState("");
 
 	const [selectedIdentityId, setSelectedIdentityId] = useState<string | null>(
 		null,
 	);
 
+	useEffect(() => {
+		const id = setTimeout(() => setDebouncedIdentitySearch(identitySearch), 300);
+		return () => clearTimeout(id);
+	}, [identitySearch]);
+
+	useEffect(() => {
+		const id = setTimeout(() => setDebouncedRoleSearch(roleSearch), 300);
+		return () => clearTimeout(id);
+	}, [roleSearch]);
+
 	const { data: tenant, isLoading: tenantLoading } =
 		useGetTenantQuery(tenantSlug);
 
 	const { data: identities, isLoading: identitiesLoading } =
-		useListIdentitiesQuery(tenantSlug, {
-			page: identityPagination.pageIndex + 1,
-			limit: identityPagination.pageSize,
-			search: identitySearch || undefined,
-		});
+		useListIdentitiesQuery(
+			tenantSlug,
+			{
+				page: identityPagination.pageIndex + 1,
+				limit: identityPagination.pageSize,
+				search: debouncedIdentitySearch || undefined,
+			},
+			{ staleTime: 5 * 60 * 1000 },
+		);
 
 	const { data: roles, isLoading: rolesLoading } = useListRolesQuery(
 		tenantSlug,
 		{
 			page: rolePagination.pageIndex + 1,
 			limit: rolePagination.pageSize,
-			search: roleSearch || undefined,
+			search: debouncedRoleSearch || undefined,
 		},
+		{ staleTime: 5 * 60 * 1000 },
 	);
 
 	return (

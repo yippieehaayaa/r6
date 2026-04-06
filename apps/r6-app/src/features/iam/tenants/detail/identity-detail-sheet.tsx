@@ -42,6 +42,7 @@ export function IdentityDetailSheet({
 	const { data: identity, isLoading } = useGetIdentityWithRolesQuery(
 		tenantSlug,
 		identityId ?? "",
+		{ enabled: open && !!identityId },
 	);
 
 	return (
