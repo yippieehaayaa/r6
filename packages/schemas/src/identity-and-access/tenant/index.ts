@@ -85,6 +85,21 @@ export const UpdateTenantSchema = TenantSchema.omit({
 
 export type UpdateTenantInput = z.infer<typeof UpdateTenantSchema>;
 
+// ── Create response (tenant + one-time owner credentials) ──────────────────
+
+/**
+ * Returned by POST /tenants (ADMIN-only).
+ * ownerCredentials is shown exactly once — the caller must persist it.
+ */
+export const CreateTenantResponseSchema = TenantSchema.extend({
+  ownerCredentials: z.object({
+    username: z.string(),
+    password: z.string(),
+  }),
+});
+
+export type CreateTenantResponse = z.infer<typeof CreateTenantResponseSchema>;
+
 // ── List query params ───────────────────────────────────────
 
 export const ListTenantsQuerySchema = ListQuerySchema;

@@ -54,6 +54,72 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
   });
 };
 
+// ─── Create with defaults ─────────────────────────────────────────────────────
+
+// Atomically creates a Tenant, its two standard protected roles
+// (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
+// identity using the pre-computed password hash/salt.
+//
+// The owner's username is derived from the slug: "${slug.slice(0,58)}-owner"
+// (capped so the total stays within the 64-char username limit).
+//
+// Caller is responsible for pre-computing hash + salt (bcrypt is async and
+// cannot run safely inside a Prisma interactive transaction callback).
+//
+// Returns: { tenant, ownerUsername }
+const createTenantWithDefaults = async (
+  input: CreateTenantInput,
+  ownerHash: string,
+  ownerSalt: string,
+): Promise<{ tenant: Tenant; ownerUsername: string }> => {
+  return prisma.$transaction(async (tx) => {
+    const tenant = await tx.tenant.create({
+      data: {
+        name: input.name,
+        slug: input.slug,
+        moduleAccess: { set: input.moduleAccess },
+      },
+    });
+
+    // Both roles only depend on tenant.id — create them in parallel.
+    const [ownerRole] = await Promise.all([
+      tx.role.create({
+        data: {
+          tenantId: tenant.id,
+          name: "tenant-owner",
+          description:
+            "Tenant owner — bootstrapped at tenant creation. Unique per tenant.",
+        },
+      }),
+      tx.role.create({
+        data: {
+          tenantId: tenant.id,
+          name: "tenant-admin",
+          description: "Tenant administrator — full IAM management access.",
+        },
+      }),
+    ]);
+
+    const ownerUsername = `${tenant.slug.slice(0, 58)}-owner`;
+
+    await tx.identity.create({
+      data: {
+        tenantId: tenant.id,
+        username: ownerUsername,
+        email: null,
+        hash: ownerHash,
+        salt: ownerSalt,
+        kind: "USER",
+        status: "ACTIVE",
+        mustChangePassword: true,
+        roles: { connect: { id: ownerRole.id } },
+      },
+    });
+
+    return { tenant, ownerUsername };
+  });
+};
+
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted tenant by primary key.
@@ -147,6 +213,7 @@ const restoreTenant = async (id: string): Promise<Tenant> => {
 
 export {
   createTenant,
+  createTenantWithDefaults,
   getTenantById,
   getTenantBySlug,
   getTenantByName,

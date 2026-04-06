@@ -5,7 +5,6 @@ import {
   NullableTimestampSchema,
   TenantScopedSchema,
 } from "../base.schema";
-import { ProtectedRoleSchema } from "../constants";
 import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 
 // ============================================================
@@ -203,7 +202,9 @@ export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 
 /**
  * Used by POST /tenants/:slug/provision (requireAdmin)
- * Creates a USER identity and assigns it a protected role (tenant-owner or tenant-admin).
+ * Creates a USER identity and assigns it the tenant-admin role.
+ * The tenant-owner role is reserved — it is created automatically at tenant
+ * creation time and cannot be reassigned via this endpoint.
  * Password field name matches CreateIdentitySchema for consistency.
  */
 export const ProvisionIdentitySchema = z.object({
@@ -220,7 +221,7 @@ export const ProvisionIdentitySchema = z.object({
       /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/,
       "Password must contain at least one special character",
     ),
-  role: ProtectedRoleSchema,
+  role: z.literal("tenant-admin"),
 });
 
 export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;

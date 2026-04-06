@@ -32,13 +32,17 @@ import {
 } from "@/components/ui/sheet";
 import { getApiErrorMessage } from "@/lib/api-error";
 
-const ROLE_OPTIONS = PROTECTED_ROLES.map((r) => ({
-	value: r,
-	label: r
-		.split("-")
-		.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-		.join(" "),
-}));
+// tenant-owner is bootstrapped automatically at tenant creation time and
+// cannot be re-assigned via this endpoint. Only tenant-admin is provisionable.
+const ROLE_OPTIONS = PROTECTED_ROLES.filter((r) => r !== "tenant-owner").map(
+	(r) => ({
+		value: r,
+		label: r
+			.split("-")
+			.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+			.join(" "),
+	}),
+);
 
 interface Props {
 	open: boolean;
@@ -67,7 +71,7 @@ export function ProvisionIdentitySheet({
 			username: "",
 			email: undefined,
 			plainPassword: "",
-			role: "tenant-owner",
+			role: "tenant-admin",
 		},
 	});
 
