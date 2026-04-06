@@ -34,7 +34,7 @@ router.get(
 router.get(
   "/:id",
   requireTenantScope(),
-  requireSelfOrAdminOrTenantOwner(),
+  requireSelfOrAdminOrTenantOwner({ orPermission: "iam:identity:read" }),
   getIdentity,
 );
 

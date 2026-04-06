@@ -58,8 +58,8 @@ export const IdentitySchema = TenantScopedSchema.extend({
    */
   email: z
     .string()
-    .regex(emailRegex, "Must be a valid e-mail address (RFC 5321)")
-    .max(254, "E-mail must not exceed 254 characters (RFC 5321)")
+    .regex(emailRegex, "Must be a valid e-mail address")
+    .max(254, "E-mail must not exceed 254 characters")
     .toLowerCase()
     .nullable(),
 

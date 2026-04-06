@@ -32,6 +32,7 @@ import {
 import { getApiErrorMessage } from "@/lib/api-error";
 import { IdentitiesTable } from "./identities-table";
 import { IdentitySheet } from "./identity-sheet";
+import { ManageRolesSheet } from "./manage-roles-sheet";
 
 const PAGE_SIZE = 20;
 
@@ -41,6 +42,7 @@ export default function IdentitiesPage() {
 	const canCreate = !isAdmin && hasPermission("iam:identity:create");
 	const canUpdate = !isAdmin && hasPermission("iam:identity:update");
 	const canDelete = !isAdmin && hasPermission("iam:identity:delete");
+	const canManageRoles = !isAdmin && hasPermission("iam:identity:update");
 	// For tenant-owners the slug comes from the JWT; for admins they pick a tenant.
 	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
 		claims?.tenantSlug ?? "",
@@ -64,6 +66,8 @@ export default function IdentitiesPage() {
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<IdentitySafe | null>(null);
+	const [manageRolesTarget, setManageRolesTarget] =
+		useState<IdentitySafe | null>(null);
 
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -185,8 +189,10 @@ export default function IdentitiesPage() {
 						onEdit={handleEdit}
 						onDelete={handleDelete}
 						onRestore={handleRestore}
-						canUpdate={canUpdate}
-						canDelete={canDelete}
+					onManageRoles={setManageRolesTarget}
+					canUpdate={canUpdate}
+					canDelete={canDelete}
+					canManageRoles={canManageRoles}
 						rowCount={data?.total}
 						paginationState={pagination}
 						onPaginationChange={setPagination}
@@ -204,6 +210,13 @@ export default function IdentitiesPage() {
 				onOpenChange={handleSheetOpenChange}
 				tenantSlug={activeTenantSlug}
 				identity={editTarget}
+			/>
+
+			<ManageRolesSheet
+				open={!!manageRolesTarget}
+				onOpenChange={(open) => !open && setManageRolesTarget(null)}
+				tenantSlug={activeTenantSlug}
+				identity={manageRolesTarget}
 			/>
 
 			<AlertDialog

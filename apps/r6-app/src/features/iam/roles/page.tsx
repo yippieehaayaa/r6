@@ -23,17 +23,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { RoleSheet } from "./role-sheet";
+import { ManagePoliciesSheet } from "./manage-policies-sheet";
 import { RolesTable } from "./roles-table";
 
 const PAGE_SIZE = 20;
 
 export default function RolesPage() {
-	const { claims, hasPermission } = useAuth();
+	const { claims, hasPermission, hasRole } = useAuth();
 	const isAdmin = claims?.kind === "ADMIN";
 	const canCreate = !isAdmin && hasPermission("iam:role:create");
 	const canUpdate = !isAdmin && hasPermission("iam:role:update");
 	const canDelete = !isAdmin && hasPermission("iam:role:delete");
 	const canRestore = isAdmin;
+	const canManagePolicies = isAdmin || hasRole("tenant-owner");
 	const tenantSlug = claims?.tenantSlug ?? "";
 	const queryClient = useQueryClient();
 
@@ -46,6 +48,8 @@ export default function RolesPage() {
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<Role | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
+	const [managePoliciesTarget, setManagePoliciesTarget] =
+		useState<Role | null>(null);
 
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -133,9 +137,11 @@ export default function RolesPage() {
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 					onRestore={handleRestore}
+					onManagePolicies={setManagePoliciesTarget}
 					canUpdate={canUpdate}
 					canDelete={canDelete}
 					canRestore={canRestore}
+					canManagePolicies={canManagePolicies}
 					rowCount={data?.total}
 					paginationState={pagination}
 					onPaginationChange={setPagination}
@@ -154,26 +160,33 @@ export default function RolesPage() {
 				role={editTarget}
 			/>
 
-			<AlertDialog
-				open={!!deleteTarget}
-				onOpenChange={(open) => !open && setDeleteTarget(null)}
-			>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>Delete role?</AlertDialogTitle>
-						<AlertDialogDescription>
-							<strong>{deleteTarget?.name}</strong> will be soft-deleted. Any
-							identities currently assigned this role will lose its permissions.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>Cancel</AlertDialogCancel>
-						<AlertDialogAction variant="destructive" onClick={confirmDelete}>
-							Delete
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</div>
+		<ManagePoliciesSheet
+			open={!!managePoliciesTarget}
+			onOpenChange={(open) => !open && setManagePoliciesTarget(null)}
+			tenantSlug={tenantSlug}
+			role={managePoliciesTarget}
+		/>
+
+		<AlertDialog
+			open={!!deleteTarget}
+			onOpenChange={(open) => !open && setDeleteTarget(null)}
+		>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>Delete role?</AlertDialogTitle>
+					<AlertDialogDescription>
+						<strong>{deleteTarget?.name}</strong> will be soft-deleted. Any
+						identities currently assigned this role will lose its permissions.
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>Cancel</AlertDialogCancel>
+					<AlertDialogAction variant="destructive" onClick={confirmDelete}>
+						Delete
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+	</div>
 	);
 }

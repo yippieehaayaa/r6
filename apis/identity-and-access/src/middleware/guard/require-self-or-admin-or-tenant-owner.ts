@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../lib/errors";
+import { checkPermission } from "../../lib/jwt";
 import type { AuthJwtPayload } from "../auth";
 
 // Allows:
@@ -7,11 +8,18 @@ import type { AuthJwtPayload } from "../auth";
 //   - USER or SERVICE that holds the "tenant-owner" role within the
 //     target tenant (tenantSlug match + role check)
 //   - The identity whose primary key matches :id (acting on themselves)
+//   - Optionally: any identity with a specific permission (orPermission)
 //
 // Used for per-identity read/update routes where a regular user may only
 // operate on their own record, while admins and tenant owners can reach any.
+
+interface Options {
+  orPermission?: string;
+}
+
 export const requireSelfOrAdminOrTenantOwner =
-  () => (req: Request, _res: Response, next: NextFunction) => {
+  (options: Options = {}) =>
+  (req: Request, _res: Response, next: NextFunction) => {
     const payload = req.jwtPayload as AuthJwtPayload | undefined;
 
     if (!payload) {
@@ -28,6 +36,13 @@ export const requireSelfOrAdminOrTenantOwner =
     }
 
     if (payload.sub === req.params.id) return next();
+
+    if (
+      options.orPermission &&
+      checkPermission(options.orPermission, payload.permissions ?? [])
+    ) {
+      return next();
+    }
 
     return next(
       new AppError(

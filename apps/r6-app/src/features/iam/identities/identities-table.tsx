@@ -4,7 +4,7 @@ import type {
 	OnChangeFn,
 	PaginationState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -38,8 +38,10 @@ interface Props {
 	onEdit: (identity: IdentitySafe) => void;
 	onDelete: (identity: IdentitySafe) => void;
 	onRestore: (identity: IdentitySafe) => void;
+	onManageRoles: (identity: IdentitySafe) => void;
 	canUpdate: boolean;
 	canDelete: boolean;
+	canManageRoles: boolean;
 	rowCount?: number;
 	paginationState?: PaginationState;
 	onPaginationChange?: OnChangeFn<PaginationState>;
@@ -53,8 +55,10 @@ export function IdentitiesTable({
 	onEdit,
 	onDelete,
 	onRestore,
+	onManageRoles,
 	canUpdate,
 	canDelete,
+	canManageRoles,
 	rowCount,
 	paginationState,
 	onPaginationChange,
@@ -113,7 +117,7 @@ export function IdentitiesTable({
 				enableSorting: false,
 				cell: ({ row }) => {
 					const identity = row.original;
-					if (!canUpdate && !canDelete) return null;
+					if (!canUpdate && !canDelete && !canManageRoles) return null;
 					return (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -127,6 +131,12 @@ export function IdentitiesTable({
 									<DropdownMenuItem onSelect={() => onEdit(identity)}>
 										<Pencil />
 										Edit
+									</DropdownMenuItem>
+								)}
+								{canManageRoles && !identity.deletedAt && (
+									<DropdownMenuItem onSelect={() => onManageRoles(identity)}>
+										<ShieldCheck />
+										Manage Roles
 									</DropdownMenuItem>
 								)}
 								{canDelete &&
@@ -150,7 +160,7 @@ export function IdentitiesTable({
 				},
 			},
 		],
-		[canUpdate, canDelete, onEdit, onDelete, onRestore],
+		[canUpdate, canDelete, canManageRoles, onEdit, onDelete, onRestore, onManageRoles],
 	);
 
 	return (
