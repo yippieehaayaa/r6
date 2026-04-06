@@ -31,7 +31,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { ManagePoliciesSheet } from "./manage-policies-sheet";
 import { RoleSheet } from "./role-sheet";
 import { RolesTable } from "./roles-table";
 
@@ -44,10 +43,6 @@ export default function RolesPage() {
 	const canUpdate = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_UPDATE);
 	const canDelete = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_DELETE);
 	const canRestore = isAdmin;
-	// Only tenant-admin (who has iam:role:update) may manage policy attachments.
-	// ADMIN is blocked from role writes; tenant-owner only has read.
-	const canManagePolicies =
-		!isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_UPDATE);
 	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
 		claims?.tenantSlug ?? "",
 	);
@@ -70,9 +65,6 @@ export default function RolesPage() {
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<Role | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
-	const [managePoliciesTarget, setManagePoliciesTarget] = useState<Role | null>(
-		null,
-	);
 
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -194,11 +186,9 @@ export default function RolesPage() {
 						onEdit={handleEdit}
 						onDelete={handleDelete}
 						onRestore={handleRestore}
-						onManagePolicies={setManagePoliciesTarget}
 						canUpdate={canUpdate}
 						canDelete={canDelete}
 						canRestore={canRestore}
-						canManagePolicies={canManagePolicies}
 						rowCount={data?.total}
 						paginationState={pagination}
 						onPaginationChange={setPagination}
@@ -216,13 +206,6 @@ export default function RolesPage() {
 				onOpenChange={handleSheetOpenChange}
 				tenantSlug={activeTenantSlug}
 				role={editTarget}
-			/>
-
-			<ManagePoliciesSheet
-				open={!!managePoliciesTarget}
-				onOpenChange={(open) => !open && setManagePoliciesTarget(null)}
-				tenantSlug={activeTenantSlug}
-				role={managePoliciesTarget}
 			/>
 
 			<AlertDialog

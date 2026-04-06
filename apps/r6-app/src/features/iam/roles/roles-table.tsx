@@ -4,13 +4,7 @@ import type {
 	OnChangeFn,
 	PaginationState,
 } from "@tanstack/react-table";
-import {
-	MoreHorizontal,
-	Pencil,
-	RotateCcw,
-	ShieldCheck,
-	Trash2,
-} from "lucide-react";
+import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -28,11 +22,9 @@ interface Props {
 	onEdit: (role: Role) => void;
 	onDelete: (role: Role) => void;
 	onRestore: (role: Role) => void;
-	onManagePolicies: (role: Role) => void;
 	canUpdate: boolean;
 	canDelete: boolean;
 	canRestore: boolean;
-	canManagePolicies: boolean;
 	rowCount?: number;
 	paginationState?: PaginationState;
 	onPaginationChange?: OnChangeFn<PaginationState>;
@@ -46,11 +38,9 @@ export function RolesTable({
 	onEdit,
 	onDelete,
 	onRestore,
-	onManagePolicies,
 	canUpdate,
 	canDelete,
 	canRestore,
-	canManagePolicies,
 	rowCount,
 	paginationState,
 	onPaginationChange,
@@ -102,7 +92,6 @@ export function RolesTable({
 					const role = row.original;
 					const hasActions =
 						canUpdate ||
-						(canManagePolicies && !role.deletedAt) ||
 						(canDelete && !role.deletedAt) ||
 						(canRestore && !!role.deletedAt);
 					if (!hasActions) return null;
@@ -121,12 +110,7 @@ export function RolesTable({
 										Edit
 									</DropdownMenuItem>
 								)}
-								{canManagePolicies && !role.deletedAt && (
-									<DropdownMenuItem onSelect={() => onManagePolicies(role)}>
-										<ShieldCheck />
-										Manage Policies
-									</DropdownMenuItem>
-								)}
+
 								{canDelete && !role.deletedAt && (
 									<DropdownMenuItem
 										variant="destructive"
@@ -148,16 +132,7 @@ export function RolesTable({
 				},
 			},
 		],
-		[
-			canUpdate,
-			canDelete,
-			canRestore,
-			canManagePolicies,
-			onEdit,
-			onDelete,
-			onRestore,
-			onManagePolicies,
-		],
+		[canUpdate, canDelete, canRestore, onEdit, onDelete, onRestore],
 	);
 
 	return (
