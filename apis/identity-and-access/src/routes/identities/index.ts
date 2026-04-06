@@ -2,7 +2,9 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
   requireNotAdmin,
+  requireNotSelf,
   requirePermission,
+  requireSelfOrAdminOrTenantOwner,
   requireTenantScope,
 } from "../../middleware/guard";
 import { assignRole } from "./controller/assign-role";
@@ -32,7 +34,7 @@ router.get(
 router.get(
   "/:id",
   requireTenantScope(),
-  requirePermission("iam:identity:read"),
+  requireSelfOrAdminOrTenantOwner(),
   getIdentity,
 );
 
@@ -47,6 +49,7 @@ router.post(
 router.patch(
   "/:id",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
   requirePermission("iam:identity:update"),
   updateIdentityHandler,
@@ -54,6 +57,7 @@ router.patch(
 router.delete(
   "/:id",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
   requirePermission("iam:identity:delete"),
   remove,
@@ -61,6 +65,7 @@ router.delete(
 router.post(
   "/:id/restore",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
   requirePermission("iam:identity:delete"),
   restore,
@@ -70,6 +75,7 @@ router.post(
 router.post(
   "/:id/roles",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
   requirePermission("iam:identity:update"),
   assignRole,
@@ -77,6 +83,7 @@ router.post(
 router.delete(
   "/:id/roles/:roleId",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
   requirePermission("iam:identity:update"),
   removeRole,
@@ -84,6 +91,7 @@ router.delete(
 router.put(
   "/:id/roles",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
   requirePermission("iam:identity:update"),
   setRoles,
