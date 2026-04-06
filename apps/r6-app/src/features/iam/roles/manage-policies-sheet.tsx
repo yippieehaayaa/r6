@@ -48,7 +48,10 @@ export function ManagePoliciesSheet({
 		});
 
 	const { data: allPolicies, isLoading: isLoadingPolicies } =
-		useListPoliciesQuery({ limit: 200 }, { staleTime: 10 * 60 * 1000 });
+		useListPoliciesQuery(
+			{ limit: 200 },
+			{ staleTime: 10 * 60 * 1000, enabled: open && !!role },
+		);
 
 	// Initialise selection once current policies load
 	useEffect(() => {

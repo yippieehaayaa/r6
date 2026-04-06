@@ -23,7 +23,7 @@ export async function listPoliciesFn(
 
 export function useListPoliciesQuery(
 	params: ListPoliciesParams = {},
-	options?: { staleTime?: number; gcTime?: number },
+	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
 		queryKey: ["policies", params],
