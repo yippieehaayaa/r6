@@ -5,7 +5,11 @@ import type { PaginationState } from "@tanstack/react-table";
 import { Building2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useListRolesQuery, useRemoveRoleMutation, useRestoreRoleMutation } from "@/api/roles";
+import {
+	useListRolesQuery,
+	useRemoveRoleMutation,
+	useRestoreRoleMutation,
+} from "@/api/roles";
 import { useListTenantsQuery } from "@/api/tenants";
 import { useAuth } from "@/auth";
 import {
@@ -109,7 +113,9 @@ export default function RolesPage() {
 			{ tenantSlug: activeTenantSlug, id: deleteTarget.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["roles", activeTenantSlug] });
+					queryClient.invalidateQueries({
+						queryKey: ["roles", activeTenantSlug],
+					});
 					toast.success("Role deleted.");
 					setDeleteTarget(null);
 				},
@@ -124,7 +130,9 @@ export default function RolesPage() {
 			{ tenantSlug: activeTenantSlug, id: role.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["roles", activeTenantSlug] });
+					queryClient.invalidateQueries({
+						queryKey: ["roles", activeTenantSlug],
+					});
 					toast.success("Role restored.");
 				},
 				onError: (err) => toast.error(getApiErrorMessage(err)),
@@ -150,57 +158,57 @@ export default function RolesPage() {
 			</div>
 
 			<div className="rounded-xl border bg-card p-4">
-			{isAdmin && !activeTenantSlug ? (
-				<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
-					<Building2 className="h-10 w-10 text-muted-foreground/50" />
-					<div>
-						<p className="font-medium">No tenant selected</p>
-						<p className="text-sm text-muted-foreground">
-							Choose a tenant to view its roles.
-						</p>
+				{isAdmin && !activeTenantSlug ? (
+					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
+						<Building2 className="h-10 w-10 text-muted-foreground/50" />
+						<div>
+							<p className="font-medium">No tenant selected</p>
+							<p className="text-sm text-muted-foreground">
+								Choose a tenant to view its roles.
+							</p>
+						</div>
+						<Select
+							value={selectedTenantSlug}
+							onValueChange={(v) => {
+								setSelectedTenantSlug(v);
+								setPagination((p) => ({ ...p, pageIndex: 0 }));
+							}}
+						>
+							<SelectTrigger className="w-64">
+								<SelectValue placeholder="Select a tenant…" />
+							</SelectTrigger>
+							<SelectContent>
+								{(tenantsData?.data ?? []).map((t) => (
+									<SelectItem key={t.slug} value={t.slug}>
+										{t.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
 					</div>
-					<Select
-						value={selectedTenantSlug}
-						onValueChange={(v) => {
-							setSelectedTenantSlug(v);
+				) : (
+					<RolesTable
+						key={activeTenantSlug}
+						data={data?.data ?? []}
+						isLoading={isLoading}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+						onRestore={handleRestore}
+						onManagePolicies={setManagePoliciesTarget}
+						canUpdate={canUpdate}
+						canDelete={canDelete}
+						canRestore={canRestore}
+						canManagePolicies={canManagePolicies}
+						rowCount={data?.total}
+						paginationState={pagination}
+						onPaginationChange={setPagination}
+						filterValue={search}
+						onFilterChange={(v) => {
+							setSearch(v);
 							setPagination((p) => ({ ...p, pageIndex: 0 }));
 						}}
-					>
-						<SelectTrigger className="w-64">
-							<SelectValue placeholder="Select a tenant…" />
-						</SelectTrigger>
-						<SelectContent>
-							{(tenantsData?.data ?? []).map((t) => (
-								<SelectItem key={t.slug} value={t.slug}>
-									{t.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				</div>
-			) : (
-				<RolesTable
-					key={activeTenantSlug}
-					data={data?.data ?? []}
-					isLoading={isLoading}
-					onEdit={handleEdit}
-					onDelete={handleDelete}
-					onRestore={handleRestore}
-					onManagePolicies={setManagePoliciesTarget}
-					canUpdate={canUpdate}
-					canDelete={canDelete}
-					canRestore={canRestore}
-					canManagePolicies={canManagePolicies}
-					rowCount={data?.total}
-					paginationState={pagination}
-					onPaginationChange={setPagination}
-					filterValue={search}
-					onFilterChange={(v) => {
-						setSearch(v);
-						setPagination((p) => ({ ...p, pageIndex: 0 }));
-					}}
-				/>
-			)}
+					/>
+				)}
 			</div>
 
 			<RoleSheet
