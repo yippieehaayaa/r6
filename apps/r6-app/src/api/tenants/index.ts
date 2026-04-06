@@ -1,4 +1,5 @@
 export * from "./mutations/create-tenant";
+export * from "./mutations/provision-identity";
 export * from "./mutations/remove-tenant";
 export * from "./mutations/restore-tenant";
 export * from "./mutations/update-tenant";

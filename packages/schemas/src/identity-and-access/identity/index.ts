@@ -5,6 +5,7 @@ import {
   NullableTimestampSchema,
   TenantScopedSchema,
 } from "../base.schema";
+import { ProtectedRoleSchema } from "../constants";
 import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 
 // ============================================================
@@ -197,6 +198,32 @@ export const ChangePasswordSchema = z
   });
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+
+// ── Provision payload (ADMIN-only, bootstrap tenant identities) ────────────
+
+/**
+ * Used by POST /tenants/:slug/provision (requireAdmin)
+ * Creates a USER identity and assigns it a protected role (tenant-owner or tenant-admin).
+ * Password field name matches CreateIdentitySchema for consistency.
+ */
+export const ProvisionIdentitySchema = z.object({
+  username: IdentitySchema.shape.username,
+  email: IdentitySchema.shape.email.optional(),
+  plainPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password must not exceed 128 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/\d/, "Password must contain at least one digit")
+    .regex(
+      /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/,
+      "Password must contain at least one special character",
+    ),
+  role: ProtectedRoleSchema,
+});
+
+export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;
 
 // ── List query params ───────────────────────────────────────
 

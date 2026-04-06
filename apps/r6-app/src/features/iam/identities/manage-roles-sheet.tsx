@@ -1,4 +1,5 @@
 import type { IdentitySafe } from "@r6/schemas";
+import { PROTECTED_ROLES } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -73,13 +74,27 @@ export function ManageRolesSheet({
 
 	const filteredRoles = useMemo(() => {
 		const q = search.trim().toLowerCase();
-		if (!q) return allRoles?.data ?? [];
-		return (allRoles?.data ?? []).filter(
+		const assignable = (allRoles?.data ?? []).filter(
+			(r) => !(PROTECTED_ROLES as readonly string[]).includes(r.name),
+		);
+		if (!q) return assignable;
+		return assignable.filter(
 			(r) =>
 				r.name.toLowerCase().includes(q) ||
 				r.description?.toLowerCase().includes(q),
 		);
 	}, [allRoles, search]);
+
+	// Protected roles already assigned to this identity (read-only display)
+	const lockedRoles = useMemo(
+		() =>
+			(allRoles?.data ?? []).filter(
+				(r) =>
+					(PROTECTED_ROLES as readonly string[]).includes(r.name) &&
+					initialIds.has(r.id),
+			),
+		[allRoles, initialIds],
+	);
 
 	const hasChanged = useMemo(() => {
 		if (selectedIds.size !== initialIds.size) return true;
@@ -138,6 +153,25 @@ export function ManageRolesSheet({
 							className="pl-9"
 						/>
 					</div>
+
+					{lockedRoles.length > 0 && (
+						<div className="flex flex-col gap-1">
+							<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">
+								Protected (read-only)
+							</span>
+							<div className="flex flex-wrap gap-1.5">
+								{lockedRoles.map((role) => (
+									<span
+										key={role.id}
+										className="inline-flex items-center gap-1 rounded-full border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground select-none"
+									>
+										{role.name}
+									</span>
+								))}
+							</div>
+							<Separator className="mt-1" />
+						</div>
+					)}
 
 					<div className="flex items-center justify-between">
 						<span className="text-xs text-muted-foreground uppercase tracking-wide font-medium">

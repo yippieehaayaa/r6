@@ -1,3 +1,4 @@
+import { IAM_PERMISSIONS } from "@r6/schemas/identity-and-access";
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
@@ -28,13 +29,15 @@ router.use(authMiddleware());
 router.get(
   "/",
   requireTenantScope(),
-  requirePermission("iam:identity:read"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_READ),
   list,
 );
 router.get(
   "/:id",
   requireTenantScope(),
-  requireSelfOrAdminOrTenantOwner({ orPermission: "iam:identity:read" }),
+  requireSelfOrAdminOrTenantOwner({
+    orPermission: IAM_PERMISSIONS.IDENTITY_READ,
+  }),
   getIdentity,
 );
 
@@ -43,7 +46,7 @@ router.post(
   "/",
   requireNotAdmin(),
   requireTenantScope(),
-  requirePermission("iam:identity:create"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_CREATE),
   createIdentityHandler,
 );
 router.patch(
@@ -51,7 +54,7 @@ router.patch(
   requireNotAdmin(),
   requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
   updateIdentityHandler,
 );
 router.delete(
@@ -59,7 +62,7 @@ router.delete(
   requireNotAdmin(),
   requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:delete"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_DELETE),
   remove,
 );
 router.post(
@@ -67,7 +70,7 @@ router.post(
   requireNotAdmin(),
   requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:delete"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_DELETE),
   restore,
 );
 
@@ -77,7 +80,7 @@ router.post(
   requireNotAdmin(),
   requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
   assignRole,
 );
 router.delete(
@@ -85,7 +88,7 @@ router.delete(
   requireNotAdmin(),
   requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
   removeRole,
 );
 router.put(
@@ -93,7 +96,7 @@ router.put(
   requireNotAdmin(),
   requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
   setRoles,
 );
 

@@ -1,16 +1,18 @@
 import type { IdentitySafe, Role } from "@r6/schemas";
 import { getRouteApi, Link } from "@tanstack/react-router";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useListIdentitiesQuery } from "@/api/identities";
 import { useListRolesQuery } from "@/api/roles";
 import { useGetTenantQuery } from "@/api/tenants";
+import { useAuth } from "@/auth";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { IdentityDetailSheet } from "./identity-detail-sheet";
+import { ProvisionIdentitySheet } from "./provision-identity-sheet";
 
 const routeApi = getRouteApi("/_authenticated/iam/tenants_/$tenantSlug");
 
@@ -95,6 +97,8 @@ const roleColumns: ColumnDef<Role>[] = [
 
 export default function TenantDetailPage() {
 	const { tenantSlug } = routeApi.useParams();
+	const { claims } = useAuth();
+	const isAdmin = claims?.kind === "ADMIN";
 
 	const [identityPagination, setIdentityPagination] = useState<PaginationState>(
 		{ pageIndex: 0, pageSize: PAGE_SIZE },
@@ -112,9 +116,13 @@ export default function TenantDetailPage() {
 	const [selectedIdentityId, setSelectedIdentityId] = useState<string | null>(
 		null,
 	);
+	const [provisionOpen, setProvisionOpen] = useState(false);
 
 	useEffect(() => {
-		const id = setTimeout(() => setDebouncedIdentitySearch(identitySearch), 300);
+		const id = setTimeout(
+			() => setDebouncedIdentitySearch(identitySearch),
+			300,
+		);
 		return () => clearTimeout(id);
 	}, [identitySearch]);
 
@@ -193,11 +201,19 @@ export default function TenantDetailPage() {
 
 			{/* Identities section */}
 			<div className="rounded-xl border bg-card p-4">
-				<div className="mb-4">
-					<h2 className="text-base font-semibold">Identities</h2>
-					<p className="text-sm text-muted-foreground">
-						Members belonging to this tenant.
-					</p>
+				<div className="flex items-center justify-between mb-4">
+					<div>
+						<h2 className="text-base font-semibold">Identities</h2>
+						<p className="text-sm text-muted-foreground">
+							Members belonging to this tenant.
+						</p>
+					</div>
+					{isAdmin && (
+						<Button size="sm" onClick={() => setProvisionOpen(true)}>
+							<UserPlus className="size-4" />
+							Provision Identity
+						</Button>
+					)}
 				</div>
 				<DataTable
 					columns={identityColumns}
@@ -246,6 +262,13 @@ export default function TenantDetailPage() {
 				onOpenChange={(open) => !open && setSelectedIdentityId(null)}
 				tenantSlug={tenantSlug}
 				identityId={selectedIdentityId}
+			/>
+
+			{/* Provision identity drawer (ADMIN only) */}
+			<ProvisionIdentitySheet
+				open={provisionOpen}
+				onOpenChange={setProvisionOpen}
+				tenantSlug={tenantSlug}
 			/>
 		</div>
 	);

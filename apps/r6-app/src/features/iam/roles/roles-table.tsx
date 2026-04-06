@@ -4,7 +4,13 @@ import type {
 	OnChangeFn,
 	PaginationState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
+import {
+	MoreHorizontal,
+	Pencil,
+	RotateCcw,
+	ShieldCheck,
+	Trash2,
+} from "lucide-react";
 import { useMemo } from "react";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -94,7 +100,8 @@ export function RolesTable({
 				enableSorting: false,
 				cell: ({ row }) => {
 					const role = row.original;
-					if (!canUpdate && !canDelete && !canRestore && !canManagePolicies) return null;
+					if (!canUpdate && !canDelete && !canRestore && !canManagePolicies)
+						return null;
 					return (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -137,7 +144,16 @@ export function RolesTable({
 				},
 			},
 		],
-		[canUpdate, canDelete, canRestore, canManagePolicies, onEdit, onDelete, onRestore, onManagePolicies],
+		[
+			canUpdate,
+			canDelete,
+			canRestore,
+			canManagePolicies,
+			onEdit,
+			onDelete,
+			onRestore,
+			onManagePolicies,
+		],
 	);
 
 	return (

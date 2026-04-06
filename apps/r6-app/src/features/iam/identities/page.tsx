@@ -189,10 +189,10 @@ export default function IdentitiesPage() {
 						onEdit={handleEdit}
 						onDelete={handleDelete}
 						onRestore={handleRestore}
-					onManageRoles={setManageRolesTarget}
-					canUpdate={canUpdate}
-					canDelete={canDelete}
-					canManageRoles={canManageRoles}
+						onManageRoles={setManageRolesTarget}
+						canUpdate={canUpdate}
+						canDelete={canDelete}
+						canManageRoles={canManageRoles}
 						rowCount={data?.total}
 						paginationState={pagination}
 						onPaginationChange={setPagination}

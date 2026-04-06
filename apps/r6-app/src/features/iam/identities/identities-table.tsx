@@ -4,7 +4,13 @@ import type {
 	OnChangeFn,
 	PaginationState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, RotateCcw, ShieldCheck, Trash2 } from "lucide-react";
+import {
+	MoreHorizontal,
+	Pencil,
+	RotateCcw,
+	ShieldCheck,
+	Trash2,
+} from "lucide-react";
 import { useMemo } from "react";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
@@ -160,7 +166,15 @@ export function IdentitiesTable({
 				},
 			},
 		],
-		[canUpdate, canDelete, canManageRoles, onEdit, onDelete, onRestore, onManageRoles],
+		[
+			canUpdate,
+			canDelete,
+			canManageRoles,
+			onEdit,
+			onDelete,
+			onRestore,
+			onManageRoles,
+		],
 	);
 
 	return (

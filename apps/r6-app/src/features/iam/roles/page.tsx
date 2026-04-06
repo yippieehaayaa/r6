@@ -1,4 +1,5 @@
 import type { Role } from "@r6/schemas";
+import { IAM_PERMISSIONS } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
@@ -22,20 +23,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { RoleSheet } from "./role-sheet";
 import { ManagePoliciesSheet } from "./manage-policies-sheet";
+import { RoleSheet } from "./role-sheet";
 import { RolesTable } from "./roles-table";
 
 const PAGE_SIZE = 20;
 
 export default function RolesPage() {
-	const { claims, hasPermission, hasRole } = useAuth();
+	const { claims, hasPermission } = useAuth();
 	const isAdmin = claims?.kind === "ADMIN";
-	const canCreate = !isAdmin && hasPermission("iam:role:create");
-	const canUpdate = !isAdmin && hasPermission("iam:role:update");
-	const canDelete = !isAdmin && hasPermission("iam:role:delete");
+	const canCreate = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_CREATE);
+	const canUpdate = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_UPDATE);
+	const canDelete = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_DELETE);
 	const canRestore = isAdmin;
-	const canManagePolicies = isAdmin || hasRole("tenant-owner");
+	// Only tenant-admin (who has iam:role:update) may manage policy attachments.
+	// ADMIN is blocked from role writes; tenant-owner only has read.
+	const canManagePolicies =
+		!isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_UPDATE);
 	const tenantSlug = claims?.tenantSlug ?? "";
 	const queryClient = useQueryClient();
 
@@ -48,8 +52,9 @@ export default function RolesPage() {
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<Role | null>(null);
 	const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
-	const [managePoliciesTarget, setManagePoliciesTarget] =
-		useState<Role | null>(null);
+	const [managePoliciesTarget, setManagePoliciesTarget] = useState<Role | null>(
+		null,
+	);
 
 	useEffect(() => {
 		const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -160,33 +165,33 @@ export default function RolesPage() {
 				role={editTarget}
 			/>
 
-		<ManagePoliciesSheet
-			open={!!managePoliciesTarget}
-			onOpenChange={(open) => !open && setManagePoliciesTarget(null)}
-			tenantSlug={tenantSlug}
-			role={managePoliciesTarget}
-		/>
+			<ManagePoliciesSheet
+				open={!!managePoliciesTarget}
+				onOpenChange={(open) => !open && setManagePoliciesTarget(null)}
+				tenantSlug={tenantSlug}
+				role={managePoliciesTarget}
+			/>
 
-		<AlertDialog
-			open={!!deleteTarget}
-			onOpenChange={(open) => !open && setDeleteTarget(null)}
-		>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>Delete role?</AlertDialogTitle>
-					<AlertDialogDescription>
-						<strong>{deleteTarget?.name}</strong> will be soft-deleted. Any
-						identities currently assigned this role will lose its permissions.
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>Cancel</AlertDialogCancel>
-					<AlertDialogAction variant="destructive" onClick={confirmDelete}>
-						Delete
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
-	</div>
+			<AlertDialog
+				open={!!deleteTarget}
+				onOpenChange={(open) => !open && setDeleteTarget(null)}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete role?</AlertDialogTitle>
+						<AlertDialogDescription>
+							<strong>{deleteTarget?.name}</strong> will be soft-deleted. Any
+							identities currently assigned this role will lose its permissions.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction variant="destructive" onClick={confirmDelete}>
+							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</div>
 	);
 }

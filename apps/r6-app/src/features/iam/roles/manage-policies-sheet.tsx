@@ -4,7 +4,10 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useListPoliciesQuery } from "@/api/policies";
-import { useGetRoleWithPoliciesQuery, useSetPoliciesMutation } from "@/api/roles";
+import {
+	useGetRoleWithPoliciesQuery,
+	useSetPoliciesMutation,
+} from "@/api/roles";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,10 +48,7 @@ export function ManagePoliciesSheet({
 		});
 
 	const { data: allPolicies, isLoading: isLoadingPolicies } =
-		useListPoliciesQuery(
-			{ limit: 200 },
-			{ staleTime: 10 * 60 * 1000 },
-		);
+		useListPoliciesQuery({ limit: 200 }, { staleTime: 10 * 60 * 1000 });
 
 	// Initialise selection once current policies load
 	useEffect(() => {
