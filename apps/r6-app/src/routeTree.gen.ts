@@ -18,6 +18,7 @@ import { Route as AuthenticatedIamTenantsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedIamRolesRouteImport } from './routes/_authenticated/iam/roles'
 import { Route as AuthenticatedIamPoliciesRouteImport } from './routes/_authenticated/iam/policies'
 import { Route as AuthenticatedIamIdentitiesRouteImport } from './routes/_authenticated/iam/identities'
+import { Route as AuthenticatedIamTenantsTenantSlugRouteImport } from './routes/_authenticated/iam/tenants_.$tenantSlug'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -65,6 +66,12 @@ const AuthenticatedIamIdentitiesRoute =
     path: '/iam/identities',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedIamTenantsTenantSlugRoute =
+  AuthenticatedIamTenantsTenantSlugRouteImport.update({
+    id: '/iam/tenants_/$tenantSlug',
+    path: '/iam/tenants/$tenantSlug',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/iam/roles': typeof AuthenticatedIamRolesRoute
   '/iam/tenants': typeof AuthenticatedIamTenantsRoute
   '/iam/': typeof AuthenticatedIamIndexRoute
+  '/iam/tenants/$tenantSlug': typeof AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -85,6 +93,7 @@ export interface FileRoutesByTo {
   '/iam/roles': typeof AuthenticatedIamRolesRoute
   '/iam/tenants': typeof AuthenticatedIamTenantsRoute
   '/iam': typeof AuthenticatedIamIndexRoute
+  '/iam/tenants/$tenantSlug': typeof AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -97,6 +106,7 @@ export interface FileRoutesById {
   '/_authenticated/iam/roles': typeof AuthenticatedIamRolesRoute
   '/_authenticated/iam/tenants': typeof AuthenticatedIamTenantsRoute
   '/_authenticated/iam/': typeof AuthenticatedIamIndexRoute
+  '/_authenticated/iam/tenants_/$tenantSlug': typeof AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/iam/roles'
     | '/iam/tenants'
     | '/iam/'
+    | '/iam/tenants/$tenantSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/iam/roles'
     | '/iam/tenants'
     | '/iam'
+    | '/iam/tenants/$tenantSlug'
   id:
     | '__root__'
     | '/_authenticated'
@@ -130,6 +142,7 @@ export interface FileRouteTypes {
     | '/_authenticated/iam/roles'
     | '/_authenticated/iam/tenants'
     | '/_authenticated/iam/'
+    | '/_authenticated/iam/tenants_/$tenantSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -202,6 +215,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIamIdentitiesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/iam/tenants_/$tenantSlug': {
+      id: '/_authenticated/iam/tenants_/$tenantSlug'
+      path: '/iam/tenants/$tenantSlug'
+      fullPath: '/iam/tenants/$tenantSlug'
+      preLoaderRoute: typeof AuthenticatedIamTenantsTenantSlugRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -213,6 +233,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIamRolesRoute: typeof AuthenticatedIamRolesRoute
   AuthenticatedIamTenantsRoute: typeof AuthenticatedIamTenantsRoute
   AuthenticatedIamIndexRoute: typeof AuthenticatedIamIndexRoute
+  AuthenticatedIamTenantsTenantSlugRoute: typeof AuthenticatedIamTenantsTenantSlugRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -223,6 +244,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIamRolesRoute: AuthenticatedIamRolesRoute,
   AuthenticatedIamTenantsRoute: AuthenticatedIamTenantsRoute,
   AuthenticatedIamIndexRoute: AuthenticatedIamIndexRoute,
+  AuthenticatedIamTenantsTenantSlugRoute:
+    AuthenticatedIamTenantsTenantSlugRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

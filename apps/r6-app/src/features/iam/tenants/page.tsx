@@ -1,5 +1,6 @@
 import type { Tenant } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import type { PaginationState } from "@tanstack/react-table";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,6 +29,7 @@ const PAGE_SIZE = 20;
 
 export default function TenantsPage() {
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -114,6 +116,12 @@ export default function TenantsPage() {
 					onEdit={handleEdit}
 					onDelete={handleDelete}
 					onRestore={handleRestore}
+					onRowClick={(t) =>
+						navigate({
+							to: "/iam/tenants/$tenantSlug",
+							params: { tenantSlug: t.slug },
+						})
+					}
 					rowCount={data?.total}
 					paginationState={pagination}
 					onPaginationChange={setPagination}

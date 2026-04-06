@@ -497,7 +497,7 @@ async function main() {
 
 	// ── IAM tenant — granular ─────────────────────────────────────────────────
 
-	await upsertPolicy({
+	const tenantReadOnlyPolicy = await upsertPolicy({
 		tenantId: null,
 		name: "iam:tenant:read-only",
 		description: "Read-only access to tenants",
@@ -1060,6 +1060,7 @@ async function main() {
 	await linkPolicyToRole(demoIamManagerRole.id, identityFullAccessPolicy.id, "demo:iam-manager → iam:identity:full-access");
 	await linkPolicyToRole(demoIamManagerRole.id, roleFullAccessPolicy.id, "demo:iam-manager → iam:role:full-access");
 	await linkPolicyToRole(demoIamManagerRole.id, policyReadPolicy.id, "demo:iam-manager → iam:policy:read-only");
+	await linkPolicyToRole(demoIamManagerRole.id, tenantReadOnlyPolicy.id, "demo:iam-manager → iam:tenant:read-only");
 
 	await linkPolicyToRole(demoIamViewerRole.id, iamReadOnlyPolicy.id, "demo:iam-viewer → iam:read-only");
 

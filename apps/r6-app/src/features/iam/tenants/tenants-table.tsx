@@ -22,6 +22,7 @@ interface Props {
 	onEdit: (tenant: Tenant) => void;
 	onDelete: (tenant: Tenant) => void;
 	onRestore: (tenant: Tenant) => void;
+	onRowClick?: (tenant: Tenant) => void;
 	rowCount?: number;
 	paginationState?: PaginationState;
 	onPaginationChange?: OnChangeFn<PaginationState>;
@@ -35,6 +36,7 @@ export function TenantsTable({
 	onEdit,
 	onDelete,
 	onRestore,
+	onRowClick,
 	rowCount,
 	paginationState,
 	onPaginationChange,
@@ -98,34 +100,36 @@ export function TenantsTable({
 				cell: ({ row }) => {
 					const tenant = row.original;
 					return (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="icon-sm">
-									<MoreHorizontal />
-									<span className="sr-only">Open menu</span>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuItem onSelect={() => onEdit(tenant)}>
-									<Pencil />
-									Edit
-								</DropdownMenuItem>
-								{tenant.deletedAt ? (
-									<DropdownMenuItem onSelect={() => onRestore(tenant)}>
-										<RotateCcw />
-										Restore
+						<span role="none" onClick={(e) => e.stopPropagation()}>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" size="icon-sm">
+										<MoreHorizontal />
+										<span className="sr-only">Open menu</span>
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuItem onSelect={() => onEdit(tenant)}>
+										<Pencil />
+										Edit
 									</DropdownMenuItem>
-								) : (
-									<DropdownMenuItem
-										variant="destructive"
-										onSelect={() => onDelete(tenant)}
-									>
-										<Trash2 />
-										Delete
-									</DropdownMenuItem>
-								)}
-							</DropdownMenuContent>
-						</DropdownMenu>
+									{tenant.deletedAt ? (
+										<DropdownMenuItem onSelect={() => onRestore(tenant)}>
+											<RotateCcw />
+											Restore
+										</DropdownMenuItem>
+									) : (
+										<DropdownMenuItem
+											variant="destructive"
+											onSelect={() => onDelete(tenant)}
+										>
+											<Trash2 />
+											Delete
+										</DropdownMenuItem>
+									)}
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</span>
 					);
 				},
 			},
@@ -144,6 +148,7 @@ export function TenantsTable({
 			globalFilterValue={filterValue}
 			onGlobalFilterChange={onFilterChange}
 			filterPlaceholder="Search tenants…"
+			onRowClick={onRowClick}
 		/>
 	);
 }
