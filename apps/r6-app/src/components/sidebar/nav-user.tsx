@@ -8,6 +8,7 @@ import {
 	// Sparkles,
 } from "lucide-react";
 import { LogoutMenuItem } from "#/features/auth/logout";
+import { ChangePasswordMenuItem } from "#/features/me/change-password";
 import { useAuth } from "@/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -16,7 +17,7 @@ import {
 	// DropdownMenuGroup,
 	// DropdownMenuItem,
 	DropdownMenuLabel,
-	// DropdownMenuSeparator,
+	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -101,6 +102,8 @@ export function NavUser() {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator /> */}
+						<ChangePasswordMenuItem />
+						<DropdownMenuSeparator />
 						<LogoutMenuItem />
 					</DropdownMenuContent>
 				</DropdownMenu>
