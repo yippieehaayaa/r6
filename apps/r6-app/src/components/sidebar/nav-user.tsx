@@ -80,8 +80,8 @@ export function NavUser() {
 								</div>
 							</div>
 						</DropdownMenuLabel>
-						{/* <DropdownMenuSeparator />
-						<DropdownMenuGroup>
+						<DropdownMenuSeparator />
+						{/* <DropdownMenuGroup>
 							<DropdownMenuItem>
 								<Sparkles />
 								Upgrade to Pro

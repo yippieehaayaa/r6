@@ -22,16 +22,28 @@ export async function enableTotp(
     }
 
     if (identity.totpEnabled) {
-      throw new AppError(409, "totp_already_enabled", "TOTP is already enabled for this identity");
+      throw new AppError(
+        409,
+        "totp_already_enabled",
+        "TOTP is already enabled for this identity",
+      );
     }
 
     if (!identity.totpSecret) {
-      throw new AppError(400, "totp_setup_required", "Call GET /me/totp/setup first to generate a secret");
+      throw new AppError(
+        400,
+        "totp_setup_required",
+        "Call GET /me/totp/setup first to generate a secret",
+      );
     }
 
     const valid = verifyTotpCode(identity.totpSecret, code);
     if (!valid) {
-      throw new AppError(401, "invalid_totp_code", "TOTP code is incorrect or expired");
+      throw new AppError(
+        401,
+        "invalid_totp_code",
+        "TOTP code is incorrect or expired",
+      );
     }
 
     await activateTotp(identity.id);

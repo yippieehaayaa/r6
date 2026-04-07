@@ -82,7 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		if ("totpRequired" in result && result.totpRequired) {
 			return { totpRequired: true, challengeToken: result.challengeToken };
 		}
-		await hydrateSession(result.accessToken);
+		if ("accessToken" in result) {
+			await hydrateSession(result.accessToken);
+		}
 		return { totpRequired: false };
 	}
 

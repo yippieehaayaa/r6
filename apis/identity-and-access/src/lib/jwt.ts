@@ -166,7 +166,10 @@ export const verifyTotpChallengeToken = async (
     algorithms: ["RS256"],
   });
 
-  if (payload.tokenType !== "totp_challenge" || typeof payload.sub !== "string") {
+  if (
+    payload.tokenType !== "totp_challenge" ||
+    typeof payload.sub !== "string"
+  ) {
     throw new Error("invalid_token_type");
   }
 

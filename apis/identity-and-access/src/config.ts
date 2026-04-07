@@ -21,7 +21,10 @@ const envSchema = z.object({
     .transform(Number),
   TOTP_ENCRYPTION_KEY: z
     .string()
-    .length(64, "TOTP_ENCRYPTION_KEY must be a 64-character hex string (32 bytes)"),
+    .length(
+      64,
+      "TOTP_ENCRYPTION_KEY must be a 64-character hex string (32 bytes)",
+    ),
   HASH_SECRET: z.string(),
   REDIS_URL: z.string(),
   CORS_ORIGIN: z.string().transform((v) => v.split(",").map((s) => s.trim())),

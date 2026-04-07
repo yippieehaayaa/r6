@@ -69,3 +69,19 @@ export type LogoutResponse = z.infer<typeof LogoutResponseSchema>;
 export const RefreshResponseSchema = LoginSuccessResponseSchema;
 
 export type RefreshResponse = z.infer<typeof RefreshResponseSchema>;
+
+// ── Sessions ─────────────────────────────────────────────────
+
+export const SessionSchema = z.object({
+  jti: z.string(),
+  userAgent: z.string().nullable(),
+  ipAddress: z.string().nullable(),
+  expiresAt: z.coerce.date(),
+  createdAt: z.coerce.date(),
+});
+
+export type Session = z.infer<typeof SessionSchema>;
+
+export const SessionsResponseSchema = z.array(SessionSchema);
+
+export type SessionsResponse = z.infer<typeof SessionsResponseSchema>;

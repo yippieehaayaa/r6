@@ -1,5 +1,13 @@
-import { ChevronRight, Lock, Shield, ShieldCheck } from "lucide-react";
+import type { SessionsResponse } from "@r6/schemas";
+import {
+	ChevronRight,
+	Lock,
+	MonitorSmartphone,
+	Shield,
+	ShieldCheck,
+} from "lucide-react";
 import { useState } from "react";
+import { useGetSessionsQuery } from "@/api/me";
 import { useAuth } from "@/auth";
 import {
 	Dialog,
@@ -8,13 +16,46 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChangePasswordForm } from "./change-password";
 import { DisableTotpForm, EnableTotpForm } from "./totp-setup";
+
+function formatRelativeTime(date: Date): string {
+	const diffMs = Date.now() - date.getTime();
+	const diffMins = Math.floor(diffMs / 60_000);
+	if (diffMins < 1) return "Just now";
+	if (diffMins < 60) return `${diffMins}m ago`;
+	const diffHours = Math.floor(diffMins / 60);
+	if (diffHours < 24) return `${diffHours}h ago`;
+	const diffDays = Math.floor(diffHours / 24);
+	return `${diffDays}d ago`;
+}
+
+function SessionRow({ session }: { session: SessionsResponse[number] }) {
+	return (
+		<div className="flex items-center gap-4 px-4 py-3.5">
+			<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+				<MonitorSmartphone className="size-4" />
+			</span>
+			<div className="flex-1 min-w-0">
+				<p className="text-sm font-medium leading-none mb-0.5 truncate">
+					{session.userAgent ?? "Unknown device"}
+				</p>
+				<p className="text-xs text-muted-foreground">
+					{session.ipAddress ?? "Unknown IP"}
+					{" · "}
+					{formatRelativeTime(session.createdAt)}
+				</p>
+			</div>
+		</div>
+	);
+}
 
 export default function AccountSecurityPage() {
 	const { profile } = useAuth();
 	const [passwordOpen, setPasswordOpen] = useState(false);
 	const [totpOpen, setTotpOpen] = useState(false);
+	const { data: sessions, isLoading: sessionsLoading } = useGetSessionsQuery();
 
 	return (
 		<div className="flex flex-1 flex-col gap-6 p-4 pt-0 max-w-2xl">
@@ -82,6 +123,38 @@ export default function AccountSecurityPage() {
 					</div>
 					<ChevronRight className="size-4 text-muted-foreground/60 shrink-0" />
 				</button>
+			</div>
+
+			{/* Active Sessions */}
+			<div>
+				<h2 className="text-base font-semibold tracking-tight mb-1">
+					Active Sessions
+				</h2>
+				<p className="text-sm text-muted-foreground mb-3">
+					Devices currently signed in to your account.
+				</p>
+				<div className="rounded-2xl border border-border bg-card overflow-hidden divide-y divide-border">
+					{sessionsLoading ? (
+						<>
+							<div className="px-4 py-3.5">
+								<Skeleton className="h-9.5 w-full" />
+							</div>
+							<div className="px-4 py-3.5">
+								<Skeleton className="h-9.5 w-full" />
+							</div>
+						</>
+					) : sessions && sessions.length > 0 ? (
+						sessions.map((session) => (
+							<SessionRow key={session.jti} session={session} />
+						))
+					) : (
+						<div className="flex items-center justify-center px-4 py-6">
+							<p className="text-sm text-muted-foreground">
+								No active sessions
+							</p>
+						</div>
+					)}
+				</div>
 			</div>
 
 			{/* Change Password Dialog */}
