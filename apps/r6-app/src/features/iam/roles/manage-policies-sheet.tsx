@@ -44,11 +44,12 @@ export function PoliciesTabContent({ tenantSlug, role, open, active }: Props) {
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
-	// Server-side search — only fires when there's a query
-	const { data: searchResults, isFetching: isSearching } = useListPoliciesQuery(
-		{ search: debouncedQuery, limit: 20 },
-		{ staleTime: 30 * 1000, enabled: open && active && !!debouncedQuery },
-	);
+	// Eagerly fetch all policies on open; filter client-side
+	const { data: policiesData, isLoading: isLoadingPolicies } =
+		useListPoliciesQuery(
+			{ limit: 100 },
+			{ staleTime: 30 * 1000, enabled: open && active },
+		);
 
 	// Initialise from current policies
 	useEffect(() => {
@@ -76,12 +77,14 @@ export function PoliciesTabContent({ tenantSlug, role, open, active }: Props) {
 		}
 	}, [active]);
 
-	// Exclude already-assigned policies from search results
-	const filteredSearchResults = useMemo(
-		() =>
-			(searchResults?.data ?? []).filter((p) => !assignedPolicies.has(p.id)),
-		[searchResults, assignedPolicies],
-	);
+	// Exclude already-assigned policies and filter by search query client-side
+	const filteredSearchResults = useMemo(() => {
+		const q = debouncedQuery.toLowerCase();
+		return (policiesData?.data ?? []).filter(
+			(p) =>
+				!assignedPolicies.has(p.id) && (!q || p.name.toLowerCase().includes(q)),
+		);
+	}, [policiesData, assignedPolicies, debouncedQuery]);
 
 	const hasChanged = useMemo(() => {
 		const current = new Set(assignedPolicies.keys());
@@ -197,11 +200,7 @@ export function PoliciesTabContent({ tenantSlug, role, open, active }: Props) {
 						/>
 					</div>
 					<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
-						{!debouncedQuery ? (
-							<p className="text-sm text-muted-foreground py-4 text-center">
-								Type to search for policies to add.
-							</p>
-						) : isSearching ? (
+						{isLoadingPolicies ? (
 							Array.from({ length: 3 }).map((_, i) => (
 								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 								<Skeleton key={i} className="h-12 w-full rounded-lg" />

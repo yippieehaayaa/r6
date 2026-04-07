@@ -43,11 +43,11 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
-	// Server-side search — only fires when there's a query
-	const { data: searchResults, isFetching: isSearching } = useListRolesQuery(
+	// Eagerly fetch all roles on open; filter client-side
+	const { data: rolesData, isLoading: isLoadingRoles } = useListRolesQuery(
 		tenantSlug,
-		{ search: debouncedQuery, limit: 20 },
-		{ staleTime: 30 * 1000, enabled: open && active && !!debouncedQuery },
+		{ limit: 100 },
+		{ staleTime: 30 * 1000, enabled: open && active },
 	);
 
 	// Initialise from current roles
@@ -76,11 +76,14 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 		}
 	}, [active]);
 
-	// Exclude already-assigned roles from search results
-	const filteredSearchResults = useMemo(
-		() => (searchResults?.data ?? []).filter((r) => !assignedRoles.has(r.id)),
-		[searchResults, assignedRoles],
-	);
+	// Exclude already-assigned roles and filter by search query client-side
+	const filteredSearchResults = useMemo(() => {
+		const q = debouncedQuery.toLowerCase();
+		return (rolesData?.data ?? []).filter(
+			(r) =>
+				!assignedRoles.has(r.id) && (!q || r.name.toLowerCase().includes(q)),
+		);
+	}, [rolesData, assignedRoles, debouncedQuery]);
 
 	const hasChanged = useMemo(() => {
 		const current = new Set(assignedRoles.keys());
@@ -181,11 +184,7 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 						/>
 					</div>
 					<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
-						{!debouncedQuery ? (
-							<p className="text-sm text-muted-foreground py-4 text-center">
-								Type to search for roles to add.
-							</p>
-						) : isSearching ? (
+						{isLoadingRoles ? (
 							Array.from({ length: 3 }).map((_, i) => (
 								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 								<Skeleton key={i} className="h-12 w-full rounded-lg" />
