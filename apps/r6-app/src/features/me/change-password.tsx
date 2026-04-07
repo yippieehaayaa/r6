@@ -5,8 +5,8 @@ import { KeyRound } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useAuth } from "@/auth";
 import { useUpdatePasswordMutation } from "@/api/me";
+import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
