@@ -1,12 +1,16 @@
-import { type CreateTenantInput, type Tenant, TenantSchema } from "@r6/schemas";
+import {
+	type CreateTenantInput,
+	type CreateTenantResponse,
+	CreateTenantResponseSchema,
+} from "@r6/schemas";
 import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export async function createTenantFn(
 	input: CreateTenantInput,
-): Promise<Tenant> {
+): Promise<CreateTenantResponse> {
 	const { data } = await identityApi.post<unknown>("/tenants", input);
-	return TenantSchema.parse(data);
+	return CreateTenantResponseSchema.parse(data);
 }
 
 export function useCreateTenantMutation() {

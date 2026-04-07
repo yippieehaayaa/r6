@@ -1,8 +1,9 @@
+import { IAM_PERMISSIONS } from "@r6/schemas/identity-and-access";
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
-  requireAdmin,
-  requireAdminOrTenantOwner,
+  requireNotAdmin,
+  requireNotTargetingProtectedRole,
   requirePermission,
   requireTenantScope,
 } from "../../middleware/guard";
@@ -19,21 +20,63 @@ import { updateRoleHandler } from "./controller/update";
 const router: Router = Router({ mergeParams: true });
 
 router.use(authMiddleware(), requireTenantScope());
-router.post("/", requirePermission("iam:role:create"), createRoleHandler);
-router.get("/", requirePermission("iam:role:read"), list);
-router.get("/:id", requirePermission("iam:role:read"), getRole);
-router.patch("/:id", requirePermission("iam:role:update"), updateRoleHandler);
-router.delete("/:id", requirePermission("iam:role:delete"), remove);
-router.post("/:id/restore", requireAdmin(), restore);
-// Tenant-Owner/Tenant-Admin may manage role-policy assignments, but the
-// attach and set-policies controllers enforce module-scope validation so
-// they can only assign policies within their availed services.
-router.post("/:id/policies", requireAdminOrTenantOwner(), attachPolicy);
+
+// ── Reads (Admin reads are allowed; permission check is sufficient) ──────────
+router.get("/", requirePermission(IAM_PERMISSIONS.ROLE_READ), list);
+router.get("/:id", requirePermission(IAM_PERMISSIONS.ROLE_READ), getRole);
+
+// ── Writes (Admin blocked — only tenant-admin may mutate roles) ──────────────
+router.post(
+  "/",
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_CREATE),
+  createRoleHandler,
+);
+router.patch(
+  "/:id",
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
+  updateRoleHandler,
+);
+router.delete(
+  "/:id",
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_DELETE),
+  requireNotTargetingProtectedRole(),
+  remove,
+);
+
+// Restore is a write — tenant-admin (has role:delete) may restore soft-deleted roles.
+router.post(
+  "/:id/restore",
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_DELETE),
+  requireNotTargetingProtectedRole(),
+  restore,
+);
+
+// Policy attachment — tenant-admin only (has role:update). Admin and tenant-owner blocked.
+router.post(
+  "/:id/policies",
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
+  attachPolicy,
+);
 router.delete(
   "/:id/policies/:policyId",
-  requireAdminOrTenantOwner(),
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
   detachPolicy,
 );
-router.put("/:id/policies", requireAdminOrTenantOwner(), setPolicies);
+router.put(
+  "/:id/policies",
+  requireNotAdmin(),
+  requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
+  setPolicies,
+);
 
 export default router;

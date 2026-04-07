@@ -53,7 +53,6 @@ export function EditIdentityForm({ tenantSlug, identity, onSuccess }: Props) {
 		mode: "onTouched",
 		// `values` keeps the form in sync if the identity prop changes
 		values: {
-			username: identity.username,
 			email: identity.email,
 			status: identity.status,
 			mustChangePassword: identity.mustChangePassword,
@@ -83,15 +82,15 @@ export function EditIdentityForm({ tenantSlug, identity, onSuccess }: Props) {
 			className="flex flex-col gap-4 px-4"
 		>
 			<FieldGroup>
-				<Field data-invalid={!!errors.username}>
+				<Field>
 					<FieldLabel htmlFor="username">Username</FieldLabel>
 					<Input
 						id="username"
-						placeholder="john.doe"
-						aria-invalid={!!errors.username}
-						{...register("username")}
+						value={identity.username}
+						disabled
+						readOnly
+						className="opacity-60 cursor-not-allowed"
 					/>
-					<FieldError errors={errors.username ? [errors.username] : []} />
 				</Field>
 
 				<Field data-invalid={!!errors.email}>

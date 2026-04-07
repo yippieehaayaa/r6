@@ -1,6 +1,8 @@
-import { setRolesForIdentity } from "@r6/db-identity-and-access";
+import { getRoleById, setRolesForIdentity } from "@r6/db-identity-and-access";
+import { PROTECTED_ROLES } from "@r6/schemas/identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
+import { AppError } from "../../../lib/errors";
 import { ensureTenantExistsBySlug } from "../../tenants/helpers";
 import { ensureIdentityBelongsToTenant, toSafeIdentity } from "../helpers";
 
@@ -19,6 +21,29 @@ export async function setRoles(
     const { roleIds } = z
       .object({ roleIds: z.array(UuidSchema) })
       .parse(req.body);
+
+    const roles = await Promise.all(roleIds.map((rid) => getRoleById(rid)));
+    const protectedMatch = roles.find(
+      (r) => r && (PROTECTED_ROLES as readonly string[]).includes(r.name),
+    );
+    if (protectedMatch) {
+      const callerRoles: string[] = Array.isArray(req.jwtPayload?.roles)
+        ? (req.jwtPayload.roles as string[])
+        : [];
+      const isTenantOwner = callerRoles.includes("tenant-owner");
+      // Tenant-owners may include tenant-admin but never tenant-owner
+      const tenantOwnerAssignment = roles.find(
+        (r) => r?.name === "tenant-owner",
+      );
+      if (!isTenantOwner || tenantOwnerAssignment) {
+        throw new AppError(
+          403,
+          "forbidden",
+          `Cannot assign protected role "${protectedMatch.name}" via this endpoint. Use the provision endpoint instead.`,
+        );
+      }
+    }
+
     const result = await setRolesForIdentity(id, roleIds);
     res.status(200).json(toSafeIdentity(result));
   } catch (error) {

@@ -1,7 +1,8 @@
 import type { Role } from "@r6/schemas";
+import { IAM_PERMISSIONS } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
-import { Plus } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -9,6 +10,7 @@ import {
 	useRemoveRoleMutation,
 	useRestoreRoleMutation,
 } from "@/api/roles";
+import { useListTenantsQuery } from "@/api/tenants";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,
@@ -21,6 +23,13 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { RoleSheet } from "./role-sheet";
 import { RolesTable } from "./roles-table";
@@ -30,12 +39,22 @@ const PAGE_SIZE = 20;
 export default function RolesPage() {
 	const { claims, hasPermission } = useAuth();
 	const isAdmin = claims?.kind === "ADMIN";
-	const canCreate = !isAdmin && hasPermission("iam:role:create");
-	const canUpdate = !isAdmin && hasPermission("iam:role:update");
-	const canDelete = !isAdmin && hasPermission("iam:role:delete");
+	const canCreate = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_CREATE);
+	const canUpdate = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_UPDATE);
+	const canDelete = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_DELETE);
 	const canRestore = isAdmin;
-	const tenantSlug = claims?.tenantSlug ?? "";
+	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
+		claims?.tenantSlug ?? "",
+	);
+	const activeTenantSlug = isAdmin
+		? selectedTenantSlug
+		: (claims?.tenantSlug ?? "");
 	const queryClient = useQueryClient();
+
+	const { data: tenantsData } = useListTenantsQuery(
+		{ limit: 100 },
+		{ staleTime: 5 * 60 * 1000, enabled: isAdmin },
+	);
 
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -53,7 +72,7 @@ export default function RolesPage() {
 	}, [search]);
 
 	const { data, isLoading } = useListRolesQuery(
-		tenantSlug,
+		activeTenantSlug,
 		{
 			page: pagination.pageIndex + 1,
 			limit: pagination.pageSize,
@@ -83,10 +102,12 @@ export default function RolesPage() {
 	function confirmDelete() {
 		if (!deleteTarget || !canDelete) return;
 		removeMutation.mutate(
-			{ tenantSlug, id: deleteTarget.id },
+			{ tenantSlug: activeTenantSlug, id: deleteTarget.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["roles", tenantSlug] });
+					queryClient.invalidateQueries({
+						queryKey: ["roles", activeTenantSlug],
+					});
 					toast.success("Role deleted.");
 					setDeleteTarget(null);
 				},
@@ -98,10 +119,12 @@ export default function RolesPage() {
 	function handleRestore(role: Role) {
 		if (!canRestore) return;
 		restoreMutation.mutate(
-			{ tenantSlug, id: role.id },
+			{ tenantSlug: activeTenantSlug, id: role.id },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["roles", tenantSlug] });
+					queryClient.invalidateQueries({
+						queryKey: ["roles", activeTenantSlug],
+					});
 					toast.success("Role restored.");
 				},
 				onError: (err) => toast.error(getApiErrorMessage(err)),
@@ -127,30 +150,61 @@ export default function RolesPage() {
 			</div>
 
 			<div className="rounded-xl border bg-card p-4">
-				<RolesTable
-					data={data?.data ?? []}
-					isLoading={isLoading}
-					onEdit={handleEdit}
-					onDelete={handleDelete}
-					onRestore={handleRestore}
-					canUpdate={canUpdate}
-					canDelete={canDelete}
-					canRestore={canRestore}
-					rowCount={data?.total}
-					paginationState={pagination}
-					onPaginationChange={setPagination}
-					filterValue={search}
-					onFilterChange={(v) => {
-						setSearch(v);
-						setPagination((p) => ({ ...p, pageIndex: 0 }));
-					}}
-				/>
+				{isAdmin && !activeTenantSlug ? (
+					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
+						<Building2 className="h-10 w-10 text-muted-foreground/50" />
+						<div>
+							<p className="font-medium">No tenant selected</p>
+							<p className="text-sm text-muted-foreground">
+								Choose a tenant to view its roles.
+							</p>
+						</div>
+						<Select
+							value={selectedTenantSlug}
+							onValueChange={(v) => {
+								setSelectedTenantSlug(v);
+								setPagination((p) => ({ ...p, pageIndex: 0 }));
+							}}
+						>
+							<SelectTrigger className="w-64">
+								<SelectValue placeholder="Select a tenant…" />
+							</SelectTrigger>
+							<SelectContent>
+								{(tenantsData?.data ?? []).map((t) => (
+									<SelectItem key={t.slug} value={t.slug}>
+										{t.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+				) : (
+					<RolesTable
+						key={activeTenantSlug}
+						data={data?.data ?? []}
+						isLoading={isLoading}
+						onEdit={handleEdit}
+						onDelete={handleDelete}
+						onRestore={handleRestore}
+						canUpdate={canUpdate}
+						canDelete={canDelete}
+						canRestore={canRestore}
+						rowCount={data?.total}
+						paginationState={pagination}
+						onPaginationChange={setPagination}
+						filterValue={search}
+						onFilterChange={(v) => {
+							setSearch(v);
+							setPagination((p) => ({ ...p, pageIndex: 0 }));
+						}}
+					/>
+				)}
 			</div>
 
 			<RoleSheet
 				open={sheetOpen}
 				onOpenChange={handleSheetOpenChange}
-				tenantSlug={tenantSlug}
+				tenantSlug={activeTenantSlug}
 				role={editTarget}
 			/>
 

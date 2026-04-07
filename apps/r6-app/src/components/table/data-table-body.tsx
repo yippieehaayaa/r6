@@ -14,12 +14,14 @@ interface DataTableBodyProps<TData> {
 	table: Table<TData>;
 	isLoading: boolean;
 	pageIndex: number;
+	onRowClick?: (row: TData) => void;
 }
 
 export function DataTableBody<TData>({
 	table,
 	isLoading,
 	pageIndex,
+	onRowClick,
 }: DataTableBodyProps<TData>) {
 	const rows = table.getRowModel().rows;
 	const colCount = table.getVisibleLeafColumns().length;
@@ -87,6 +89,8 @@ export function DataTableBody<TData>({
 							<TableRow
 								key={row.id}
 								data-state={row.getIsSelected() && "selected"}
+								className={onRowClick ? "cursor-pointer" : undefined}
+								onClick={() => onRowClick?.(row.original)}
 							>
 								{row.getVisibleCells().map((cell) => (
 									<TableCell key={cell.id}>

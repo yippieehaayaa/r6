@@ -129,6 +129,7 @@ export function IdentitiesTable({
 										Edit
 									</DropdownMenuItem>
 								)}
+
 								{canDelete &&
 									(identity.deletedAt ? (
 										<DropdownMenuItem onSelect={() => onRestore(identity)}>

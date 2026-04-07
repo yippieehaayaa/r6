@@ -43,6 +43,9 @@ interface DataTableProps<TData, TValue> {
 	globalFilterValue?: string;
 	onGlobalFilterChange?: (value: string) => void;
 	filterPlaceholder?: string;
+
+	// Row interaction
+	onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -59,6 +62,7 @@ export function DataTable<TData, TValue>({
 	globalFilterValue,
 	onGlobalFilterChange,
 	filterPlaceholder = "Search…",
+	onRowClick,
 }: DataTableProps<TData, TValue>) {
 	const isManualPagination = !!onPaginationChange;
 	const isManualSorting = !!onSortingChange;
@@ -140,6 +144,7 @@ export function DataTable<TData, TValue>({
 				table={table}
 				isLoading={isLoading}
 				pageIndex={pageIndex}
+				onRowClick={onRowClick}
 			/>
 			<DataTablePagination
 				table={table}

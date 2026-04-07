@@ -58,8 +58,8 @@ export const IdentitySchema = TenantScopedSchema.extend({
    */
   email: z
     .string()
-    .regex(emailRegex, "Must be a valid e-mail address (RFC 5321)")
-    .max(254, "E-mail must not exceed 254 characters (RFC 5321)")
+    .regex(emailRegex, "Must be a valid e-mail address")
+    .max(254, "E-mail must not exceed 254 characters")
     .toLowerCase()
     .nullable(),
 
@@ -197,6 +197,34 @@ export const ChangePasswordSchema = z
   });
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+
+// ── Provision payload (ADMIN-only, bootstrap tenant identities) ────────────
+
+/**
+ * Used by POST /tenants/:slug/provision (requireAdmin)
+ * Creates a USER identity and assigns it the tenant-admin role.
+ * The tenant-owner role is reserved — it is created automatically at tenant
+ * creation time and cannot be reassigned via this endpoint.
+ * Password field name matches CreateIdentitySchema for consistency.
+ */
+export const ProvisionIdentitySchema = z.object({
+  username: IdentitySchema.shape.username,
+  email: IdentitySchema.shape.email.optional(),
+  plainPassword: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password must not exceed 128 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/\d/, "Password must contain at least one digit")
+    .regex(
+      /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/,
+      "Password must contain at least one special character",
+    ),
+  role: z.literal("tenant-admin"),
+});
+
+export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;
 
 // ── List query params ───────────────────────────────────────
 

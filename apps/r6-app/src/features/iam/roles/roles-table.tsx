@@ -90,7 +90,11 @@ export function RolesTable({
 				enableSorting: false,
 				cell: ({ row }) => {
 					const role = row.original;
-					if (!canUpdate && !canDelete && !canRestore) return null;
+					const hasActions =
+						canUpdate ||
+						(canDelete && !role.deletedAt) ||
+						(canRestore && !!role.deletedAt);
+					if (!hasActions) return null;
 					return (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -106,6 +110,7 @@ export function RolesTable({
 										Edit
 									</DropdownMenuItem>
 								)}
+
 								{canDelete && !role.deletedAt && (
 									<DropdownMenuItem
 										variant="destructive"

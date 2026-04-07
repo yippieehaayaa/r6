@@ -54,6 +54,118 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
   });
 };
 
+// ─── Create with defaults ─────────────────────────────────────────────────────
+
+// Platform-level policies automatically connected to the tenant-owner role
+// on every new tenant. Names must match the seed (tenantId = null).
+const TENANT_OWNER_DEFAULT_POLICIES = [
+  "iam:identity:full-access",
+  "iam:role:full-access",
+  "iam:policy:full-access",
+] as const;
+
+// Platform-level policies automatically connected to the tenant-admin role
+// on every new tenant. Names must match the seed (tenantId = null).
+const TENANT_ADMIN_DEFAULT_POLICIES = [
+  "iam:identity:full-access",
+  "iam:role:full-access",
+  "iam:policy:read-only",
+] as const;
+
+// Atomically creates a Tenant, its two standard protected roles
+// (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
+// identity using the pre-computed password hash/salt.
+//
+// The owner's username is derived from the slug: "${slug.slice(0,58)}-owner"
+// (capped so the total stays within the 64-char username limit).
+//
+// Caller is responsible for pre-computing hash + salt (bcrypt is async and
+// cannot run safely inside a Prisma interactive transaction callback).
+//
+// Returns: { tenant, ownerUsername }
+const createTenantWithDefaults = async (
+  input: CreateTenantInput,
+  ownerHash: string,
+  ownerSalt: string,
+): Promise<{ tenant: Tenant; ownerUsername: string }> => {
+  return prisma.$transaction(async (tx) => {
+    const tenant = await tx.tenant.create({
+      data: {
+        name: input.name,
+        slug: input.slug,
+        moduleAccess: { set: input.moduleAccess },
+      },
+    });
+
+    // Roles + default policy lookups are independent — run in parallel.
+    const [ownerRole, adminRole, ownerPolicies, adminPolicies] =
+      await Promise.all([
+        tx.role.create({
+          data: {
+            tenantId: tenant.id,
+            name: "tenant-owner",
+            description:
+              "Tenant owner — bootstrapped at tenant creation. Unique per tenant.",
+          },
+        }),
+        tx.role.create({
+          data: {
+            tenantId: tenant.id,
+            name: "tenant-admin",
+            description: "Tenant administrator — full IAM management access.",
+          },
+        }),
+        tx.policy.findMany({
+          where: {
+            tenantId: null,
+            name: { in: [...TENANT_OWNER_DEFAULT_POLICIES] },
+          },
+          select: { id: true },
+        }),
+        tx.policy.findMany({
+          where: {
+            tenantId: null,
+            name: { in: [...TENANT_ADMIN_DEFAULT_POLICIES] },
+          },
+          select: { id: true },
+        }),
+      ]);
+
+    const ownerUsername = `${tenant.slug.slice(0, 58)}-owner`;
+
+    // Owner identity creation and role policy assignments are independent.
+    await Promise.all([
+      tx.identity.create({
+        data: {
+          tenantId: tenant.id,
+          username: ownerUsername,
+          email: null,
+          hash: ownerHash,
+          salt: ownerSalt,
+          kind: "USER",
+          status: "ACTIVE",
+          mustChangePassword: true,
+          roles: { connect: { id: ownerRole.id } },
+        },
+      }),
+      ownerPolicies.length > 0
+        ? tx.role.update({
+            where: { id: ownerRole.id },
+            data: { policies: { connect: ownerPolicies } },
+          })
+        : Promise.resolve(),
+      adminPolicies.length > 0
+        ? tx.role.update({
+            where: { id: adminRole.id },
+            data: { policies: { connect: adminPolicies } },
+          })
+        : Promise.resolve(),
+    ]);
+
+    return { tenant, ownerUsername };
+  });
+};
+
 // ─── Read ────────────────────────────────────────────────────
 
 // Finds a non-deleted tenant by primary key.
@@ -147,6 +259,7 @@ const restoreTenant = async (id: string): Promise<Tenant> => {
 
 export {
   createTenant,
+  createTenantWithDefaults,
   getTenantById,
   getTenantBySlug,
   getTenantByName,

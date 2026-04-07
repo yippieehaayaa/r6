@@ -1,8 +1,12 @@
+import { IAM_PERMISSIONS } from "@r6/schemas/identity-and-access";
 import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
   requireNotAdmin,
+  requireNotSelf,
+  requireNotTargetingElevatedIdentity,
   requirePermission,
+  requireSelfOrAdminOrTenantOwner,
   requireTenantScope,
 } from "../../middleware/guard";
 import { assignRole } from "./controller/assign-role";
@@ -26,13 +30,15 @@ router.use(authMiddleware());
 router.get(
   "/",
   requireTenantScope(),
-  requirePermission("iam:identity:read"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_READ),
   list,
 );
 router.get(
   "/:id",
   requireTenantScope(),
-  requirePermission("iam:identity:read"),
+  requireSelfOrAdminOrTenantOwner({
+    orPermission: IAM_PERMISSIONS.IDENTITY_READ,
+  }),
   getIdentity,
 );
 
@@ -41,28 +47,32 @@ router.post(
   "/",
   requireNotAdmin(),
   requireTenantScope(),
-  requirePermission("iam:identity:create"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_CREATE),
   createIdentityHandler,
 );
 router.patch(
   "/:id",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   updateIdentityHandler,
 );
 router.delete(
   "/:id",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:delete"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_DELETE),
   remove,
 );
 router.post(
   "/:id/restore",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:delete"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_DELETE),
   restore,
 );
 
@@ -70,22 +80,28 @@ router.post(
 router.post(
   "/:id/roles",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   assignRole,
 );
 router.delete(
   "/:id/roles/:roleId",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   removeRole,
 );
 router.put(
   "/:id/roles",
   requireNotAdmin(),
+  requireNotSelf(),
   requireTenantScope(),
-  requirePermission("iam:identity:update"),
+  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   setRoles,
 );
 

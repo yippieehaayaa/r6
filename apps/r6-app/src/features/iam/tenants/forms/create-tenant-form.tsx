@@ -1,11 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type CreateTenantInput, CreateTenantSchema } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { Copy } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useCreateTenantMutation } from "@/api/tenants";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
 	Field,
@@ -50,6 +60,10 @@ export function CreateTenantForm({ onSuccess }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useCreateTenantMutation();
 	const slugTouched = useRef(false);
+	const [pendingCredentials, setPendingCredentials] = useState<{
+		username: string;
+		password: string;
+	} | null>(null);
 
 	const {
 		register,
@@ -84,13 +98,17 @@ export function CreateTenantForm({ onSuccess }: Props) {
 			moduleAccess: linesToArray(values.moduleAccessText),
 		};
 		mutation.mutate(body, {
-			onSuccess: () => {
-				queryClient.invalidateQueries({ queryKey: ["tenants"] });
-				toast.success("Tenant created.");
-				onSuccess();
+			onSuccess: (result) => {
+				setPendingCredentials(result.ownerCredentials);
 			},
 			onError: (err) => toast.error(getApiErrorMessage(err)),
 		});
+	}
+
+	function handleCredentialsDismiss() {
+		queryClient.invalidateQueries({ queryKey: ["tenants"] });
+		setPendingCredentials(null);
+		onSuccess();
 	}
 
 	return (
@@ -148,10 +166,74 @@ export function CreateTenantForm({ onSuccess }: Props) {
 			</FieldGroup>
 
 			<SheetFooter>
-				<Button type="submit" form="create-tenant-form" disabled={isSubmitting}>
-					{isSubmitting ? "Creating…" : "Create"}
+				<Button
+					type="submit"
+					form="create-tenant-form"
+					disabled={isSubmitting || mutation.isPending}
+				>
+					{isSubmitting || mutation.isPending ? "Creating…" : "Create"}
 				</Button>
 			</SheetFooter>
+
+			<AlertDialog open={!!pendingCredentials}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Tenant Created — Save Owner Credentials
+						</AlertDialogTitle>
+						<AlertDialogDescription asChild>
+							<div className="flex flex-col gap-3">
+								<p className="text-sm text-destructive font-medium">
+									These credentials will not be shown again. Store them securely
+									before continuing.
+								</p>
+								<div className="flex flex-col gap-2">
+									<CredentialRow
+										label="Username"
+										value={pendingCredentials?.username ?? ""}
+									/>
+									<CredentialRow
+										label="Password"
+										value={pendingCredentials?.password ?? ""}
+									/>
+								</div>
+							</div>
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogAction onClick={handleCredentialsDismiss}>
+							I've saved these credentials
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</form>
+	);
+}
+
+function CredentialRow({ label, value }: { label: string; value: string }) {
+	function copy() {
+		navigator.clipboard.writeText(value);
+		toast.success(`${label} copied.`);
+	}
+
+	return (
+		<div className="flex items-center gap-2">
+			<span className="text-xs text-muted-foreground w-20 shrink-0">
+				{label}
+			</span>
+			<code className="flex-1 rounded bg-muted px-2 py-1 text-sm font-mono break-all select-all">
+				{value}
+			</code>
+			<Button
+				type="button"
+				variant="ghost"
+				size="icon"
+				onClick={copy}
+				aria-label={`Copy ${label}`}
+			>
+				<Copy className="size-4" />
+			</Button>
+		</div>
 	);
 }
