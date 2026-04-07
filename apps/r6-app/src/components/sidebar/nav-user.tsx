@@ -1,11 +1,11 @@
 "use client";
 
 import {
-	BadgeCheck,
-	Bell,
+	// BadgeCheck,
+	// Bell,
 	ChevronsUpDown,
-	CreditCard,
-	Sparkles,
+	// CreditCard,
+	// Sparkles,
 } from "lucide-react";
 import { LogoutMenuItem } from "#/features/auth/logout";
 import { useAuth } from "@/auth";
@@ -13,10 +13,10 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
-	DropdownMenuItem,
+	// DropdownMenuGroup,
+	// DropdownMenuItem,
 	DropdownMenuLabel,
-	DropdownMenuSeparator,
+	// DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -78,7 +78,7 @@ export function NavUser() {
 								</div>
 							</div>
 						</DropdownMenuLabel>
-						<DropdownMenuSeparator />
+						{/* <DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem>
 								<Sparkles />
@@ -100,7 +100,7 @@ export function NavUser() {
 								Notifications
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
-						<DropdownMenuSeparator />
+						<DropdownMenuSeparator /> */}
 						<LogoutMenuItem />
 					</DropdownMenuContent>
 				</DropdownMenu>
