@@ -1,4 +1,7 @@
-import { getIdentityById, saveTotpSecret } from "@r6/db-identity-and-access";
+import {
+  getIdentityById,
+  saveTotpSecret,
+} from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../config";
 import { AppError } from "../../../lib/errors";
@@ -25,11 +28,7 @@ export async function getTotpSetup(
     }
 
     if (identity.totpEnabled) {
-      throw new AppError(
-        409,
-        "totp_already_enabled",
-        "TOTP is already enabled. Disable it first before re-enrolling.",
-      );
+      throw new AppError(409, "totp_already_enabled", "TOTP is already enabled. Disable it first before re-enrolling.");
     }
 
     const plainSecret = generateTotpSecret();

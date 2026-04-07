@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedForbiddenRouteImport } from './routes/_authenticated/forbidden'
+import { Route as AuthenticatedAccountSecurityRouteImport } from './routes/_authenticated/account-security'
 import { Route as AuthenticatedIamIndexRouteImport } from './routes/_authenticated/iam/index'
 import { Route as AuthenticatedIamTenantsRouteImport } from './routes/_authenticated/iam/tenants'
 import { Route as AuthenticatedIamRolesRouteImport } from './routes/_authenticated/iam/roles'
@@ -39,6 +40,12 @@ const AuthenticatedForbiddenRoute = AuthenticatedForbiddenRouteImport.update({
   path: '/forbidden',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAccountSecurityRoute =
+  AuthenticatedAccountSecurityRouteImport.update({
+    id: '/account-security',
+    path: '/account-security',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedIamIndexRoute = AuthenticatedIamIndexRouteImport.update({
   id: '/iam/',
   path: '/iam/',
@@ -76,6 +83,7 @@ const AuthenticatedIamTenantsTenantSlugRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/account-security': typeof AuthenticatedAccountSecurityRoute
   '/forbidden': typeof AuthenticatedForbiddenRoute
   '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
   '/iam/policies': typeof AuthenticatedIamPoliciesRoute
@@ -86,6 +94,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/account-security': typeof AuthenticatedAccountSecurityRoute
   '/forbidden': typeof AuthenticatedForbiddenRoute
   '/': typeof AuthenticatedIndexRoute
   '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
@@ -99,6 +108,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/account-security': typeof AuthenticatedAccountSecurityRoute
   '/_authenticated/forbidden': typeof AuthenticatedForbiddenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/iam/identities': typeof AuthenticatedIamIdentitiesRoute
@@ -113,6 +123,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/login'
+    | '/account-security'
     | '/forbidden'
     | '/iam/identities'
     | '/iam/policies'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
+    | '/account-security'
     | '/forbidden'
     | '/'
     | '/iam/identities'
@@ -135,6 +147,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/account-security'
     | '/_authenticated/forbidden'
     | '/_authenticated/'
     | '/_authenticated/iam/identities'
@@ -178,6 +191,13 @@ declare module '@tanstack/react-router' {
       path: '/forbidden'
       fullPath: '/forbidden'
       preLoaderRoute: typeof AuthenticatedForbiddenRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/account-security': {
+      id: '/_authenticated/account-security'
+      path: '/account-security'
+      fullPath: '/account-security'
+      preLoaderRoute: typeof AuthenticatedAccountSecurityRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/iam/': {
@@ -226,6 +246,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAccountSecurityRoute: typeof AuthenticatedAccountSecurityRoute
   AuthenticatedForbiddenRoute: typeof AuthenticatedForbiddenRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedIamIdentitiesRoute: typeof AuthenticatedIamIdentitiesRoute
@@ -237,6 +258,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAccountSecurityRoute: AuthenticatedAccountSecurityRoute,
   AuthenticatedForbiddenRoute: AuthenticatedForbiddenRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedIamIdentitiesRoute: AuthenticatedIamIdentitiesRoute,

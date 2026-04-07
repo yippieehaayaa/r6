@@ -12,7 +12,8 @@ const ALGORITHM = "aes-256-gcm";
 const IV_BYTES = 16;
 const TAG_BYTES = 16;
 
-const getKey = (): Buffer => Buffer.from(env.TOTP_ENCRYPTION_KEY, "hex");
+const getKey = (): Buffer =>
+  Buffer.from(env.TOTP_ENCRYPTION_KEY, "hex");
 
 export const encryptTotpSecret = (plaintext: string): string => {
   const key = getKey();
@@ -38,9 +39,7 @@ export const decryptTotpSecret = (ciphertext: string): string => {
 
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(tag);
-  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
-    "utf8",
-  );
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
 };
 
 // ─── TOTP helpers ────────────────────────────────────────────
@@ -64,10 +63,7 @@ export const generateQrDataUrl = async (otpauthUri: string): Promise<string> =>
  * Verifies a 6-digit TOTP code against an *encrypted* secret from the DB.
  * Decrypts the secret internally so the plaintext never escapes this module.
  */
-export const verifyTotpCode = (
-  encryptedSecret: string,
-  code: string,
-): boolean => {
+export const verifyTotpCode = (encryptedSecret: string, code: string): boolean => {
   try {
     const secret = decryptTotpSecret(encryptedSecret);
     return authenticator.check(code, secret);

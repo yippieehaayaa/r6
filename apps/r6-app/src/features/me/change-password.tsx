@@ -1,14 +1,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type ChangePasswordInput, ChangePasswordSchema } from "@r6/schemas";
 import { useNavigate } from "@tanstack/react-router";
-import { KeyRound } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useUpdatePasswordMutation } from "@/api/me";
 import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import {
 	Field,
 	FieldError,
@@ -16,47 +13,13 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-	Sheet,
-	SheetContent,
-	SheetFooter,
-	SheetHeader,
-	SheetTitle,
-} from "@/components/ui/sheet";
 import { getApiErrorMessage } from "@/lib/api-error";
-
-export function ChangePasswordMenuItem() {
-	const [open, setOpen] = useState(false);
-
-	return (
-		<>
-			<DropdownMenuItem
-				onSelect={(e) => {
-					e.preventDefault();
-					setOpen(true);
-				}}
-			>
-				<KeyRound />
-				Change password
-			</DropdownMenuItem>
-
-			<Sheet open={open} onOpenChange={setOpen}>
-				<SheetContent className="sm:max-w-md">
-					<SheetHeader>
-						<SheetTitle>Change Password</SheetTitle>
-					</SheetHeader>
-					<ChangePasswordForm onSuccess={() => setOpen(false)} />
-				</SheetContent>
-			</Sheet>
-		</>
-	);
-}
 
 interface FormProps {
 	onSuccess: () => void;
 }
 
-function ChangePasswordForm({ onSuccess }: FormProps) {
+export function ChangePasswordForm({ onSuccess }: FormProps) {
 	const mutation = useUpdatePasswordMutation();
 	const { logout } = useAuth();
 	const navigate = useNavigate();
@@ -131,7 +94,7 @@ function ChangePasswordForm({ onSuccess }: FormProps) {
 				</Field>
 			</FieldGroup>
 
-			<SheetFooter>
+			<div className="flex justify-end">
 				<Button
 					type="submit"
 					form="change-password-form"
@@ -139,7 +102,7 @@ function ChangePasswordForm({ onSuccess }: FormProps) {
 				>
 					{isSubmitting ? "Saving…" : "Change password"}
 				</Button>
-			</SheetFooter>
+			</div>
 		</form>
 	);
 }

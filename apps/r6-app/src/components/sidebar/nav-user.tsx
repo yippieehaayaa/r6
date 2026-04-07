@@ -1,25 +1,22 @@
 "use client";
 
+import { Link } from "@tanstack/react-router";
 import {
 	// BadgeCheck,
 	// Bell,
 	ChevronsUpDown,
 	// CreditCard,
+	ShieldCheck,
 	// Sparkles,
 } from "lucide-react";
 import { LogoutMenuItem } from "#/features/auth/logout";
-import { ChangePasswordMenuItem } from "#/features/me/change-password";
-import {
-	DisableTotpMenuItem,
-	EnableTotpMenuItem,
-} from "#/features/me/totp-setup";
 import { useAuth } from "@/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	// DropdownMenuGroup,
-	// DropdownMenuItem,
+	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
@@ -106,12 +103,12 @@ export function NavUser() {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator /> */}
-						<ChangePasswordMenuItem />
-						{profile?.totpEnabled ? (
-							<DisableTotpMenuItem />
-						) : (
-							<EnableTotpMenuItem />
-						)}
+						<DropdownMenuItem asChild>
+							<Link to="/account-security">
+								<ShieldCheck />
+								Account Security
+							</Link>
+						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<LogoutMenuItem />
 					</DropdownMenuContent>

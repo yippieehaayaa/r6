@@ -1,7 +1,7 @@
 import {
   createRefreshToken,
-  getIdentityWithRolesAndPolicies,
   getTenantById,
+  getIdentityWithRolesAndPolicies,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../config";
@@ -28,18 +28,15 @@ export async function verifyTotp(
 
     if (!challengeToken)
       throw new AppError(400, "validation_error", "challengeToken is required");
-    if (!code) throw new AppError(400, "validation_error", "code is required");
+    if (!code)
+      throw new AppError(400, "validation_error", "code is required");
 
     // Verify and decode the short-lived challenge token.
     let sub: string;
     try {
       ({ sub } = await verifyTotpChallengeToken(challengeToken));
     } catch {
-      throw new AppError(
-        401,
-        "invalid_token",
-        "TOTP challenge token is invalid or expired",
-      );
+      throw new AppError(401, "invalid_token", "TOTP challenge token is invalid or expired");
     }
 
     // Load identity with roles+policies so we can build full token claims.
@@ -50,26 +47,16 @@ export async function verifyTotp(
 
     // Guard: totpSecret must be present and TOTP must be enabled.
     if (!identity.totpEnabled || !identity.totpSecret) {
-      throw new AppError(
-        400,
-        "totp_not_enabled",
-        "TOTP is not enabled for this identity",
-      );
+      throw new AppError(400, "totp_not_enabled", "TOTP is not enabled for this identity");
     }
 
     // Verify the 6-digit code against the encrypted secret.
     const valid = verifyTotpCode(identity.totpSecret, code);
     if (!valid) {
-      throw new AppError(
-        401,
-        "invalid_totp_code",
-        "TOTP code is incorrect or expired",
-      );
+      throw new AppError(401, "invalid_totp_code", "TOTP code is incorrect or expired");
     }
 
-    const tenant = identity.tenantId
-      ? await getTenantById(identity.tenantId)
-      : null;
+    const tenant = identity.tenantId ? await getTenantById(identity.tenantId) : null;
     const claims = buildTokenClaims(identity);
 
     const fingerprint = generateDeviceFingerprint(
