@@ -56,7 +56,7 @@ function SessionExpiredListener() {
 		return onSessionExpired(async () => {
 			await logout();
 			toast.error("Session expired. Please sign in again.");
-			navigate({ to: "/login", replace: true });
+			navigate({ to: "/r6/login", replace: true });
 		});
 	}, [logout, navigate]);
 

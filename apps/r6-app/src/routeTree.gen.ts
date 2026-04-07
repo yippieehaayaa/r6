@@ -9,274 +9,300 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedForbiddenRouteImport } from './routes/_authenticated/forbidden'
-import { Route as AuthenticatedAccountSecurityRouteImport } from './routes/_authenticated/account-security'
-import { Route as AuthenticatedIamIndexRouteImport } from './routes/_authenticated/iam/index'
-import { Route as AuthenticatedIamTenantsRouteImport } from './routes/_authenticated/iam/tenants'
-import { Route as AuthenticatedIamRolesRouteImport } from './routes/_authenticated/iam/roles'
-import { Route as AuthenticatedIamPoliciesRouteImport } from './routes/_authenticated/iam/policies'
-import { Route as AuthenticatedIamIdentitiesRouteImport } from './routes/_authenticated/iam/identities'
-import { Route as AuthenticatedIamTenantsTenantSlugRouteImport } from './routes/_authenticated/iam/tenants_.$tenantSlug'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as R6LoginRouteImport } from './routes/r6/login'
+import { Route as R6AuthenticatedRouteImport } from './routes/r6/_authenticated'
+import { Route as R6AuthenticatedIndexRouteImport } from './routes/r6/_authenticated/index'
+import { Route as R6AuthenticatedForbiddenRouteImport } from './routes/r6/_authenticated/forbidden'
+import { Route as R6AuthenticatedAccountSecurityRouteImport } from './routes/r6/_authenticated/account-security'
+import { Route as R6AuthenticatedIamIndexRouteImport } from './routes/r6/_authenticated/iam/index'
+import { Route as R6AuthenticatedIamTenantsRouteImport } from './routes/r6/_authenticated/iam/tenants'
+import { Route as R6AuthenticatedIamRolesRouteImport } from './routes/r6/_authenticated/iam/roles'
+import { Route as R6AuthenticatedIamPoliciesRouteImport } from './routes/r6/_authenticated/iam/policies'
+import { Route as R6AuthenticatedIamIdentitiesRouteImport } from './routes/r6/_authenticated/iam/identities'
+import { Route as R6AuthenticatedIamTenantsTenantSlugRouteImport } from './routes/r6/_authenticated/iam/tenants_.$tenantSlug'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedRoute = AuthenticatedRouteImport.update({
-  id: '/_authenticated',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedForbiddenRoute = AuthenticatedForbiddenRouteImport.update({
-  id: '/forbidden',
-  path: '/forbidden',
-  getParentRoute: () => AuthenticatedRoute,
+const R6LoginRoute = R6LoginRouteImport.update({
+  id: '/r6/login',
+  path: '/r6/login',
+  getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedAccountSecurityRoute =
-  AuthenticatedAccountSecurityRouteImport.update({
+const R6AuthenticatedRoute = R6AuthenticatedRouteImport.update({
+  id: '/r6/_authenticated',
+  path: '/r6',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R6AuthenticatedIndexRoute = R6AuthenticatedIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => R6AuthenticatedRoute,
+} as any)
+const R6AuthenticatedForbiddenRoute =
+  R6AuthenticatedForbiddenRouteImport.update({
+    id: '/forbidden',
+    path: '/forbidden',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedAccountSecurityRoute =
+  R6AuthenticatedAccountSecurityRouteImport.update({
     id: '/account-security',
     path: '/account-security',
-    getParentRoute: () => AuthenticatedRoute,
+    getParentRoute: () => R6AuthenticatedRoute,
   } as any)
-const AuthenticatedIamIndexRoute = AuthenticatedIamIndexRouteImport.update({
+const R6AuthenticatedIamIndexRoute = R6AuthenticatedIamIndexRouteImport.update({
   id: '/iam/',
   path: '/iam/',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => R6AuthenticatedRoute,
 } as any)
-const AuthenticatedIamTenantsRoute = AuthenticatedIamTenantsRouteImport.update({
-  id: '/iam/tenants',
-  path: '/iam/tenants',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedIamRolesRoute = AuthenticatedIamRolesRouteImport.update({
+const R6AuthenticatedIamTenantsRoute =
+  R6AuthenticatedIamTenantsRouteImport.update({
+    id: '/iam/tenants',
+    path: '/iam/tenants',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedIamRolesRoute = R6AuthenticatedIamRolesRouteImport.update({
   id: '/iam/roles',
   path: '/iam/roles',
-  getParentRoute: () => AuthenticatedRoute,
+  getParentRoute: () => R6AuthenticatedRoute,
 } as any)
-const AuthenticatedIamPoliciesRoute =
-  AuthenticatedIamPoliciesRouteImport.update({
+const R6AuthenticatedIamPoliciesRoute =
+  R6AuthenticatedIamPoliciesRouteImport.update({
     id: '/iam/policies',
     path: '/iam/policies',
-    getParentRoute: () => AuthenticatedRoute,
+    getParentRoute: () => R6AuthenticatedRoute,
   } as any)
-const AuthenticatedIamIdentitiesRoute =
-  AuthenticatedIamIdentitiesRouteImport.update({
+const R6AuthenticatedIamIdentitiesRoute =
+  R6AuthenticatedIamIdentitiesRouteImport.update({
     id: '/iam/identities',
     path: '/iam/identities',
-    getParentRoute: () => AuthenticatedRoute,
+    getParentRoute: () => R6AuthenticatedRoute,
   } as any)
-const AuthenticatedIamTenantsTenantSlugRoute =
-  AuthenticatedIamTenantsTenantSlugRouteImport.update({
+const R6AuthenticatedIamTenantsTenantSlugRoute =
+  R6AuthenticatedIamTenantsTenantSlugRouteImport.update({
     id: '/iam/tenants_/$tenantSlug',
     path: '/iam/tenants/$tenantSlug',
-    getParentRoute: () => AuthenticatedRoute,
+    getParentRoute: () => R6AuthenticatedRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
-  '/login': typeof LoginRoute
-  '/account-security': typeof AuthenticatedAccountSecurityRoute
-  '/forbidden': typeof AuthenticatedForbiddenRoute
-  '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
-  '/iam/policies': typeof AuthenticatedIamPoliciesRoute
-  '/iam/roles': typeof AuthenticatedIamRolesRoute
-  '/iam/tenants': typeof AuthenticatedIamTenantsRoute
-  '/iam/': typeof AuthenticatedIamIndexRoute
-  '/iam/tenants/$tenantSlug': typeof AuthenticatedIamTenantsTenantSlugRoute
+  '/': typeof IndexRoute
+  '/r6': typeof R6AuthenticatedRouteWithChildren
+  '/r6/login': typeof R6LoginRoute
+  '/r6/account-security': typeof R6AuthenticatedAccountSecurityRoute
+  '/r6/forbidden': typeof R6AuthenticatedForbiddenRoute
+  '/r6/': typeof R6AuthenticatedIndexRoute
+  '/r6/iam/identities': typeof R6AuthenticatedIamIdentitiesRoute
+  '/r6/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
+  '/r6/iam/roles': typeof R6AuthenticatedIamRolesRoute
+  '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/iam/': typeof R6AuthenticatedIamIndexRoute
+  '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRoutesByTo {
-  '/login': typeof LoginRoute
-  '/account-security': typeof AuthenticatedAccountSecurityRoute
-  '/forbidden': typeof AuthenticatedForbiddenRoute
-  '/': typeof AuthenticatedIndexRoute
-  '/iam/identities': typeof AuthenticatedIamIdentitiesRoute
-  '/iam/policies': typeof AuthenticatedIamPoliciesRoute
-  '/iam/roles': typeof AuthenticatedIamRolesRoute
-  '/iam/tenants': typeof AuthenticatedIamTenantsRoute
-  '/iam': typeof AuthenticatedIamIndexRoute
-  '/iam/tenants/$tenantSlug': typeof AuthenticatedIamTenantsTenantSlugRoute
+  '/': typeof IndexRoute
+  '/r6/login': typeof R6LoginRoute
+  '/r6/account-security': typeof R6AuthenticatedAccountSecurityRoute
+  '/r6/forbidden': typeof R6AuthenticatedForbiddenRoute
+  '/r6': typeof R6AuthenticatedIndexRoute
+  '/r6/iam/identities': typeof R6AuthenticatedIamIdentitiesRoute
+  '/r6/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
+  '/r6/iam/roles': typeof R6AuthenticatedIamRolesRoute
+  '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/iam': typeof R6AuthenticatedIamIndexRoute
+  '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/_authenticated': typeof AuthenticatedRouteWithChildren
-  '/login': typeof LoginRoute
-  '/_authenticated/account-security': typeof AuthenticatedAccountSecurityRoute
-  '/_authenticated/forbidden': typeof AuthenticatedForbiddenRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/_authenticated/iam/identities': typeof AuthenticatedIamIdentitiesRoute
-  '/_authenticated/iam/policies': typeof AuthenticatedIamPoliciesRoute
-  '/_authenticated/iam/roles': typeof AuthenticatedIamRolesRoute
-  '/_authenticated/iam/tenants': typeof AuthenticatedIamTenantsRoute
-  '/_authenticated/iam/': typeof AuthenticatedIamIndexRoute
-  '/_authenticated/iam/tenants_/$tenantSlug': typeof AuthenticatedIamTenantsTenantSlugRoute
+  '/': typeof IndexRoute
+  '/r6/_authenticated': typeof R6AuthenticatedRouteWithChildren
+  '/r6/login': typeof R6LoginRoute
+  '/r6/_authenticated/account-security': typeof R6AuthenticatedAccountSecurityRoute
+  '/r6/_authenticated/forbidden': typeof R6AuthenticatedForbiddenRoute
+  '/r6/_authenticated/': typeof R6AuthenticatedIndexRoute
+  '/r6/_authenticated/iam/identities': typeof R6AuthenticatedIamIdentitiesRoute
+  '/r6/_authenticated/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
+  '/r6/_authenticated/iam/roles': typeof R6AuthenticatedIamRolesRoute
+  '/r6/_authenticated/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/_authenticated/iam/': typeof R6AuthenticatedIamIndexRoute
+  '/r6/_authenticated/iam/tenants_/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/login'
-    | '/account-security'
-    | '/forbidden'
-    | '/iam/identities'
-    | '/iam/policies'
-    | '/iam/roles'
-    | '/iam/tenants'
-    | '/iam/'
-    | '/iam/tenants/$tenantSlug'
+    | '/r6'
+    | '/r6/login'
+    | '/r6/account-security'
+    | '/r6/forbidden'
+    | '/r6/'
+    | '/r6/iam/identities'
+    | '/r6/iam/policies'
+    | '/r6/iam/roles'
+    | '/r6/iam/tenants'
+    | '/r6/iam/'
+    | '/r6/iam/tenants/$tenantSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/login'
-    | '/account-security'
-    | '/forbidden'
     | '/'
-    | '/iam/identities'
-    | '/iam/policies'
-    | '/iam/roles'
-    | '/iam/tenants'
-    | '/iam'
-    | '/iam/tenants/$tenantSlug'
+    | '/r6/login'
+    | '/r6/account-security'
+    | '/r6/forbidden'
+    | '/r6'
+    | '/r6/iam/identities'
+    | '/r6/iam/policies'
+    | '/r6/iam/roles'
+    | '/r6/iam/tenants'
+    | '/r6/iam'
+    | '/r6/iam/tenants/$tenantSlug'
   id:
     | '__root__'
-    | '/_authenticated'
-    | '/login'
-    | '/_authenticated/account-security'
-    | '/_authenticated/forbidden'
-    | '/_authenticated/'
-    | '/_authenticated/iam/identities'
-    | '/_authenticated/iam/policies'
-    | '/_authenticated/iam/roles'
-    | '/_authenticated/iam/tenants'
-    | '/_authenticated/iam/'
-    | '/_authenticated/iam/tenants_/$tenantSlug'
+    | '/'
+    | '/r6/_authenticated'
+    | '/r6/login'
+    | '/r6/_authenticated/account-security'
+    | '/r6/_authenticated/forbidden'
+    | '/r6/_authenticated/'
+    | '/r6/_authenticated/iam/identities'
+    | '/r6/_authenticated/iam/policies'
+    | '/r6/_authenticated/iam/roles'
+    | '/r6/_authenticated/iam/tenants'
+    | '/r6/_authenticated/iam/'
+    | '/r6/_authenticated/iam/tenants_/$tenantSlug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
-  LoginRoute: typeof LoginRoute
+  IndexRoute: typeof IndexRoute
+  R6AuthenticatedRoute: typeof R6AuthenticatedRouteWithChildren
+  R6LoginRoute: typeof R6LoginRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated': {
-      id: '/_authenticated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/forbidden': {
-      id: '/_authenticated/forbidden'
+    '/r6/login': {
+      id: '/r6/login'
+      path: '/r6/login'
+      fullPath: '/r6/login'
+      preLoaderRoute: typeof R6LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r6/_authenticated': {
+      id: '/r6/_authenticated'
+      path: '/r6'
+      fullPath: '/r6'
+      preLoaderRoute: typeof R6AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r6/_authenticated/': {
+      id: '/r6/_authenticated/'
+      path: '/'
+      fullPath: '/r6/'
+      preLoaderRoute: typeof R6AuthenticatedIndexRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/forbidden': {
+      id: '/r6/_authenticated/forbidden'
       path: '/forbidden'
-      fullPath: '/forbidden'
-      preLoaderRoute: typeof AuthenticatedForbiddenRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/forbidden'
+      preLoaderRoute: typeof R6AuthenticatedForbiddenRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/account-security': {
-      id: '/_authenticated/account-security'
+    '/r6/_authenticated/account-security': {
+      id: '/r6/_authenticated/account-security'
       path: '/account-security'
-      fullPath: '/account-security'
-      preLoaderRoute: typeof AuthenticatedAccountSecurityRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/account-security'
+      preLoaderRoute: typeof R6AuthenticatedAccountSecurityRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/iam/': {
-      id: '/_authenticated/iam/'
+    '/r6/_authenticated/iam/': {
+      id: '/r6/_authenticated/iam/'
       path: '/iam'
-      fullPath: '/iam/'
-      preLoaderRoute: typeof AuthenticatedIamIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/iam/'
+      preLoaderRoute: typeof R6AuthenticatedIamIndexRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/iam/tenants': {
-      id: '/_authenticated/iam/tenants'
+    '/r6/_authenticated/iam/tenants': {
+      id: '/r6/_authenticated/iam/tenants'
       path: '/iam/tenants'
-      fullPath: '/iam/tenants'
-      preLoaderRoute: typeof AuthenticatedIamTenantsRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/iam/tenants'
+      preLoaderRoute: typeof R6AuthenticatedIamTenantsRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/iam/roles': {
-      id: '/_authenticated/iam/roles'
+    '/r6/_authenticated/iam/roles': {
+      id: '/r6/_authenticated/iam/roles'
       path: '/iam/roles'
-      fullPath: '/iam/roles'
-      preLoaderRoute: typeof AuthenticatedIamRolesRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/iam/roles'
+      preLoaderRoute: typeof R6AuthenticatedIamRolesRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/iam/policies': {
-      id: '/_authenticated/iam/policies'
+    '/r6/_authenticated/iam/policies': {
+      id: '/r6/_authenticated/iam/policies'
       path: '/iam/policies'
-      fullPath: '/iam/policies'
-      preLoaderRoute: typeof AuthenticatedIamPoliciesRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/iam/policies'
+      preLoaderRoute: typeof R6AuthenticatedIamPoliciesRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/iam/identities': {
-      id: '/_authenticated/iam/identities'
+    '/r6/_authenticated/iam/identities': {
+      id: '/r6/_authenticated/iam/identities'
       path: '/iam/identities'
-      fullPath: '/iam/identities'
-      preLoaderRoute: typeof AuthenticatedIamIdentitiesRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/iam/identities'
+      preLoaderRoute: typeof R6AuthenticatedIamIdentitiesRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
-    '/_authenticated/iam/tenants_/$tenantSlug': {
-      id: '/_authenticated/iam/tenants_/$tenantSlug'
+    '/r6/_authenticated/iam/tenants_/$tenantSlug': {
+      id: '/r6/_authenticated/iam/tenants_/$tenantSlug'
       path: '/iam/tenants/$tenantSlug'
-      fullPath: '/iam/tenants/$tenantSlug'
-      preLoaderRoute: typeof AuthenticatedIamTenantsTenantSlugRouteImport
-      parentRoute: typeof AuthenticatedRoute
+      fullPath: '/r6/iam/tenants/$tenantSlug'
+      preLoaderRoute: typeof R6AuthenticatedIamTenantsTenantSlugRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
     }
   }
 }
 
-interface AuthenticatedRouteChildren {
-  AuthenticatedAccountSecurityRoute: typeof AuthenticatedAccountSecurityRoute
-  AuthenticatedForbiddenRoute: typeof AuthenticatedForbiddenRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
-  AuthenticatedIamIdentitiesRoute: typeof AuthenticatedIamIdentitiesRoute
-  AuthenticatedIamPoliciesRoute: typeof AuthenticatedIamPoliciesRoute
-  AuthenticatedIamRolesRoute: typeof AuthenticatedIamRolesRoute
-  AuthenticatedIamTenantsRoute: typeof AuthenticatedIamTenantsRoute
-  AuthenticatedIamIndexRoute: typeof AuthenticatedIamIndexRoute
-  AuthenticatedIamTenantsTenantSlugRoute: typeof AuthenticatedIamTenantsTenantSlugRoute
+interface R6AuthenticatedRouteChildren {
+  R6AuthenticatedAccountSecurityRoute: typeof R6AuthenticatedAccountSecurityRoute
+  R6AuthenticatedForbiddenRoute: typeof R6AuthenticatedForbiddenRoute
+  R6AuthenticatedIndexRoute: typeof R6AuthenticatedIndexRoute
+  R6AuthenticatedIamIdentitiesRoute: typeof R6AuthenticatedIamIdentitiesRoute
+  R6AuthenticatedIamPoliciesRoute: typeof R6AuthenticatedIamPoliciesRoute
+  R6AuthenticatedIamRolesRoute: typeof R6AuthenticatedIamRolesRoute
+  R6AuthenticatedIamTenantsRoute: typeof R6AuthenticatedIamTenantsRoute
+  R6AuthenticatedIamIndexRoute: typeof R6AuthenticatedIamIndexRoute
+  R6AuthenticatedIamTenantsTenantSlugRoute: typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 
-const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAccountSecurityRoute: AuthenticatedAccountSecurityRoute,
-  AuthenticatedForbiddenRoute: AuthenticatedForbiddenRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
-  AuthenticatedIamIdentitiesRoute: AuthenticatedIamIdentitiesRoute,
-  AuthenticatedIamPoliciesRoute: AuthenticatedIamPoliciesRoute,
-  AuthenticatedIamRolesRoute: AuthenticatedIamRolesRoute,
-  AuthenticatedIamTenantsRoute: AuthenticatedIamTenantsRoute,
-  AuthenticatedIamIndexRoute: AuthenticatedIamIndexRoute,
-  AuthenticatedIamTenantsTenantSlugRoute:
-    AuthenticatedIamTenantsTenantSlugRoute,
+const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
+  R6AuthenticatedAccountSecurityRoute: R6AuthenticatedAccountSecurityRoute,
+  R6AuthenticatedForbiddenRoute: R6AuthenticatedForbiddenRoute,
+  R6AuthenticatedIndexRoute: R6AuthenticatedIndexRoute,
+  R6AuthenticatedIamIdentitiesRoute: R6AuthenticatedIamIdentitiesRoute,
+  R6AuthenticatedIamPoliciesRoute: R6AuthenticatedIamPoliciesRoute,
+  R6AuthenticatedIamRolesRoute: R6AuthenticatedIamRolesRoute,
+  R6AuthenticatedIamTenantsRoute: R6AuthenticatedIamTenantsRoute,
+  R6AuthenticatedIamIndexRoute: R6AuthenticatedIamIndexRoute,
+  R6AuthenticatedIamTenantsTenantSlugRoute:
+    R6AuthenticatedIamTenantsTenantSlugRoute,
 }
 
-const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
-  AuthenticatedRouteChildren,
+const R6AuthenticatedRouteWithChildren = R6AuthenticatedRoute._addFileChildren(
+  R6AuthenticatedRouteChildren,
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  AuthenticatedRoute: AuthenticatedRouteWithChildren,
-  LoginRoute: LoginRoute,
+  IndexRoute: IndexRoute,
+  R6AuthenticatedRoute: R6AuthenticatedRouteWithChildren,
+  R6LoginRoute: R6LoginRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

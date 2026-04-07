@@ -41,7 +41,7 @@ export function ChangePasswordForm({ onSuccess }: FormProps) {
 				onSuccess();
 				toast.success("Password changed. Please log in again.");
 				await logout();
-				navigate({ to: "/login", replace: true });
+				navigate({ to: "/r6/login", replace: true });
 			},
 			onError: (err) => toast.error(getApiErrorMessage(err)),
 		});

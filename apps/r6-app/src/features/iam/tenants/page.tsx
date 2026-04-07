@@ -118,7 +118,7 @@ export default function TenantsPage() {
 					onRestore={handleRestore}
 					onRowClick={(t) =>
 						navigate({
-							to: "/iam/tenants/$tenantSlug",
+							to: "/r6/iam/tenants/$tenantSlug",
 							params: { tenantSlug: t.slug },
 						})
 					}

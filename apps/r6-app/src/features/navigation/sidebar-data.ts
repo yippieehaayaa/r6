@@ -163,32 +163,32 @@ export const data = {
 		},
 		{
 			title: "Identity & Access",
-			url: "/iam",
+			url: "/r6/iam",
 			icon: Shield,
 			items: [
 				{
 					title: "Overview",
-					url: "/iam",
+					url: "/r6/iam",
 					permission: "iam:identity:read",
 				},
 				{
 					title: "Identities",
-					url: "/iam/identities",
+					url: "/r6/iam/identities",
 					permission: "iam:identity:read",
 				},
 				{
 					title: "Roles",
-					url: "/iam/roles",
+					url: "/r6/iam/roles",
 					permission: "iam:role:read",
 				},
 				{
 					title: "Policies",
-					url: "/iam/policies",
+					url: "/r6/iam/policies",
 					permission: "iam:policy:read",
 				},
 				{
 					title: "Tenants",
-					url: "/iam/tenants",
+					url: "/r6/iam/tenants",
 					adminOnly: true,
 				},
 			],

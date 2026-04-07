@@ -58,7 +58,7 @@ export function LoginForm({
 				return;
 			}
 			toast.success("Signed in successfully");
-			navigate({ to: "/" });
+			navigate({ to: "/r6" });
 		} catch (error) {
 			const { code, message, details } = parseApiError(error);
 
@@ -97,7 +97,7 @@ export function LoginForm({
 		try {
 			await auth.totpVerify(totpChallenge, code);
 			toast.success("Signed in successfully");
-			navigate({ to: "/" });
+			navigate({ to: "/r6" });
 		} catch (error) {
 			const { code: errCode } = parseApiError(error);
 			if (errCode === "invalid_totp_code") {
