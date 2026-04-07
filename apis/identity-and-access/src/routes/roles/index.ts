@@ -3,6 +3,7 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import {
   requireNotAdmin,
+  requireNotTargetingProtectedRole,
   requirePermission,
   requireTenantScope,
 } from "../../middleware/guard";
@@ -35,12 +36,14 @@ router.patch(
   "/:id",
   requireNotAdmin(),
   requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
   updateRoleHandler,
 );
 router.delete(
   "/:id",
   requireNotAdmin(),
   requirePermission(IAM_PERMISSIONS.ROLE_DELETE),
+  requireNotTargetingProtectedRole(),
   remove,
 );
 
@@ -49,6 +52,7 @@ router.post(
   "/:id/restore",
   requireNotAdmin(),
   requirePermission(IAM_PERMISSIONS.ROLE_DELETE),
+  requireNotTargetingProtectedRole(),
   restore,
 );
 
@@ -57,18 +61,21 @@ router.post(
   "/:id/policies",
   requireNotAdmin(),
   requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
   attachPolicy,
 );
 router.delete(
   "/:id/policies/:policyId",
   requireNotAdmin(),
   requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
   detachPolicy,
 );
 router.put(
   "/:id/policies",
   requireNotAdmin(),
   requirePermission(IAM_PERMISSIONS.ROLE_UPDATE),
+  requireNotTargetingProtectedRole(),
   setPolicies,
 );
 

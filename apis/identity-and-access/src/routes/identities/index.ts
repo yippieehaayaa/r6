@@ -4,6 +4,7 @@ import { authMiddleware } from "../../middleware/auth";
 import {
   requireNotAdmin,
   requireNotSelf,
+  requireNotTargetingElevatedIdentity,
   requirePermission,
   requireSelfOrAdminOrTenantOwner,
   requireTenantScope,
@@ -55,6 +56,7 @@ router.patch(
   requireNotSelf(),
   requireTenantScope(),
   requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   updateIdentityHandler,
 );
 router.delete(
@@ -81,6 +83,7 @@ router.post(
   requireNotSelf(),
   requireTenantScope(),
   requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   assignRole,
 );
 router.delete(
@@ -89,6 +92,7 @@ router.delete(
   requireNotSelf(),
   requireTenantScope(),
   requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   removeRole,
 );
 router.put(
@@ -97,6 +101,7 @@ router.put(
   requireNotSelf(),
   requireTenantScope(),
   requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
+  requireNotTargetingElevatedIdentity(),
   setRoles,
 );
 

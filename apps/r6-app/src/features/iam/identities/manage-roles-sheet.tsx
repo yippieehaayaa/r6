@@ -1,5 +1,4 @@
 import type { IdentitySafe, Role } from "@r6/schemas";
-import { PROTECTED_ROLES } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -77,22 +76,6 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 		}
 	}, [active]);
 
-	const lockedChips = useMemo(
-		() =>
-			[...assignedRoles.values()].filter((r) =>
-				(PROTECTED_ROLES as readonly string[]).includes(r.name),
-			),
-		[assignedRoles],
-	);
-
-	const removableChips = useMemo(
-		() =>
-			[...assignedRoles.values()].filter(
-				(r) => !(PROTECTED_ROLES as readonly string[]).includes(r.name),
-			),
-		[assignedRoles],
-	);
-
 	// Exclude already-assigned roles from search results
 	const filteredSearchResults = useMemo(
 		() => (searchResults?.data ?? []).filter((r) => !assignedRoles.has(r.id)),
@@ -161,15 +144,7 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 						</p>
 					) : (
 						<div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
-							{lockedChips.map((role) => (
-								<span
-									key={role.id}
-									className="inline-flex items-center gap-1 rounded-full border bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground select-none"
-								>
-									{role.name}
-								</span>
-							))}
-							{removableChips.map((role) => (
+							{[...assignedRoles.values()].map((role) => (
 								<span
 									key={role.id}
 									className="inline-flex items-center gap-1 rounded-full border bg-secondary px-2.5 py-0.5 text-xs font-medium"

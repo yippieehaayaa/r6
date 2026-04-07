@@ -25,6 +25,8 @@ export { requireAdmin } from "./require-admin";
 export { requireAdminOrTenantOwner } from "./require-admin-or-tenant-owner";
 export { requireNotAdmin } from "./require-not-admin";
 export { requireNotSelf } from "./require-not-self";
+export { requireNotTargetingElevatedIdentity } from "./require-not-targeting-elevated-identity";
+export { requireNotTargetingProtectedRole } from "./require-not-targeting-protected-role";
 export { requirePermission } from "./require-permission";
 export { requireSelfOrAdminOrTenantOwner } from "./require-self-or-admin-or-tenant-owner";
 export { requireTenantScope } from "./require-tenant-scope";
