@@ -10,6 +10,7 @@ import {
   generateDeviceFingerprint,
   signAccessToken,
   signRefreshToken,
+  signTotpChallengeToken,
 } from "../../../lib/jwt";
 import { buildTokenClaims } from "../helpers";
 
@@ -73,6 +74,16 @@ export async function login(
 
     const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
     const claims = buildTokenClaims(full);
+
+    // ── TOTP gate ────────────────────────────────────────────
+    // If the identity has TOTP enabled, issue a short-lived challenge token
+    // instead of full access/refresh tokens. The client must exchange this
+    // at POST /auth/totp/verify with a valid 6-digit code.
+    if (full.totpEnabled) {
+      const challengeToken = await signTotpChallengeToken(full.id);
+      res.status(200).json({ totpRequired: true, challengeToken });
+      return;
+    }
 
     const fingerprint = generateDeviceFingerprint(
       req.headers["user-agent"] ?? "",

@@ -1,6 +1,8 @@
-export const toSafeIdentity = <T extends { hash: string; salt: string }>(
+export const toSafeIdentity = <
+  T extends { hash: string; salt: string; totpSecret?: string | null },
+>(
   identity: T,
 ) => {
-  const { hash, salt, ...safe } = identity;
+  const { hash, salt, totpSecret, ...safe } = identity;
   return safe;
 };

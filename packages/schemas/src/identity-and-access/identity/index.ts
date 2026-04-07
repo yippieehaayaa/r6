@@ -89,6 +89,15 @@ export const IdentitySchema = TenantScopedSchema.extend({
 
   kind: IdentityKindSchema.default("USER"),
   status: IdentityStatusSchema.default("PENDING_VERIFICATION"),
+
+  /** Whether TOTP two-factor authentication is active for this identity */
+  totpEnabled: z.boolean().default(false),
+
+  /** AES-256-GCM encrypted TOTP secret — NEVER expose to clients */
+  totpSecret: z.string().nullable().optional(),
+
+  /** When the TOTP secret was first verified; null when TOTP is not enabled */
+  totpVerifiedAt: NullableTimestampSchema.optional(),
 });
 
 export type Identity = z.infer<typeof IdentitySchema>;
@@ -98,6 +107,7 @@ export type Identity = z.infer<typeof IdentitySchema>;
 export const IdentitySafeSchema = IdentitySchema.omit({
   hash: true,
   salt: true,
+  totpSecret: true,
 });
 
 export type IdentitySafe = z.infer<typeof IdentitySafeSchema>;
@@ -231,3 +241,30 @@ export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;
 export const ListIdentitiesQuerySchema = ListQuerySchema;
 
 export type ListIdentitiesQuery = z.infer<typeof ListIdentitiesQuerySchema>;
+
+// ── TOTP setup / management ─────────────────────────────────
+
+/**
+ * Returned by GET /me/totp/setup.
+ * Contains everything the identity needs to register in their authenticator app.
+ */
+export const TotpSetupResponseSchema = z.object({
+  qrCodeDataUrl: z.string().min(1),
+  manualEntryKey: z.string().min(1),
+});
+
+export type TotpSetupResponse = z.infer<typeof TotpSetupResponseSchema>;
+
+/**
+ * Body for POST /me/totp/enable.
+ * The identity submits the 6-digit code from their authenticator app
+ * to confirm they have successfully enrolled.
+ */
+export const TotpEnableRequestSchema = z.object({
+  code: z
+    .string()
+    .length(6, "TOTP code must be exactly 6 digits")
+    .regex(/^\d{6}$/, "TOTP code must be 6 digits"),
+});
+
+export type TotpEnableRequestInput = z.infer<typeof TotpEnableRequestSchema>;

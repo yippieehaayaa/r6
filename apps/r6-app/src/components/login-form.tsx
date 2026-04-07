@@ -1,7 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type LoginRequestInput, LoginRequestSchema } from "@r6/schemas";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2Icon } from "lucide-react";
+import { ArrowLeftIcon, Loader2Icon, ShieldIcon } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { useAuth } from "@/auth";
@@ -21,6 +22,11 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+	InputOTP,
+	InputOTPGroup,
+	InputOTPSlot,
+} from "@/components/ui/input-otp";
 import { parseApiError } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +36,10 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
 	const navigate = useNavigate();
 	const auth = useAuth();
+
+	const [totpChallenge, setTotpChallenge] = useState<string | null>(null);
+	const [totpCode, setTotpCode] = useState("");
+	const [isTotpSubmitting, setIsTotpSubmitting] = useState(false);
 
 	const {
 		register,
@@ -42,7 +52,11 @@ export function LoginForm({
 
 	async function onSubmit(values: LoginRequestInput) {
 		try {
-			await auth.login(values);
+			const result = await auth.login(values);
+			if (result.totpRequired) {
+				setTotpChallenge(result.challengeToken);
+				return;
+			}
 			toast.success("Signed in successfully");
 			navigate({ to: "/" });
 		} catch (error) {
@@ -76,6 +90,109 @@ export function LoginForm({
 			}
 		}
 	}
+
+	async function onTotpComplete(code: string) {
+		if (!totpChallenge || code.length !== 6) return;
+		setIsTotpSubmitting(true);
+		try {
+			await auth.totpVerify(totpChallenge, code);
+			toast.success("Signed in successfully");
+			navigate({ to: "/" });
+		} catch (error) {
+			const { code: errCode } = parseApiError(error);
+			if (errCode === "invalid_totp_code") {
+				toast.error("Incorrect code. Please try again.");
+			} else if (errCode === "invalid_token") {
+				toast.error("Session expired. Please sign in again.");
+				setTotpChallenge(null);
+				setTotpCode("");
+			} else {
+				toast.error("Verification failed. Please try again.");
+			}
+			setTotpCode("");
+		} finally {
+			setIsTotpSubmitting(false);
+		}
+	}
+
+	// ── TOTP step ─────────────────────────────────────────────
+
+	if (totpChallenge) {
+		return (
+			<div
+				className={cn("flex flex-col gap-4 w-full max-w-sm", className)}
+				{...props}
+			>
+				<div className="relative">
+					<div className="absolute inset-0 translate-y-2 translate-x-2 rounded-2xl bg-foreground/[0.04] dark:bg-foreground/[0.06] ring-1 ring-foreground/8 dark:ring-foreground/10" />
+					<Card className="relative border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
+						<CardHeader className="text-center pb-2 pt-8 px-8">
+							<div className="mx-auto mb-4 size-12 rounded-2xl bg-[var(--accent)] shadow-lg shadow-[var(--accent)]/30 flex items-center justify-center">
+								<ShieldIcon className="size-5 text-white" />
+							</div>
+							<CardTitle className="text-[22px] font-semibold tracking-tight text-[var(--text-primary)]">
+								Two-Factor Authentication
+							</CardTitle>
+							<CardDescription className="text-sm text-[var(--text-secondary)] mt-1">
+								Enter the 6-digit code from your authenticator app
+							</CardDescription>
+						</CardHeader>
+						<CardContent className="px-8 pb-8 pt-5">
+							<FieldGroup className="gap-6 items-center">
+								<div className="flex justify-center">
+									<InputOTP
+										maxLength={6}
+										value={totpCode}
+										onChange={setTotpCode}
+										onComplete={onTotpComplete}
+										disabled={isTotpSubmitting}
+									>
+										<InputOTPGroup>
+											<InputOTPSlot index={0} />
+											<InputOTPSlot index={1} />
+											<InputOTPSlot index={2} />
+											<InputOTPSlot index={3} />
+											<InputOTPSlot index={4} />
+											<InputOTPSlot index={5} />
+										</InputOTPGroup>
+									</InputOTP>
+								</div>
+								<Button
+									type="button"
+									disabled={isTotpSubmitting || totpCode.length !== 6}
+									onClick={() => onTotpComplete(totpCode)}
+									className="w-full h-10 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
+								>
+									{isTotpSubmitting ? (
+										<>
+											<Loader2Icon className="size-4 animate-spin" />
+											Verifying...
+										</>
+									) : (
+										"Verify"
+									)}
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									className="w-full h-9 rounded-xl text-[13px] text-[var(--text-secondary)]"
+									onClick={() => {
+										setTotpChallenge(null);
+										setTotpCode("");
+									}}
+								>
+									<ArrowLeftIcon className="size-3.5" />
+									Back to sign in
+								</Button>
+							</FieldGroup>
+						</CardContent>
+					</Card>
+				</div>
+			</div>
+		);
+	}
+
+	// ── Password step ──────────────────────────────────────────
 
 	return (
 		<div

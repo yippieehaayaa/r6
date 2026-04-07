@@ -317,6 +317,42 @@ const setRolesForIdentity = async (
   });
 };
 
+// ─── TOTP ────────────────────────────────────────────────────
+
+// Persists an AES-256-GCM encrypted TOTP secret for the identity.
+// totpEnabled remains false until the user confirms the code (activateTotp).
+// Calling this again while TOTP is already enabled will overwrite the secret,
+// so the caller should guard against that.
+const saveTotpSecret = async (
+  id: string,
+  encryptedSecret: string,
+): Promise<void> => {
+  await prisma.identity.update({
+    where: { id },
+    data: {
+      totpSecret: encryptedSecret,
+      totpEnabled: false,
+      totpVerifiedAt: null,
+    },
+  });
+};
+
+// Marks TOTP as enabled after the identity has verified their first code.
+const activateTotp = async (id: string): Promise<void> => {
+  await prisma.identity.update({
+    where: { id },
+    data: { totpEnabled: true, totpVerifiedAt: new Date() },
+  });
+};
+
+// Clears all TOTP data from an identity, returning them to single-factor auth.
+const disableTotp = async (id: string): Promise<void> => {
+  await prisma.identity.update({
+    where: { id },
+    data: { totpSecret: null, totpEnabled: false, totpVerifiedAt: null },
+  });
+};
+
 // ─── Soft delete ─────────────────────────────────────────────
 
 // Soft-deletes an identity.
@@ -354,4 +390,7 @@ export {
   setRolesForIdentity,
   softDeleteIdentity,
   restoreIdentity,
+  saveTotpSecret,
+  activateTotp,
+  disableTotp,
 };

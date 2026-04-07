@@ -9,6 +9,10 @@ import {
 } from "lucide-react";
 import { LogoutMenuItem } from "#/features/auth/logout";
 import { ChangePasswordMenuItem } from "#/features/me/change-password";
+import {
+	DisableTotpMenuItem,
+	EnableTotpMenuItem,
+} from "#/features/me/totp-setup";
 import { useAuth } from "@/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -103,6 +107,11 @@ export function NavUser() {
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator /> */}
 						<ChangePasswordMenuItem />
+						{profile?.totpEnabled ? (
+							<DisableTotpMenuItem />
+						) : (
+							<EnableTotpMenuItem />
+						)}
 						<DropdownMenuSeparator />
 						<LogoutMenuItem />
 					</DropdownMenuContent>
