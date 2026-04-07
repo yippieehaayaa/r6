@@ -22,11 +22,18 @@ export async function assignRole(
 
     const role = await getRoleById(roleId);
     if (role && (PROTECTED_ROLES as readonly string[]).includes(role.name)) {
-      throw new AppError(
-        403,
-        "forbidden",
-        "Cannot assign a protected role via this endpoint. Use the provision endpoint instead.",
-      );
+      const callerRoles: string[] = Array.isArray(req.jwtPayload?.roles)
+        ? (req.jwtPayload.roles as string[])
+        : [];
+      const isTenantOwner = callerRoles.includes("tenant-owner");
+      // Tenant-owners may assign tenant-admin but not tenant-owner
+      if (!isTenantOwner || role.name === "tenant-owner") {
+        throw new AppError(
+          403,
+          "forbidden",
+          "Cannot assign a protected role via this endpoint. Use the provision endpoint instead.",
+        );
+      }
     }
 
     const result = await assignRoleToIdentity({ identityId: id, roleId });

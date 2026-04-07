@@ -27,11 +27,21 @@ export async function setRoles(
       (r) => r && (PROTECTED_ROLES as readonly string[]).includes(r.name),
     );
     if (protectedMatch) {
-      throw new AppError(
-        403,
-        "forbidden",
-        `Cannot assign protected role "${protectedMatch.name}" via this endpoint. Use the provision endpoint instead.`,
+      const callerRoles: string[] = Array.isArray(req.jwtPayload?.roles)
+        ? (req.jwtPayload.roles as string[])
+        : [];
+      const isTenantOwner = callerRoles.includes("tenant-owner");
+      // Tenant-owners may include tenant-admin but never tenant-owner
+      const tenantOwnerAssignment = roles.find(
+        (r) => r?.name === "tenant-owner",
       );
+      if (!isTenantOwner || tenantOwnerAssignment) {
+        throw new AppError(
+          403,
+          "forbidden",
+          `Cannot assign protected role "${protectedMatch.name}" via this endpoint. Use the provision endpoint instead.`,
+        );
+      }
     }
 
     const result = await setRolesForIdentity(id, roleIds);
