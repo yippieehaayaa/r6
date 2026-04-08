@@ -68,6 +68,10 @@ const experience = [
 			"Implemented Docker-based environments and CI/CD pipelines using GitHub Actions to streamline releases.",
 			"Integrated systems with Google Workspace APIs to automate user provisioning and administrative workflows.",
 			"Developed a graduation management system using low-latency messaging for real-time processing.",
+			"Built a centralized student database that aggregates and serves data from a legacy institutional system with no available source code or maintainer, ensuring continuity of critical data access.",
+			"Engineered an automated enrollment workflow that provisions Google Workspace student accounts upon enrollment by bridging the AMS API endpoint, eliminating manual account creation.",
+			"Developed an online election system for student body council voting, enforcing one-vote-per-student integrity, reducing manual workload for staff, and improving vote credibility.",
+			"Administered the university's Google Workspace environment, managing account provisioning, role assignments, access controls, storage quotas, and security policies across all users.",
 		],
 	},
 ];
@@ -78,7 +82,6 @@ const projects = [
 		tagline: "SaaS Platform for Local Businesses",
 		description:
 			"A microservices-based SaaS platform for inventory and catalog management. Built on a TurboRepo monorepo with a React frontend, Hono APIs, PostgreSQL, and Redis. Deployed on cloud infrastructure with full CI/CD.",
-		tags: ["SaaS", "Microservices", "TurboRepo", "React", "Hono", "PostgreSQL"],
 		cta: "Access Platform",
 		href: "/r6/login",
 		internal: true,
@@ -88,10 +91,32 @@ const projects = [
 		tagline: "Real-Time Institutional Platform",
 		description:
 			"A real-time graduation processing system built for a university, leveraging low-latency messaging for live orchestration of student workflows, Google Workspace integration, and admin dashboards.",
-		tags: ["Node.js", "Docker", "Google Workspace API", "CI/CD", "Real-Time"],
-		cta: "View Project",
-		href: "#",
 		internal: false,
+		confidential: true,
+	},
+	{
+		name: "Centralized Student Database",
+		tagline: "Legacy Data Continuity System",
+		description:
+			"A centralized student database that aggregates and serves data from an unmaintained legacy institutional system with no available source code, ensuring continuity of critical student data access across the university.",
+		internal: false,
+		confidential: true,
+	},
+	{
+		name: "Enrollment Automation Workflow",
+		tagline: "Automated Account Provisioning",
+		description:
+			"An automated workflow that provisions Google Workspace student accounts upon enrollment by bridging the AMS API endpoint, eliminating manual account creation and reducing administrative overhead.",
+		internal: false,
+		confidential: true,
+	},
+	{
+		name: "Student Election System",
+		tagline: "Secure Online Voting Platform",
+		description:
+			"An online election system for student body council voting that enforces one-vote-per-student integrity through secure authentication, reducing staff workload and improving the credibility and transparency of election results.",
+		internal: false,
+		confidential: true,
 	},
 ];
 
@@ -234,19 +259,13 @@ function Projects() {
 							</h3>
 							<p className="mt-3 grow text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
 								{project.description}
+							</p>						{project.confidential && (
+							<p className="mt-4 flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+								<span className="inline-block size-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+								Confidential — owned by University of Baguio. Not publicly accessible.
 							</p>
-							<div className="mt-6 flex flex-wrap gap-2">
-								{project.tags.map((tag) => (
-									<span
-										key={tag}
-										className="rounded-full bg-zinc-100 dark:bg-zinc-800 px-2.5 py-0.5 text-xs font-medium text-zinc-600 dark:text-zinc-400"
-									>
-										{tag}
-									</span>
-								))}
-							</div>
-							<div className="mt-6">
-								{project.internal ? (
+						)}							{project.internal && (
+								<div className="mt-6">
 									<a
 										href={project.href}
 										className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:opacity-70 transition-opacity"
@@ -254,16 +273,8 @@ function Projects() {
 										{project.cta}
 										<ArrowUpRightIcon className="size-4" />
 									</a>
-								) : (
-									<a
-										href={project.href}
-										className="inline-flex items-center gap-1.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:opacity-70 transition-opacity"
-									>
-										{project.cta}
-										<ArrowUpRightIcon className="size-4" />
-									</a>
-								)}
-							</div>
+								</div>
+							)}
 						</div>
 					))}
 				</div>
@@ -361,7 +372,7 @@ function Contact() {
 				</p>
 				<div className="mt-10 flex flex-wrap justify-center gap-4">
 					<a
-						href="https://github.com"
+						href="https://github.com/yippieehaayaa"
 						target="_blank"
 						rel="noreferrer"
 						className="flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 px-6 py-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900"
@@ -370,7 +381,7 @@ function Contact() {
 						<ArrowUpRightIcon className="size-3.5" />
 					</a>
 					<a
-						href="https://linkedin.com"
+						href="https://www.linkedin.com/in/joshua-dave-oropilla-07575123b/"
 						target="_blank"
 						rel="noreferrer"
 						className="flex items-center gap-2 rounded-full border border-zinc-200 dark:border-zinc-700 px-6 py-3 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900"
