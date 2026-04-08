@@ -1,7 +1,5 @@
-import { redis } from "@r6/redis";
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { RedisStore } from "rate-limit-redis";
 import { authMiddleware } from "../../middleware/auth";
 import { login } from "./controller/login";
 import { logout } from "./controller/logout";
@@ -15,9 +13,6 @@ const authLimiter = rateLimit({
   limit: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  store: new RedisStore({
-    sendCommand: (...args: string[]) => redis.sendCommand(args),
-  }),
 });
 
 router.post("/login", authLimiter, login);

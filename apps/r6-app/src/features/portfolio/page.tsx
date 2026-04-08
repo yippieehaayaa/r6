@@ -12,7 +12,14 @@ import {
 const skills = [
 	{
 		category: "Frontend",
-		items: ["React", "TypeScript", "JavaScript", "TanStack Router", "TanStack Query", "TanStack Table"],
+		items: [
+			"React",
+			"TypeScript",
+			"JavaScript",
+			"TanStack Router",
+			"TanStack Query",
+			"TanStack Table",
+		],
 	},
 	{
 		category: "Backend",
@@ -129,8 +136,8 @@ function Hero() {
 			</h1>
 
 			<p className="relative mt-6 max-w-xl text-base text-zinc-500 dark:text-zinc-400 md:text-lg">
-				Building scalable web systems — from microservices to polished
-				frontends — with a focus on performance and clean architecture.
+				Building scalable web systems — from microservices to polished frontends
+				— with a focus on performance and clean architecture.
 			</p>
 
 			<div className="relative mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -154,10 +161,7 @@ function Hero() {
 
 function About() {
 	return (
-		<section
-			id="about"
-			className="bg-zinc-50 dark:bg-zinc-900 py-28 px-6"
-		>
+		<section id="about" className="bg-zinc-50 dark:bg-zinc-900 py-28 px-6">
 			<div className="mx-auto max-w-3xl">
 				<Label icon={<BriefcaseIcon className="size-4" />}>About</Label>
 				<h2 className="mt-4 text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50 sm:text-5xl">
@@ -277,8 +281,11 @@ function Experience() {
 					Where I've worked.
 				</h2>
 				<div className="mt-12 flex flex-col gap-12">
-				{experience.map((job) => (
-					<div key={`${job.title}-${job.company}`} className="relative pl-6 border-l border-zinc-200 dark:border-zinc-800">
+					{experience.map((job) => (
+						<div
+							key={`${job.title}-${job.company}`}
+							className="relative pl-6 border-l border-zinc-200 dark:border-zinc-800"
+						>
 							<div className="absolute -left-1.5 top-1 size-3 rounded-full bg-zinc-900 dark:bg-zinc-100" />
 							<div className="flex flex-wrap items-baseline gap-2">
 								<span className="text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
