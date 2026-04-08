@@ -17,11 +17,44 @@ export const LoginRequestSchema = z.object({
 
 export type LoginRequestInput = z.infer<typeof LoginRequestSchema>;
 
-export const LoginResponseSchema = z.object({
+// Returned when login succeeds without TOTP (or after TOTP verification).
+export const LoginSuccessResponseSchema = z.object({
   accessToken: z.string().min(1),
 });
 
+export type LoginSuccessResponse = z.infer<typeof LoginSuccessResponseSchema>;
+
+// Returned when login succeeds but TOTP verification is required.
+export const TotpChallengeResponseSchema = z.object({
+  totpRequired: z.literal(true),
+  challengeToken: z.string().min(1),
+});
+
+export type TotpChallengeResponse = z.infer<typeof TotpChallengeResponseSchema>;
+
+// Union: what POST /auth/login can return.
+export const LoginResponseSchema = z.union([
+  LoginSuccessResponseSchema,
+  TotpChallengeResponseSchema,
+]);
+
 export type LoginResponse = z.infer<typeof LoginResponseSchema>;
+
+// ── TOTP verification ────────────────────────────────────────
+
+export const TotpVerifyRequestSchema = z.object({
+  challengeToken: z.string().min(1, "Challenge token is required"),
+  code: z
+    .string()
+    .length(6, "TOTP code must be exactly 6 digits")
+    .regex(/^\d{6}$/, "TOTP code must be 6 digits"),
+});
+
+export type TotpVerifyRequestInput = z.infer<typeof TotpVerifyRequestSchema>;
+
+// POST /auth/totp/verify always returns an access token on success.
+export const TotpVerifyResponseSchema = LoginSuccessResponseSchema;
+export type TotpVerifyResponse = z.infer<typeof TotpVerifyResponseSchema>;
 
 // ── Logout ───────────────────────────────────────────────────
 
@@ -33,6 +66,22 @@ export type LogoutResponse = z.infer<typeof LogoutResponseSchema>;
 
 // ── Refresh ──────────────────────────────────────────────────
 
-export const RefreshResponseSchema = LoginResponseSchema;
+export const RefreshResponseSchema = LoginSuccessResponseSchema;
 
 export type RefreshResponse = z.infer<typeof RefreshResponseSchema>;
+
+// ── Sessions ─────────────────────────────────────────────────
+
+export const SessionSchema = z.object({
+  jti: z.string(),
+  userAgent: z.string().nullable(),
+  ipAddress: z.string().nullable(),
+  expiresAt: z.coerce.date(),
+  createdAt: z.coerce.date(),
+});
+
+export type Session = z.infer<typeof SessionSchema>;
+
+export const SessionsResponseSchema = z.array(SessionSchema);
+
+export type SessionsResponse = z.infer<typeof SessionsResponseSchema>;

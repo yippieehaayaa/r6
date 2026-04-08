@@ -131,6 +131,51 @@ export const getPublicJwk = async () => {
   return { ...jwk, use: "sig", alg: "RS256", kid };
 };
 
+// ─── TOTP challenge token ────────────────────────────────────
+//
+// A short-lived RS256 JWT issued after a successful password check when the
+// identity has TOTP enabled.  The client must exchange this token plus a
+// valid TOTP code at POST /auth/totp/verify to obtain full access/refresh tokens.
+// It carries tokenType: "totp_challenge" so it cannot be used as an access or
+// refresh token.
+
+export const signTotpChallengeToken = async (sub: string): Promise<string> => {
+  await loadKeys();
+
+  const expiresAt = new Date(Date.now() + env.JWT_TOTP_CHALLENGE_TTL_MS);
+
+  return new SignJWT({ tokenType: "totp_challenge" })
+    .setProtectedHeader({ alg: "RS256" })
+    .setSubject(sub)
+    .setJti(randomUUID())
+    .setIssuer(env.JWT_ISSUER)
+    .setAudience(env.JWT_AUDIENCE)
+    .setIssuedAt()
+    .setExpirationTime(expiresAt)
+    .sign(privateKey as CryptoKey);
+};
+
+export const verifyTotpChallengeToken = async (
+  token: string,
+): Promise<{ sub: string }> => {
+  await loadKeys();
+
+  const { payload } = await jwtVerify(token, publicKey as CryptoKey, {
+    issuer: env.JWT_ISSUER,
+    audience: env.JWT_AUDIENCE,
+    algorithms: ["RS256"],
+  });
+
+  if (
+    payload.tokenType !== "totp_challenge" ||
+    typeof payload.sub !== "string"
+  ) {
+    throw new Error("invalid_token_type");
+  }
+
+  return { sub: payload.sub };
+};
+
 // Produces a stable HMAC fingerprint for the requesting device.
 // Built from User-Agent + IP so a stolen token from a different
 // network or browser will fail the device binding check on refresh.

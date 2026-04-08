@@ -35,6 +35,11 @@ model Identity {
     kind                IdentityKind   @default(USER)
     status              IdentityStatus @default(PENDING_VERIFICATION)
 
+    // TOTP (optional authenticator-app based 2FA)
+    totpSecret         String? // AES-256-GCM encrypted TOTP secret; null when TOTP not set up
+    totpEnabled        Boolean        @default(false)
+    totpVerifiedAt     DateTime? // when the secret was first confirmed by the identity
+
     // Relations
     roles          Role[]         // many-to-many via implicit join table
     refreshTokens  RefreshToken[]

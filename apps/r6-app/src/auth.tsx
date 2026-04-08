@@ -10,13 +10,21 @@ import {
 import { loginFn } from "@/api/auth/mutations/login";
 import { logoutFn } from "@/api/auth/mutations/logout";
 import { refreshFn } from "@/api/auth/mutations/refresh";
+import { verifyTotpFn } from "@/api/auth/mutations/verify-totp";
 import { getMeFn } from "@/api/me/queries/get-me";
 import { getToken, setToken } from "@/api/token";
 import { parseTokenClaims, type TokenClaims } from "@/lib/parse-token";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
-export type UserProfile = Pick<IdentitySafe, "username" | "email">;
+export type UserProfile = Pick<
+	IdentitySafe,
+	"username" | "email" | "totpEnabled"
+>;
+
+export type LoginResult =
+	| { totpRequired: false }
+	| { totpRequired: true; challengeToken: string };
 
 export interface AuthContext {
 	status: AuthStatus;
@@ -25,7 +33,8 @@ export interface AuthContext {
 	profile: UserProfile | null;
 	hasPermission: (permission: string) => boolean;
 	hasRole: (role: string) => boolean;
-	login: (input: LoginRequestInput) => Promise<void>;
+	login: (input: LoginRequestInput) => Promise<LoginResult>;
+	totpVerify: (challengeToken: string, code: string) => Promise<void>;
 	logout: () => Promise<void>;
 }
 
@@ -43,7 +52,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			setClaims(parseTokenClaims(accessToken));
 			// Profile fetch is best-effort — auth still succeeds if /me fails.
 			getMeFn()
-				.then((me) => setProfile({ username: me.username, email: me.email }))
+				.then((me) =>
+					setProfile({
+						username: me.username,
+						email: me.email,
+						totpEnabled: me.totpEnabled ?? false,
+					}),
+				)
 				.catch(() => null);
 			setStatus("authenticated");
 		},
@@ -62,8 +77,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			});
 	}, [hydrateSession]);
 
-	async function login(input: LoginRequestInput): Promise<void> {
-		const { accessToken } = await loginFn(input);
+	async function login(input: LoginRequestInput): Promise<LoginResult> {
+		const result = await loginFn(input);
+		if ("totpRequired" in result && result.totpRequired) {
+			return { totpRequired: true, challengeToken: result.challengeToken };
+		}
+		if ("accessToken" in result) {
+			await hydrateSession(result.accessToken);
+		}
+		return { totpRequired: false };
+	}
+
+	async function totpVerify(
+		challengeToken: string,
+		code: string,
+	): Promise<void> {
+		const { accessToken } = await verifyTotpFn({ challengeToken, code });
 		await hydrateSession(accessToken);
 	}
 
@@ -104,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 				hasPermission,
 				hasRole,
 				login,
+				totpVerify,
 				logout,
 			}}
 		>

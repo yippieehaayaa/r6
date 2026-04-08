@@ -14,6 +14,17 @@ const envSchema = z.object({
     .optional()
     .default("86400000")
     .transform(Number),
+  JWT_TOTP_CHALLENGE_TTL_MS: z
+    .string()
+    .optional()
+    .default("180000")
+    .transform(Number),
+  TOTP_ENCRYPTION_KEY: z
+    .string()
+    .length(
+      64,
+      "TOTP_ENCRYPTION_KEY must be a 64-character hex string (32 bytes)",
+    ),
   HASH_SECRET: z.string(),
   REDIS_URL: z.string(),
   CORS_ORIGIN: z.string().transform((v) => v.split(",").map((s) => s.trim())),
@@ -29,6 +40,8 @@ const env = envSchema.parse({
   JWT_ISSUER: process.env.JWT_ISSUER,
   JWT_AUDIENCE: process.env.JWT_AUDIENCE,
   JWT_REFRESH_TTL_MS: process.env.JWT_REFRESH_TTL_MS,
+  JWT_TOTP_CHALLENGE_TTL_MS: process.env.JWT_TOTP_CHALLENGE_TTL_MS,
+  TOTP_ENCRYPTION_KEY: process.env.TOTP_ENCRYPTION_KEY,
   HASH_SECRET: process.env.HASH_SECRET,
   REDIS_URL: process.env.REDIS_URL,
   CORS_ORIGIN: process.env.CORS_ORIGIN,

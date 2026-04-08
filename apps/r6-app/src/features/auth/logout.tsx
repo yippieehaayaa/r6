@@ -9,7 +9,7 @@ export function LogoutMenuItem() {
 
 	async function handleLogout() {
 		await logout();
-		navigate({ to: "/login", replace: true });
+		navigate({ to: "/r6/login", replace: true });
 	}
 
 	return (

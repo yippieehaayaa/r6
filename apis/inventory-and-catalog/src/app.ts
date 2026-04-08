@@ -9,7 +9,7 @@ const app: Express = express();
 app.disable("x-powered-by");
 app.set("trust proxy", true);
 app.use(helmet());
-app.use(morgan("dev"));
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(routes);

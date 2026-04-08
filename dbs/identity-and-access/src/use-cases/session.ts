@@ -68,6 +68,23 @@ export const revokeRefreshToken = async (jti: string): Promise<void> => {
   });
 };
 
+// ─── List (active for identity) ──────────────────────────────
+
+// Returns all non-revoked, non-expired sessions for the given identity.
+// Ordered newest-first so callers can display the most recent session at the top.
+export const listActiveSessionsForIdentity = async (
+  identityId: string,
+): Promise<RefreshToken[]> => {
+  return prisma.refreshToken.findMany({
+    where: {
+      identityId,
+      revokedAt: null,
+      expiresAt: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 // ─── Revoke (all for identity) ───────────────────────────────
 
 // Used when an identity is suspended, deleted, or changes

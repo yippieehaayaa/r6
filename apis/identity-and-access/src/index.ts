@@ -1,4 +1,5 @@
 import http from "node:http";
+import { redis } from "@r6/redis";
 import app from "./app";
 import { env } from "./config";
 import { connectDenylist } from "./lib/token-denylist";
@@ -15,3 +16,13 @@ connectDenylist()
     console.error("Failed to connect to Redis denylist:", err);
     process.exit(1);
   });
+
+const shutdown = () => {
+  server.close(async () => {
+    await redis.disconnect();
+    process.exit(0);
+  });
+};
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

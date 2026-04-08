@@ -1,13 +1,23 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { authMiddleware } from "../../middleware/auth";
 import { login } from "./controller/login";
 import { logout } from "./controller/logout";
 import { refresh } from "./controller/refresh";
+import { verifyTotp } from "./controller/verify-totp";
 
 const router: Router = Router();
 
-router.post("/login", login);
-router.post("/refresh", refresh);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post("/login", authLimiter, login);
+router.post("/refresh", authLimiter, refresh);
 router.post("/logout", authMiddleware(), logout);
+router.post("/totp/verify", authLimiter, verifyTotp);
 
 export default router;
