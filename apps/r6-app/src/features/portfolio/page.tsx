@@ -51,7 +51,7 @@ const experience = [
 		period: "Dec 2025 – Present",
 		type: "Part-Time",
 		bullets: [
-			"Founded and developed a SaaS platform for inventory and catalog management used by local businesses.",
+			"Built R6 as a personal passion project — a full-stack SaaS platform for inventory and catalog management, currently used by local businesses in my area. Not a business venture; built purely to explore real-world system design and engineering challenges.",
 			"Architected a microservices-based system using a monorepo (TurboRepo) for scalability and maintainability.",
 			"Built full-stack features across frontend, backend, and infrastructure layers.",
 			"Deployed production-ready services using Docker, CI/CD pipelines, and cloud infrastructure.",
@@ -80,9 +80,9 @@ const experience = [
 const projects = [
 	{
 		name: "R6",
-		tagline: "SaaS Platform for Local Businesses",
+		tagline: "Personal Project · Not a Business",
 		description:
-			"A microservices-based SaaS platform for inventory and catalog management. Built on a TurboRepo monorepo with a React frontend, Hono APIs, PostgreSQL, and Redis. Deployed on cloud infrastructure with full CI/CD.",
+			"A personal passion project — a microservices-based platform for inventory and catalog management, currently used by local businesses in my area. Built to explore real-world system design, not as a commercial venture or startup. There are no plans to monetize or turn this into a tech company.",
 		cta: "Access Platform",
 		href: "/r6/login",
 		internal: true,
@@ -208,8 +208,9 @@ function Hero() {
 				</h1>
 
 				<p className="mt-6 max-w-xl text-base text-zinc-500 dark:text-zinc-400 md:text-lg">
-					Building scalable web systems — from microservices to polished
-					frontends — with a focus on performance and clean architecture.
+					Finding solutions across the tech stack — exploring different areas of
+					the industry with a focus on best practices, performance, and clean
+					architecture.
 				</p>
 
 				<div className="mt-10 flex flex-wrap items-center justify-center gap-3">
