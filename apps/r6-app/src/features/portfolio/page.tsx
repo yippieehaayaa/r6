@@ -27,10 +27,6 @@ const skills = [
 		items: ["Node.js", "Express.js", "Hono"],
 	},
 	{
-		category: "Architecture",
-		items: ["Microservices", "Monorepo (TurboRepo)", "REST API Design"],
-	},
-	{
 		category: "Data",
 		items: ["PostgreSQL", "MongoDB", "Redis"],
 	},
