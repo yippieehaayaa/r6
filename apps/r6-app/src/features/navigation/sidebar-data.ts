@@ -36,17 +36,17 @@ export const data = {
 				},
 				{
 					title: "Warehouses",
-					url: "#",
+					url: "/r6/inventory-and-catalog/warehouses",
 					permission: "inventory:warehouse:read",
 				},
 				{
 					title: "Movements",
-					url: "#",
+					url: "/r6/inventory-and-catalog/movements",
 					permission: "inventory:movement:read",
 				},
 				{
 					title: "Damage & Losses",
-					url: "#",
+					url: "/r6/inventory-and-catalog/damage-losses",
 					permission: "inventory:damage:read",
 				},
 			],
@@ -63,7 +63,7 @@ export const data = {
 				},
 				{
 					title: "Variants",
-					url: "#",
+					url: "/r6/inventory-and-catalog/variants",
 					permission: "catalog:variant:read",
 				},
 				{
@@ -73,7 +73,7 @@ export const data = {
 				},
 				{
 					title: "Brands",
-					url: "#",
+					url: "/r6/inventory-and-catalog/brands",
 					permission: "catalog:brand:read",
 				},
 			],
