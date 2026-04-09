@@ -45,3 +45,9 @@ export class WarehouseHasInventoryError extends ConflictError {
     super(message);
   }
 }
+
+export class DamageRecordNotFoundError extends NotFoundError {
+  constructor(message = "Damage record not found") {
+    super(message);
+  }
+}

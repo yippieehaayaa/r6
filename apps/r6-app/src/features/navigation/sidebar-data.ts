@@ -5,7 +5,6 @@ import {
 	Package,
 	PackagePlus,
 	PackageSearch,
-	Receipt,
 	Shield,
 	Tag,
 	Truck,
@@ -25,29 +24,6 @@ export const data = {
 		},
 	],
 	navMain: [
-		{
-			title: "Point of Sale",
-			url: "#",
-			icon: Receipt,
-			isActive: true,
-			items: [
-				{
-					title: "New Sale",
-					url: "#",
-					permission: "pos:sale:create",
-				},
-				{
-					title: "Transaction History",
-					url: "#",
-					permission: "pos:transaction:read",
-				},
-				{
-					title: "Receipts",
-					url: "#",
-					permission: "pos:receipt:read",
-				},
-			],
-		},
 		{
 			title: "Inventory",
 			url: "#",
@@ -195,12 +171,6 @@ export const data = {
 		},
 	],
 	projects: [
-		{
-			name: "New Sale",
-			url: "#",
-			icon: Receipt,
-			permission: "pos:sale:create",
-		},
 		{
 			name: "New Purchase Order",
 			url: "#",

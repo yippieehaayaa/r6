@@ -1,4 +1,9 @@
 export {
+  getDamage,
+  type ListDamagesInput,
+  listDamages,
+} from "../../models/inventory/damage";
+export {
   type ListMovementsInput,
   listMovements,
 } from "../../models/inventory/movement-history";

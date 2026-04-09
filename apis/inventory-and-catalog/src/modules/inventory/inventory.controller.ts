@@ -175,6 +175,32 @@ router.post(
   },
 );
 
+// ─── Damage & Losses ─────────────────────────────────────────────────────────
+
+router.get("/damages", async (req: Request, res: Response) => {
+  const page = Number(req.query.page ?? 1);
+  const limit = Number(req.query.limit ?? 20);
+  const variantId = req.query.variantId as string | undefined;
+  const warehouseId = req.query.warehouseId as string | undefined;
+  const from = req.query.from ? new Date(req.query.from as string) : undefined;
+  const to = req.query.to ? new Date(req.query.to as string) : undefined;
+
+  const result = await inventoryService.listDamages({
+    page,
+    limit,
+    variantId,
+    warehouseId,
+    from,
+    to,
+  });
+  res.json(result);
+});
+
+router.get("/damages/:id", async (req: Request, res: Response) => {
+  const record = await inventoryService.getDamage(req.params.id as string);
+  res.json(record);
+});
+
 router.post(
   "/stock/record-damage",
   validate(recordDamageSchema),

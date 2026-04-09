@@ -3,6 +3,7 @@ import * as inventoryRepo from "./inventory.repository";
 import * as warehouseRepo from "./warehouse.repository";
 
 export type {
+  ListDamagesInput,
   ListMovementsInput,
   ReceiveGoodsInput,
 } from "./inventory.repository";
@@ -111,6 +112,11 @@ export const recordDamage = (
   performedBy: string,
 ) =>
   inventoryRepo.recordDamage(variantId, warehouseId, qty, notes, performedBy);
+
+export const listDamages = (input: inventoryRepo.ListDamagesInput) =>
+  inventoryRepo.listDamages(input);
+
+export const getDamage = (id: string) => inventoryRepo.getDamage(id);
 
 // --- Movement History ---
 

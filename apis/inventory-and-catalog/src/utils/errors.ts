@@ -16,6 +16,7 @@ export {
   ProductVariantSkuExistsError,
 } from "../modules/catalog/catalog.errors";
 export {
+  DamageRecordNotFoundError,
   InsufficientStockError,
   InvalidReservationError,
   InventoryItemNotFoundError,
