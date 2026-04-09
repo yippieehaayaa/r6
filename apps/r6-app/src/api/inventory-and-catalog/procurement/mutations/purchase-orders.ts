@@ -14,6 +14,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { procurementKeys } from "../keys";
 
 export async function createPurchaseOrderFn(
 	body: CreatePurchaseOrder,
@@ -118,7 +119,7 @@ export function useCreatePurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -127,7 +128,7 @@ export function useUpdatePurchaseOrderMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdatePurchaseOrder }) =>
 			updatePurchaseOrderFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -135,7 +136,7 @@ export function useDeletePurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deletePurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -143,7 +144,7 @@ export function useSendPurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: sendPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -151,7 +152,7 @@ export function useConfirmPurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: confirmPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -159,7 +160,7 @@ export function useCancelPurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: cancelPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -176,8 +177,8 @@ export function useReceivePurchaseOrderMutation() {
 			performedBy: string;
 		}) => receivePurchaseOrderFn(id, receipts, performedBy),
 		onSuccess: () => {
-			qc.invalidateQueries({ queryKey: ["purchase-orders"] });
-			qc.invalidateQueries({ queryKey: ["stock"] });
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() });
+			qc.invalidateQueries({ queryKey: ["inventory", "stock"] });
 		},
 	});
 }
@@ -192,7 +193,7 @@ export function useAddItemToOrderMutation() {
 			orderId: string;
 			body: CreatePurchaseOrderItem;
 		}) => addItemToOrderFn(orderId, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -208,7 +209,7 @@ export function useUpdateOrderItemMutation() {
 			variantId: string;
 			body: UpdatePurchaseOrderItem;
 		}) => updateOrderItemFn(orderId, variantId, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -222,6 +223,6 @@ export function useRemoveItemFromOrderMutation() {
 			orderId: string;
 			variantId: string;
 		}) => removeItemFromOrderFn(orderId, variantId),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["purchase-orders"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }

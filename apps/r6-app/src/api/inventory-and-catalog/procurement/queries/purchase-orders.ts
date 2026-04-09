@@ -5,8 +5,9 @@ import {
 	PurchaseOrderItemSchema,
 	PurchaseOrderSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { procurementKeys } from "../keys";
 
 export interface ListPurchaseOrdersParams {
 	page?: number;
@@ -39,38 +40,25 @@ export async function getPurchaseOrderFn(id: string): Promise<PurchaseOrder> {
 	return PurchaseOrderSchema.parse(data);
 }
 
-export async function getPurchaseOrderItemsFn(
-	orderId: string,
-): Promise<PurchaseOrderItem[]> {
-	const { data } = await inventoryApi.get<unknown>(
-		`/procurement/orders/${orderId}/items`,
-	);
-	return PurchaseOrderItemSchema.array().parse(data);
-}
-
 export function useListPurchaseOrdersQuery(
 	params: ListPurchaseOrdersParams = {},
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["purchase-orders", params],
+		queryKey: procurementKeys.orders.list(params),
 		queryFn: () => listPurchaseOrdersFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetPurchaseOrderQuery(id: string) {
 	return useQuery({
-		queryKey: ["purchase-orders", id],
+		queryKey: procurementKeys.orders.detail(id),
 		queryFn: () => getPurchaseOrderFn(id),
 		enabled: !!id,
-	});
-}
-
-export function useGetPurchaseOrderItemsQuery(orderId: string) {
-	return useQuery({
-		queryKey: ["purchase-orders", orderId, "items"],
-		queryFn: () => getPurchaseOrderItemsFn(orderId),
-		enabled: !!orderId,
+		staleTime: 1000 * 60 * 5,
 	});
 }

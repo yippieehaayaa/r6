@@ -8,6 +8,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { procurementKeys } from "../keys";
 
 export async function createSupplierFn(
 	body: CreateSupplier,
@@ -38,7 +39,7 @@ export function useCreateSupplierMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createSupplierFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
 	});
 }
 
@@ -47,7 +48,7 @@ export function useUpdateSupplierMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateSupplier }) =>
 			updateSupplierFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
 	});
 }
 
@@ -55,6 +56,6 @@ export function useDeleteSupplierMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteSupplierFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["suppliers"] }),
+		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
 	});
 }

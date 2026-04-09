@@ -3,8 +3,9 @@ import {
 	type Supplier,
 	SupplierSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { procurementKeys } from "../keys";
 
 export interface ListSuppliersParams {
 	page?: number;
@@ -36,16 +37,20 @@ export function useListSuppliersQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["suppliers", params],
+		queryKey: procurementKeys.suppliers.list(params),
 		queryFn: () => listSuppliersFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetSupplierQuery(id: string) {
 	return useQuery({
-		queryKey: ["suppliers", id],
+		queryKey: procurementKeys.suppliers.detail(id),
 		queryFn: () => getSupplierFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }

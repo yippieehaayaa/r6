@@ -3,8 +3,9 @@ import {
 	type Season,
 	SeasonSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { seasonsKeys } from "../keys";
 
 export interface ListSeasonsParams {
 	page?: number;
@@ -38,24 +39,29 @@ export function useListSeasonsQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["seasons", params],
+		queryKey: seasonsKeys.list(params),
 		queryFn: () => listSeasonsFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetSeasonQuery(id: string) {
 	return useQuery({
-		queryKey: ["seasons", id],
+		queryKey: seasonsKeys.detail(id),
 		queryFn: () => getSeasonFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }
 
 export function useGetSeasonBySlugQuery(slug: string) {
 	return useQuery({
-		queryKey: ["seasons", "slug", slug],
+		queryKey: seasonsKeys.bySlug(slug),
 		queryFn: () => getSeasonBySlugFn(slug),
 		enabled: !!slug,
+		staleTime: 1000 * 60 * 5,
 	});
 }

@@ -7,6 +7,7 @@ const dateTimeField = z
 
 export const SeasonSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   name: z.string(),
   slug: z.string(),
   description: z.string().optional(),
