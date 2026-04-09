@@ -1,6 +1,6 @@
 import type { PaginationState } from "@tanstack/react-table";
 import { AlertTriangle } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { StockStatus } from "@/api/inventory-and-catalog";
 import {
 	useGetStockCountsQuery,
@@ -8,17 +8,13 @@ import {
 	useListWarehousesQuery,
 } from "@/api/inventory-and-catalog";
 import { Button } from "@/components/ui/button";
-import { type InventoryRow, InventoryTable } from "./inventory-table";
+import { InventoryTable } from "./inventory-table";
 import { StockAdjustSheet } from "./stock-adjust-sheet";
-
-function computeStatus(
-	onHand: number,
-	reorderPoint: number,
-): InventoryRow["status"] {
-	if (onHand === 0) return "OUT_OF_STOCK";
-	if (onHand <= reorderPoint) return "LOW_STOCK";
-	return "IN_STOCK";
-}
+import { StockDetailSheet } from "./stock-detail-sheet";
+import { StockStatCards } from "./stock-stat-cards";
+import { StockTransferSheet } from "./stock-transfer-sheet";
+import type { InventoryRow, StockCounts, StockStatusFilter } from "./types";
+import { computeStatus } from "./types";
 
 const PAGE_SIZE = 20;
 
@@ -26,9 +22,23 @@ export default function InventoryPage() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [warehouseFilter, setWarehouseFilter] = useState("all");
-	const [statusFilter, setStatusFilter] = useState("all");
+	const [statusFilter, setStatusFilter] = useState<StockStatusFilter>("all");
+
+	// Adjust sheet
 	const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
-	const [selectedItem, setSelectedItem] = useState<InventoryRow | null>(null);
+	const [selectedAdjustItem, setSelectedAdjustItem] =
+		useState<InventoryRow | null>(null);
+
+	// Detail sheet
+	const [detailSheetOpen, setDetailSheetOpen] = useState(false);
+	const [selectedDetailItem, setSelectedDetailItem] =
+		useState<InventoryRow | null>(null);
+
+	// Transfer sheet
+	const [transferSheetOpen, setTransferSheetOpen] = useState(false);
+	const [selectedTransferItem, setSelectedTransferItem] =
+		useState<InventoryRow | null>(null);
+
 	const [localOverrides, setLocalOverrides] = useState<Record<string, number>>(
 		{},
 	);
@@ -59,59 +69,118 @@ export default function InventoryPage() {
 		status,
 	});
 
-	const rows: InventoryRow[] = (data?.data ?? []).map((item) => {
-		const base: InventoryRow = {
-			id: item.id,
-			variantName: item.variantName,
-			sku: item.sku,
-			variantId: item.variantId,
-			warehouseId: item.warehouseId,
-			warehouseName: item.warehouseName,
-			quantityOnHand: item.quantityOnHand,
-			quantityReserved: item.quantityReserved,
-			quantityAvailable: item.quantityOnHand - item.quantityReserved,
-			reorderPoint: item.reorderPoint,
-			status: computeStatus(item.quantityOnHand, item.reorderPoint),
-			updatedAt: item.updatedAt,
-		};
-		const override = localOverrides[item.id];
-		if (override !== undefined) {
-			return {
-				...base,
-				quantityOnHand: override,
-				quantityAvailable: override - item.quantityReserved,
-				status: computeStatus(override, item.reorderPoint),
-			};
-		}
-		return base;
-	});
+	const rows: InventoryRow[] = useMemo(
+		() =>
+			(data?.data ?? []).map((item) => {
+				const base: InventoryRow = {
+					id: item.id,
+					variantName: item.variantName,
+					sku: item.sku,
+					variantId: item.variantId,
+					warehouseId: item.warehouseId,
+					warehouseName: item.warehouseName,
+					quantityOnHand: item.quantityOnHand,
+					quantityReserved: item.quantityReserved,
+					quantityAvailable: item.quantityOnHand - item.quantityReserved,
+					reorderPoint: item.reorderPoint,
+					status: computeStatus(item.quantityOnHand, item.reorderPoint),
+					updatedAt: item.updatedAt,
+				};
+				const override = localOverrides[item.id];
+				if (override !== undefined) {
+					return {
+						...base,
+						quantityOnHand: override,
+						quantityAvailable: override - item.quantityReserved,
+						status: computeStatus(override, item.reorderPoint),
+					};
+				}
+				return base;
+			}),
+		[data, localOverrides],
+	);
 
-	function handleAdjust(item: InventoryRow) {
-		setSelectedItem(item);
+	const stockCounts: StockCounts | undefined = counts
+		? {
+				total: counts.total,
+				inStock: counts.inStock,
+				lowStock: counts.lowStock,
+				outOfStock: counts.outOfStock,
+			}
+		: undefined;
+
+	const handleRowClick = useCallback((item: InventoryRow) => {
+		setSelectedDetailItem(item);
+		setDetailSheetOpen(true);
+	}, []);
+
+	const handleAdjust = useCallback((item: InventoryRow) => {
+		setSelectedAdjustItem(item);
 		setAdjustSheetOpen(true);
-	}
+	}, []);
 
-	function handleStockAdjust(id: string, newQty: number) {
+	/** Open adjust from within the detail sheet — close detail first */
+	const handleAdjustFromDetail = useCallback((item: InventoryRow) => {
+		setDetailSheetOpen(false);
+		setTimeout(() => {
+			setSelectedAdjustItem(item);
+			setAdjustSheetOpen(true);
+		}, 150);
+	}, []);
+
+	const handleTransfer = useCallback((item: InventoryRow) => {
+		setSelectedTransferItem(item);
+		setTransferSheetOpen(true);
+	}, []);
+
+	/** Open transfer from within the detail sheet — close detail first */
+	const handleTransferFromDetail = useCallback((item: InventoryRow) => {
+		setDetailSheetOpen(false);
+		setTimeout(() => {
+			setSelectedTransferItem(item);
+			setTransferSheetOpen(true);
+		}, 150);
+	}, []);
+
+	const handleStockAdjust = useCallback((id: string, newQty: number) => {
 		setLocalOverrides((prev) => ({ ...prev, [id]: newQty }));
-	}
+	}, []);
 
-	function handleWarehouseFilterChange(value: string) {
+	const handleWarehouseFilterChange = useCallback((value: string) => {
 		setWarehouseFilter(value);
 		setPagination((p) => ({ ...p, pageIndex: 0 }));
-	}
+	}, []);
 
-	function handleStatusFilterChange(value: string) {
-		setStatusFilter(value);
-		setPagination((p) => ({ ...p, pageIndex: 0 }));
-	}
+	const handleStatusFilterChange = useCallback(
+		(filter: StockStatusFilter) => {
+			setStatusFilter(filter);
+			setPagination((p) => ({ ...p, pageIndex: 0 }));
+		},
+		[],
+	);
 
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4 pt-0 animate-stagger-children">
 			<StockAdjustSheet
 				open={adjustSheetOpen}
 				onOpenChange={setAdjustSheetOpen}
-				item={selectedItem}
+				item={selectedAdjustItem}
 				onAdjust={handleStockAdjust}
+			/>
+
+			<StockDetailSheet
+				open={detailSheetOpen}
+				onOpenChange={setDetailSheetOpen}
+				item={selectedDetailItem}
+				onAdjust={handleAdjustFromDetail}
+				onTransfer={handleTransferFromDetail}
+			/>
+
+			<StockTransferSheet
+				open={transferSheetOpen}
+				onOpenChange={setTransferSheetOpen}
+				item={selectedTransferItem}
+				warehouses={warehouses}
 			/>
 
 			{/* Header */}
@@ -145,32 +214,22 @@ export default function InventoryPage() {
 				</div>
 			)}
 
-			{/* Stats */}
-			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-				{[
-					{ label: "Total Items", value: counts?.total ?? "—" },
-					{ label: "In Stock", value: counts?.inStock ?? "—" },
-					{ label: "Low Stock", value: counts?.lowStock ?? "—" },
-					{ label: "Out of Stock", value: counts?.outOfStock ?? "—" },
-				].map((stat) => (
-					<div key={stat.label} className="rounded-xl border bg-card p-4">
-						<p className="text-xs text-muted-foreground">{stat.label}</p>
-						<p className="text-2xl font-semibold mt-1">{stat.value}</p>
-					</div>
-				))}
-			</div>
+			{/* Stats — clicking a card filters the table */}
+			<StockStatCards
+				counts={stockCounts}
+				activeFilter={statusFilter}
+				onFilterChange={handleStatusFilterChange}
+			/>
 
 			{/* Table */}
 			<div className="rounded-xl border bg-card p-4">
 				<InventoryTable
 					data={rows}
 					isLoading={isLoading}
-					onAdjust={handleAdjust}
+					onRowClick={handleRowClick}
 					warehouses={warehouses}
 					warehouseFilter={warehouseFilter}
 					onWarehouseFilterChange={handleWarehouseFilterChange}
-					statusFilter={statusFilter}
-					onStatusFilterChange={handleStatusFilterChange}
 					filterValue={search}
 					onFilterChange={(v) => {
 						setSearch(v);

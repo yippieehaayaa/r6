@@ -20,7 +20,7 @@ import {
 	SheetHeader,
 	SheetTitle,
 } from "@/components/ui/sheet";
-import type { InventoryRow } from "./page";
+import type { InventoryRow } from "./types";
 
 const REASONS = [
 	{ value: "RECOUNT", label: "Stock Recount" },
@@ -87,7 +87,7 @@ export function StockAdjustSheet({
 					<SheetTitle>Adjust Stock</SheetTitle>
 					<SheetDescription>
 						{item
-							? `${item.productName} — ${item.variantName}`
+							? item.variantName
 							: "Adjust inventory quantity."}
 					</SheetDescription>
 				</SheetHeader>

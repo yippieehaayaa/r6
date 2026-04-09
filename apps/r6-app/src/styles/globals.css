@@ -36,6 +36,9 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-badge-in-stock: var(--badge-in-stock);
+  --color-badge-low-stock: var(--badge-low-stock);
+  --color-badge-out-of-stock: var(--badge-out-of-stock);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -76,6 +79,9 @@
 	--chart-4: oklch(0.828 0.189 84.429);
 	--chart-5: oklch(0.769 0.188 70.08);
 	--sidebar: oklch(0.985 0 0);
+	--badge-in-stock: #2B502F;
+	--badge-low-stock: #F97316;
+	--badge-out-of-stock: #EF4444;
 	--sidebar-foreground: oklch(0.145 0 0);
 	--sidebar-primary: oklch(0.205 0 0);
 	--sidebar-primary-foreground: oklch(0.985 0 0);
@@ -114,6 +120,9 @@
 	--chart-4: oklch(0.627 0.265 303.9);
 	--chart-5: oklch(0.645 0.246 16.439);
 	--sidebar: oklch(0.205 0 0);
+	--badge-in-stock: #4ade80;
+	--badge-low-stock: #fb923c;
+	--badge-out-of-stock: #f87171;
 	--sidebar-foreground: oklch(0.985 0 0);
 	--sidebar-primary: oklch(0.488 0.243 264.376);
 	--sidebar-primary-foreground: oklch(0.985 0 0);
