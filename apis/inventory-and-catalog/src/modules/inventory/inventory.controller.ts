@@ -10,6 +10,7 @@ import {
   releaseReservationSchema,
   reserveStockSchema,
   transferStockSchema,
+  updateReorderPointSchema,
   updateWarehouseSchema,
 } from "./inventory.validator";
 
@@ -88,6 +89,21 @@ router.get(
       tenantSlug,
       req.params.variantId as string,
       req.params.warehouseId as string,
+    );
+    res.json(item);
+  },
+);
+
+router.patch(
+  "/stock/:variantId/:warehouseId/reorder-point",
+  validate(updateReorderPointSchema),
+  async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
+    const item = await inventoryService.updateReorderPoint(
+      tenantSlug,
+      req.params.variantId as string,
+      req.params.warehouseId as string,
+      req.body.reorderPoint,
     );
     res.json(item);
   },

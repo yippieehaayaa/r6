@@ -79,4 +79,8 @@ export const recordDamageSchema = z.object({
   performedBy: z.string().min(1),
 });
 
+export const updateReorderPointSchema = z.object({
+  reorderPoint: z.number().int().min(0),
+});
+
 export { movementTypeSchema };

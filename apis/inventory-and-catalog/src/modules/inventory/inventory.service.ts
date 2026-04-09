@@ -68,6 +68,19 @@ export const listStockItems = (
   input: inventoryRepo.ListStockItemsInput,
 ) => inventoryRepo.listStockItems(tenantSlug, input);
 
+export const updateReorderPoint = (
+  tenantSlug: string,
+  variantId: string,
+  warehouseId: string,
+  reorderPoint: number,
+) =>
+  inventoryRepo.updateReorderPoint(
+    tenantSlug,
+    variantId,
+    warehouseId,
+    reorderPoint,
+  );
+
 // --- Stock Mutations ---
 
 export const receiveGoods = (

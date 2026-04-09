@@ -25,4 +25,5 @@ export {
   reserveStock,
   type StockStatus,
   transferStock,
+  updateReorderPoint,
 } from "../../models/inventory/stock-operations";

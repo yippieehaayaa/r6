@@ -19,3 +19,4 @@ export { default as recordDamage } from "./recordDamage";
 export { default as releaseReservation } from "./releaseReservation";
 export { default as reserveStock } from "./reserveStock";
 export { default as transferStock } from "./transferStock";
+export { default as updateReorderPoint } from "./updateReorderPoint";
