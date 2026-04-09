@@ -3,8 +3,9 @@ import {
 	type Warehouse,
 	WarehouseSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { inventoryKeys } from "../keys";
 
 export interface ListWarehousesParams {
 	page?: number;
@@ -36,16 +37,20 @@ export function useListWarehousesQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["warehouses", params],
+		queryKey: inventoryKeys.warehouses.list(params),
 		queryFn: () => listWarehousesFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetWarehouseQuery(id: string) {
 	return useQuery({
-		queryKey: ["warehouses", id],
+		queryKey: inventoryKeys.warehouses.detail(id),
 		queryFn: () => getWarehouseFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }

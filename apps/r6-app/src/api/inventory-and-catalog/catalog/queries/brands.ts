@@ -1,6 +1,7 @@
 import { type Brand, BrandSchema, PaginatedResponseSchema } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export interface ListBrandsParams {
 	page?: number;
@@ -30,16 +31,20 @@ export function useListBrandsQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["brands", params],
+		queryKey: catalogKeys.brands.list(params),
 		queryFn: () => listBrandsFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetBrandQuery(id: string) {
 	return useQuery({
-		queryKey: ["brands", id],
+		queryKey: catalogKeys.brands.detail(id),
 		queryFn: () => getBrandFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }

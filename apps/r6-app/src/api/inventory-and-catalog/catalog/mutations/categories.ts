@@ -8,6 +8,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export async function createCategoryFn(
 	body: CreateCategory,
@@ -38,7 +39,8 @@ export function useCreateCategoryMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createCategoryFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.categories.all() }),
 	});
 }
 
@@ -47,7 +49,8 @@ export function useUpdateCategoryMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateCategory }) =>
 			updateCategoryFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.categories.all() }),
 	});
 }
 
@@ -55,6 +58,7 @@ export function useDeleteCategoryMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteCategoryFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.categories.all() }),
 	});
 }

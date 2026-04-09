@@ -1,6 +1,7 @@
 import { type InventoryItem, InventoryItemSchema } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { inventoryKeys } from "../keys";
 
 export interface ReserveStockParams {
 	variantId: string;
@@ -112,7 +113,8 @@ export function useReserveStockMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: reserveStockFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["stock"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.stock.all() }),
 	});
 }
 
@@ -120,7 +122,8 @@ export function useReleaseReservationMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: releaseReservationFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["stock"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.stock.all() }),
 	});
 }
 
@@ -128,7 +131,8 @@ export function useCommitSaleMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: commitSaleFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["stock"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.stock.all() }),
 	});
 }
 
@@ -136,7 +140,8 @@ export function useAdjustStockMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: adjustStockFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["stock"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.stock.all() }),
 	});
 }
 
@@ -144,7 +149,8 @@ export function useTransferStockMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: transferStockFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["stock"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.stock.all() }),
 	});
 }
 
@@ -152,6 +158,9 @@ export function useRecordDamageMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: recordDamageFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["stock"] }),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: inventoryKeys.stock.all() });
+			qc.invalidateQueries({ queryKey: inventoryKeys.damages.all() });
+		},
 	});
 }

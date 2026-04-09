@@ -8,6 +8,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { inventoryKeys } from "../keys";
 
 export async function createWarehouseFn(
 	body: CreateWarehouse,
@@ -38,7 +39,8 @@ export function useCreateWarehouseMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createWarehouseFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["warehouses"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.warehouses.all() }),
 	});
 }
 
@@ -47,7 +49,8 @@ export function useUpdateWarehouseMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateWarehouse }) =>
 			updateWarehouseFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["warehouses"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.warehouses.all() }),
 	});
 }
 
@@ -55,6 +58,7 @@ export function useDeleteWarehouseMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteWarehouseFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["warehouses"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: inventoryKeys.warehouses.all() }),
 	});
 }

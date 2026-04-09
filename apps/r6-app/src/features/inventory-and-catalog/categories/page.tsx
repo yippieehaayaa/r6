@@ -1,5 +1,11 @@
 import { ChevronRight, MoreHorizontal, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import {
+	useDeleteCategoryMutation,
+	useListCategoriesQuery,
+} from "@/api/inventory-and-catalog";
+import { useAuth } from "@/auth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,142 +33,11 @@ export interface CategoryRow {
 	createdAt: string;
 }
 
-const MOCK_CATEGORIES: CategoryRow[] = [
-	{
-		id: "cat-electronics",
-		name: "Electronics",
-		slug: "electronics",
-		description: "All consumer electronics and gadgets.",
-		isActive: true,
-		sortOrder: 1,
-		productCount: 45,
-		createdAt: "2024-01-01",
-	},
-	{
-		id: "cat-smartphones",
-		name: "Smartphones",
-		slug: "smartphones",
-		description: "Latest smartphones and mobile devices.",
-		parentId: "cat-electronics",
-		parentName: "Electronics",
-		isActive: true,
-		sortOrder: 1,
-		productCount: 18,
-		createdAt: "2024-01-02",
-	},
-	{
-		id: "cat-laptops",
-		name: "Laptops",
-		slug: "laptops",
-		description: "Laptops and portable computers.",
-		parentId: "cat-electronics",
-		parentName: "Electronics",
-		isActive: true,
-		sortOrder: 2,
-		productCount: 12,
-		createdAt: "2024-01-02",
-	},
-	{
-		id: "cat-accessories",
-		name: "Accessories",
-		slug: "accessories",
-		description: "Electronic accessories and peripherals.",
-		parentId: "cat-electronics",
-		parentName: "Electronics",
-		isActive: true,
-		sortOrder: 3,
-		productCount: 15,
-		createdAt: "2024-01-03",
-	},
-	{
-		id: "cat-clothing",
-		name: "Clothing",
-		slug: "clothing",
-		description: "Apparel for men, women, and children.",
-		isActive: true,
-		sortOrder: 2,
-		productCount: 67,
-		createdAt: "2024-01-01",
-	},
-	{
-		id: "cat-mens",
-		name: "Men's Wear",
-		slug: "mens-wear",
-		description: "Men's clothing and fashion.",
-		parentId: "cat-clothing",
-		parentName: "Clothing",
-		isActive: true,
-		sortOrder: 1,
-		productCount: 28,
-		createdAt: "2024-01-05",
-	},
-	{
-		id: "cat-womens",
-		name: "Women's Wear",
-		slug: "womens-wear",
-		description: "Women's clothing and fashion.",
-		parentId: "cat-clothing",
-		parentName: "Clothing",
-		isActive: true,
-		sortOrder: 2,
-		productCount: 39,
-		createdAt: "2024-01-05",
-	},
-	{
-		id: "cat-home",
-		name: "Home & Living",
-		slug: "home-living",
-		description: "Home decor, furniture, and lifestyle products.",
-		isActive: true,
-		sortOrder: 3,
-		productCount: 23,
-		createdAt: "2024-01-01",
-	},
-	{
-		id: "cat-furniture",
-		name: "Furniture",
-		slug: "furniture",
-		description: "Indoor and outdoor furniture.",
-		parentId: "cat-home",
-		parentName: "Home & Living",
-		isActive: false,
-		sortOrder: 1,
-		productCount: 10,
-		createdAt: "2024-02-01",
-	},
-	{
-		id: "cat-decor",
-		name: "Decor",
-		slug: "decor",
-		description: "Decorative items and accessories.",
-		parentId: "cat-home",
-		parentName: "Home & Living",
-		isActive: true,
-		sortOrder: 2,
-		productCount: 13,
-		createdAt: "2024-02-01",
-	},
-	{
-		id: "cat-sports",
-		name: "Sports",
-		slug: "sports",
-		isActive: true,
-		sortOrder: 4,
-		productCount: 31,
-		createdAt: "2024-01-01",
-	},
-	{
-		id: "cat-toys",
-		name: "Toys",
-		slug: "toys",
-		isActive: true,
-		sortOrder: 5,
-		productCount: 19,
-		createdAt: "2024-01-01",
-	},
-];
-
 export default function CategoriesPage() {
+	const { hasPermission } = useAuth();
+	const canCreate = hasPermission("catalog:category:create");
+	const canDelete = hasPermission("catalog:category:delete");
+
 	const [selectedCategory, setSelectedCategory] = useState<CategoryRow | null>(
 		null,
 	);
@@ -170,19 +45,44 @@ export default function CategoriesPage() {
 	const [sheetOpen, setSheetOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<CategoryRow | null>(null);
 
-	const totalCategories = MOCK_CATEGORIES.length;
-	const activeCategories = MOCK_CATEGORIES.filter((c) => c.isActive).length;
-	const parentCategories = MOCK_CATEGORIES.filter((c) => !c.parentId).length;
-	const subCategories = MOCK_CATEGORIES.filter((c) => !!c.parentId).length;
+	const { data: categoriesData, isLoading } = useListCategoriesQuery({
+		limit: 200,
+	});
+
+	const deleteMutation = useDeleteCategoryMutation();
+
+	const categories: CategoryRow[] = useMemo(
+		() =>
+			(categoriesData?.data ?? []).map((c) => {
+				const parent = categoriesData?.data.find((p) => p.id === c.parentId);
+				return {
+					id: c.id,
+					name: c.name,
+					slug: c.slug,
+					description: c.description,
+					parentId: c.parentId,
+					parentName: parent?.name,
+					isActive: c.isActive,
+					sortOrder: c.sortOrder,
+					productCount: 0,
+					createdAt: c.createdAt,
+				};
+			}),
+		[categoriesData],
+	);
+
+	const totalCategories = categories.length;
+	const activeCategories = categories.filter((c) => c.isActive).length;
+	const parentCategories = categories.filter((c) => !c.parentId).length;
+	const subCategories = categories.filter((c) => !!c.parentId).length;
 
 	const filtered = useMemo(() => {
-		if (!search) return MOCK_CATEGORIES;
-		return MOCK_CATEGORIES.filter((c) =>
+		if (!search) return categories;
+		return categories.filter((c) =>
 			c.name.toLowerCase().includes(search.toLowerCase()),
 		);
-	}, [search]);
+	}, [categories, search]);
 
-	// Group: parents first, then children indented
 	const ordered = useMemo(() => {
 		const parents = filtered.filter((c) => !c.parentId);
 		const result: CategoryRow[] = [];
@@ -191,7 +91,6 @@ export default function CategoriesPage() {
 			const children = filtered.filter((c) => c.parentId === parent.id);
 			result.push(...children);
 		}
-		// Any children whose parent is filtered out
 		const orphans = filtered.filter(
 			(c) => c.parentId && !parents.find((p) => p.id === c.parentId),
 		);
@@ -209,12 +108,23 @@ export default function CategoriesPage() {
 		setSheetOpen(true);
 	}
 
+	function handleDelete(id: string) {
+		deleteMutation.mutate(id, {
+			onSuccess: () => {
+				toast.success("Category deleted.");
+				if (selectedCategory?.id === id) setSelectedCategory(null);
+			},
+			onError: () => toast.error("Failed to delete category."),
+		});
+	}
+
 	return (
 		<div className="flex flex-1 flex-col gap-4 p-4 pt-0 animate-stagger-children">
 			<CategorySheet
 				open={sheetOpen}
 				onOpenChange={setSheetOpen}
 				category={editTarget}
+				categories={categories}
 			/>
 
 			{/* Header */}
@@ -225,19 +135,24 @@ export default function CategoriesPage() {
 						Organize your product catalog into categories.
 					</p>
 				</div>
-				<Button onClick={openCreate}>
-					<Plus className="size-4" />
-					New Category
-				</Button>
+				{canCreate && (
+					<Button onClick={openCreate}>
+						<Plus className="size-4" />
+						New Category
+					</Button>
+				)}
 			</div>
 
 			{/* Stats */}
 			<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				{[
-					{ label: "Total", value: totalCategories },
-					{ label: "Active", value: activeCategories },
-					{ label: "Parent Categories", value: parentCategories },
-					{ label: "Subcategories", value: subCategories },
+					{ label: "Total", value: isLoading ? "—" : totalCategories },
+					{ label: "Active", value: isLoading ? "—" : activeCategories },
+					{
+						label: "Parent Categories",
+						value: isLoading ? "—" : parentCategories,
+					},
+					{ label: "Subcategories", value: isLoading ? "—" : subCategories },
 				].map((stat) => (
 					<div key={stat.label} className="rounded-xl border bg-card p-4">
 						<p className="text-xs text-muted-foreground">{stat.label}</p>
@@ -256,75 +171,94 @@ export default function CategoriesPage() {
 						onChange={(e) => setSearch(e.target.value)}
 					/>
 					<div className="rounded-xl border bg-card divide-y divide-border/50">
-						{ordered.map((cat) => {
-							const isChild = !!cat.parentId;
-							const isSelected = selectedCategory?.id === cat.id;
-							return (
-								<button
-									type="button"
-									key={cat.id}
-									className={cn(
-										"flex w-full items-center gap-2 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors text-left",
-										isChild && "pl-8",
-										isSelected && "bg-accent/50",
-									)}
-									onClick={() => setSelectedCategory(cat)}
-								>
-									{isChild && (
-										<ChevronRight className="size-3.5 text-muted-foreground shrink-0" />
-									)}
-									<div className="flex-1 min-w-0">
-										<p
-											className={cn(
-												"text-sm truncate",
-												!isChild && "font-semibold",
-											)}
-										>
-											{cat.name}
-										</p>
-										<p className="text-xs text-muted-foreground">
-											{cat.productCount} products
-										</p>
-									</div>
-									<div className="flex items-center gap-2">
-										<div
-											className={cn(
-												"size-2 rounded-full",
-												cat.isActive ? "bg-green-500" : "bg-slate-300",
-											)}
-										/>
-										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
-												<Button
-													variant="ghost"
-													size="icon"
-													className="size-7"
-													onClick={(e) => e.stopPropagation()}
-												>
-													<MoreHorizontal className="size-3.5" />
-												</Button>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent align="end">
-												<DropdownMenuItem onClick={() => openEdit(cat)}>
-													Edit
-												</DropdownMenuItem>
-												<DropdownMenuItem
-													onClick={() => {
-														setEditTarget(null);
-														setSheetOpen(true);
-													}}
-												>
-													Add Subcategory
-												</DropdownMenuItem>
-												<DropdownMenuItem className="text-destructive">
-													Delete
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
-									</div>
-								</button>
-							);
-						})}
+						{isLoading ? (
+							<div className="p-4 text-sm text-muted-foreground text-center">
+								Loading...
+							</div>
+						) : ordered.length === 0 ? (
+							<div className="p-4 text-sm text-muted-foreground text-center">
+								No categories found.
+							</div>
+						) : (
+							ordered.map((cat) => {
+								const isChild = !!cat.parentId;
+								const isSelected = selectedCategory?.id === cat.id;
+								return (
+									<button
+										type="button"
+										key={cat.id}
+										className={cn(
+											"flex w-full items-center gap-2 px-4 py-3 cursor-pointer hover:bg-muted/50 transition-colors text-left",
+											isChild && "pl-8",
+											isSelected && "bg-accent/50",
+										)}
+										onClick={() => setSelectedCategory(cat)}
+									>
+										{isChild && (
+											<ChevronRight className="size-3.5 text-muted-foreground shrink-0" />
+										)}
+										<div className="flex-1 min-w-0">
+											<p
+												className={cn(
+													"text-sm truncate",
+													!isChild && "font-semibold",
+												)}
+											>
+												{cat.name}
+											</p>
+											<p className="text-xs text-muted-foreground">
+												{cat.productCount} products
+											</p>
+										</div>
+										<div className="flex items-center gap-2">
+											<div
+												className={cn(
+													"size-2 rounded-full",
+													cat.isActive ? "bg-green-500" : "bg-slate-300",
+												)}
+											/>
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button
+														variant="ghost"
+														size="icon"
+														className="size-7"
+														onClick={(e) => e.stopPropagation()}
+													>
+														<MoreHorizontal className="size-3.5" />
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end">
+													<DropdownMenuItem onClick={() => openEdit(cat)}>
+														Edit
+													</DropdownMenuItem>
+													<DropdownMenuItem
+														onClick={(e) => {
+															e.stopPropagation();
+															setEditTarget(null);
+															setSheetOpen(true);
+														}}
+													>
+														Add Subcategory
+													</DropdownMenuItem>
+													{canDelete && (
+														<DropdownMenuItem
+															className="text-destructive"
+															onClick={(e) => {
+																e.stopPropagation();
+																handleDelete(cat.id);
+															}}
+														>
+															Delete
+														</DropdownMenuItem>
+													)}
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</div>
+									</button>
+								);
+							})
+						)}
 					</div>
 				</div>
 
@@ -407,7 +341,11 @@ export default function CategoriesPage() {
 											<p className="text-xs text-muted-foreground mb-1">
 												Created
 											</p>
-											<p className="text-sm">{selectedCategory.createdAt}</p>
+											<p className="text-sm">
+												{new Date(
+													selectedCategory.createdAt,
+												).toLocaleDateString()}
+											</p>
 										</div>
 									</div>
 									<div className="flex items-center justify-between pt-2 border-t border-border/50">
@@ -416,25 +354,24 @@ export default function CategoriesPage() {
 									</div>
 
 									{/* Subcategories */}
-									{MOCK_CATEGORIES.filter(
-										(c) => c.parentId === selectedCategory.id,
-									).length > 0 && (
+									{categories.filter((c) => c.parentId === selectedCategory.id)
+										.length > 0 && (
 										<div>
 											<p className="text-xs text-muted-foreground mb-2">
 												Subcategories
 											</p>
 											<div className="flex flex-wrap gap-2">
-												{MOCK_CATEGORIES.filter(
-													(c) => c.parentId === selectedCategory.id,
-												).map((sub) => (
-													<Badge
-														key={sub.id}
-														className="bg-muted text-foreground border border-border/50 cursor-pointer"
-														onClick={() => setSelectedCategory(sub)}
-													>
-														{sub.name} ({sub.productCount})
-													</Badge>
-												))}
+												{categories
+													.filter((c) => c.parentId === selectedCategory.id)
+													.map((sub) => (
+														<Badge
+															key={sub.id}
+															className="bg-muted text-foreground border border-border/50 cursor-pointer"
+															onClick={() => setSelectedCategory(sub)}
+														>
+															{sub.name} ({sub.productCount})
+														</Badge>
+													))}
 											</div>
 										</div>
 									)}

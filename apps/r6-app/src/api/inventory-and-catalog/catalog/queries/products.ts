@@ -3,8 +3,9 @@ import {
 	type Product,
 	ProductSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export interface ListProductsParams {
 	page?: number;
@@ -44,24 +45,29 @@ export function useListProductsQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["products", params],
+		queryKey: catalogKeys.products.list(params),
 		queryFn: () => listProductsFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetProductQuery(id: string) {
 	return useQuery({
-		queryKey: ["products", id],
+		queryKey: catalogKeys.products.detail(id),
 		queryFn: () => getProductFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }
 
 export function useGetProductBySlugQuery(slug: string) {
 	return useQuery({
-		queryKey: ["products", "slug", slug],
+		queryKey: catalogKeys.products.bySlug(slug),
 		queryFn: () => getProductBySlugFn(slug),
 		enabled: !!slug,
+		staleTime: 1000 * 60 * 5,
 	});
 }

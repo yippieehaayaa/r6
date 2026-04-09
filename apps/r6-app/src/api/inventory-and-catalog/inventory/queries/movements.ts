@@ -3,8 +3,9 @@ import {
 	type StockMovement,
 	StockMovementSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { inventoryKeys } from "../keys";
 
 export interface ListMovementsParams {
 	page?: number;
@@ -40,9 +41,12 @@ export function useListMovementsQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["movements", variantId, params],
+		queryKey: inventoryKeys.movements.list(variantId, params),
 		queryFn: () => listMovementsFn(variantId, params),
 		enabled: !!variantId,
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }

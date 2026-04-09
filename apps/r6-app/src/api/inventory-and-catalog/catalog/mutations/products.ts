@@ -8,6 +8,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export async function createProductFn(body: CreateProduct): Promise<Product> {
 	const { data } = await inventoryApi.post<unknown>(
@@ -57,7 +58,8 @@ export function useCreateProductMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createProductFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.products.all() }),
 	});
 }
 
@@ -66,7 +68,8 @@ export function useUpdateProductMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateProduct }) =>
 			updateProductFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.products.all() }),
 	});
 }
 
@@ -74,7 +77,8 @@ export function useDeleteProductMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteProductFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.products.all() }),
 	});
 }
 
@@ -82,7 +86,8 @@ export function usePublishProductMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: publishProductFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.products.all() }),
 	});
 }
 
@@ -90,7 +95,8 @@ export function useDiscontinueProductMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: discontinueProductFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.products.all() }),
 	});
 }
 
@@ -98,6 +104,7 @@ export function useArchiveProductMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: archiveProductFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.products.all() }),
 	});
 }

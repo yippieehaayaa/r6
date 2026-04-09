@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+	useCreateCategoryMutation,
+	useUpdateCategoryMutation,
+} from "@/api/inventory-and-catalog";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -21,30 +25,28 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import type { CategoryRow } from "./page";
 
-const PARENT_CATEGORIES = [
-	{ id: "cat-electronics", name: "Electronics" },
-	{ id: "cat-clothing", name: "Clothing" },
-	{ id: "cat-home", name: "Home & Living" },
-	{ id: "cat-sports", name: "Sports" },
-	{ id: "cat-toys", name: "Toys" },
-];
-
 interface CategorySheetProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	category?: CategoryRow | null;
+	categories: CategoryRow[];
 }
 
 export function CategorySheet({
 	open,
 	onOpenChange,
 	category,
+	categories,
 }: CategorySheetProps) {
 	const isEdit = !!category;
 
 	const [name, setName] = useState("");
 	const [parentId, setParentId] = useState("none");
 	const [description, setDescription] = useState("");
+
+	const createMutation = useCreateCategoryMutation();
+	const updateMutation = useUpdateCategoryMutation();
+	const isPending = createMutation.isPending || updateMutation.isPending;
 
 	useEffect(() => {
 		if (open) {
@@ -56,8 +58,34 @@ export function CategorySheet({
 
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
-		toast.success(isEdit ? "Category updated." : "Category created.");
-		onOpenChange(false);
+		const body = {
+			name,
+			description: description || undefined,
+			parentId: parentId === "none" ? undefined : parentId,
+		};
+		if (isEdit && category) {
+			updateMutation.mutate(
+				{ id: category.id, body },
+				{
+					onSuccess: () => {
+						toast.success("Category updated.");
+						onOpenChange(false);
+					},
+					onError: () => toast.error("Failed to update category."),
+				},
+			);
+		} else {
+			createMutation.mutate(
+				{ ...body, sortOrder: 0, isActive: true },
+				{
+					onSuccess: () => {
+						toast.success("Category created.");
+						onOpenChange(false);
+					},
+					onError: () => toast.error("Failed to create category."),
+				},
+			);
+		}
 	}
 
 	return (
@@ -89,13 +117,15 @@ export function CategorySheet({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="none">None (top-level)</SelectItem>
-								{PARENT_CATEGORIES.filter(
-									(c) => !category || c.id !== category.id,
-								).map((c) => (
-									<SelectItem key={c.id} value={c.id}>
-										{c.name}
-									</SelectItem>
-								))}
+								{categories
+									.filter(
+										(c) => !c.parentId && (!category || c.id !== category.id),
+									)
+									.map((c) => (
+										<SelectItem key={c.id} value={c.id}>
+											{c.name}
+										</SelectItem>
+									))}
 							</SelectContent>
 						</Select>
 					</Field>
@@ -116,8 +146,12 @@ export function CategorySheet({
 						>
 							Cancel
 						</Button>
-						<Button type="submit">
-							{isEdit ? "Save Changes" : "Create Category"}
+						<Button type="submit" disabled={isPending}>
+							{isPending
+								? "Saving..."
+								: isEdit
+									? "Save Changes"
+									: "Create Category"}
 						</Button>
 					</SheetFooter>
 				</form>

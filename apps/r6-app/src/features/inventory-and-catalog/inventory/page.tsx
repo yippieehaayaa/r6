@@ -1,6 +1,11 @@
+import type { InventoryItem } from "@r6/schemas";
 import type { ColumnDef } from "@tanstack/react-table";
 import { AlertTriangle, MoreHorizontal, Warehouse } from "lucide-react";
 import { useMemo, useState } from "react";
+import {
+	useGetLowStockItemsQuery,
+	useListWarehousesQuery,
+} from "@/api/inventory-and-catalog";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +31,7 @@ export interface InventoryRow {
 	productName: string;
 	variantName: string;
 	sku: string;
+	variantId: string;
 	warehouseId: string;
 	warehouseName: string;
 	quantityOnHand: number;
@@ -45,252 +51,23 @@ function computeStatus(
 	return "IN_STOCK";
 }
 
-function makeRow(
-	id: string,
-	productName: string,
-	variantName: string,
-	sku: string,
-	warehouseId: string,
-	warehouseName: string,
-	quantityOnHand: number,
-	quantityReserved: number,
-	reorderPoint: number,
-	updatedAt: string,
-): InventoryRow {
+function mapInventoryItem(item: InventoryItem): InventoryRow {
 	return {
-		id,
-		productName,
-		variantName,
-		sku,
-		warehouseId,
-		warehouseName,
-		quantityOnHand,
-		quantityReserved,
-		quantityAvailable: quantityOnHand - quantityReserved,
-		reorderPoint,
-		status: computeStatus(quantityOnHand, reorderPoint),
-		updatedAt,
+		id: item.id,
+		productName: "—",
+		variantName: item.variantId,
+		sku: item.variantId,
+		variantId: item.variantId,
+		warehouseId: item.warehouseId,
+		warehouseName: item.warehouseId,
+		quantityOnHand: item.quantityOnHand,
+		quantityReserved: item.quantityReserved,
+		quantityAvailable: item.quantityOnHand - item.quantityReserved,
+		reorderPoint: item.reorderPoint,
+		status: computeStatus(item.quantityOnHand, item.reorderPoint),
+		updatedAt: item.updatedAt,
 	};
 }
-
-const MOCK_INVENTORY: InventoryRow[] = [
-	makeRow(
-		"inv-001",
-		"Wireless Bluetooth Headphones",
-		"Standard",
-		"ELEC-001",
-		"WH-001",
-		"Main Warehouse",
-		42,
-		5,
-		10,
-		"2024-06-01",
-	),
-	makeRow(
-		"inv-002",
-		"Smart Watch Series 5",
-		"Black",
-		"ELEC-002-BK",
-		"WH-001",
-		"Main Warehouse",
-		18,
-		3,
-		10,
-		"2024-06-05",
-	),
-	makeRow(
-		"inv-003",
-		"Smart Watch Series 5",
-		"Silver",
-		"ELEC-002-SL",
-		"WH-002",
-		"East Distribution",
-		0,
-		0,
-		10,
-		"2024-05-20",
-	),
-	makeRow(
-		"inv-004",
-		'4K Ultra HD Monitor 27"',
-		"Standard",
-		"ELEC-003",
-		"WH-001",
-		"Main Warehouse",
-		9,
-		2,
-		10,
-		"2024-05-20",
-	),
-	makeRow(
-		"inv-005",
-		"Mechanical Gaming Keyboard",
-		"RGB Blue Switch",
-		"ELEC-004-BL",
-		"WH-001",
-		"Main Warehouse",
-		3,
-		1,
-		5,
-		"2024-06-10",
-	),
-	makeRow(
-		"inv-006",
-		"Mechanical Gaming Keyboard",
-		"RGB Red Switch",
-		"ELEC-004-RD",
-		"WH-002",
-		"East Distribution",
-		0,
-		0,
-		5,
-		"2024-06-10",
-	),
-	makeRow(
-		"inv-007",
-		"Men's Classic Oxford Shirt",
-		"White L",
-		"CLTH-001-WL",
-		"WH-001",
-		"Main Warehouse",
-		25,
-		4,
-		10,
-		"2024-05-15",
-	),
-	makeRow(
-		"inv-008",
-		"Men's Classic Oxford Shirt",
-		"Blue M",
-		"CLTH-001-BM",
-		"WH-003",
-		"West Storage",
-		50,
-		6,
-		10,
-		"2024-05-15",
-	),
-	makeRow(
-		"inv-009",
-		"Women's Running Leggings",
-		"Black S",
-		"CLTH-002-BS",
-		"WH-001",
-		"Main Warehouse",
-		60,
-		8,
-		20,
-		"2024-06-01",
-	),
-	makeRow(
-		"inv-010",
-		"Women's Running Leggings",
-		"Navy M",
-		"CLTH-002-NM",
-		"WH-002",
-		"East Distribution",
-		60,
-		7,
-		20,
-		"2024-06-01",
-	),
-	makeRow(
-		"inv-011",
-		"Unisex Hooded Sweatshirt",
-		"Grey L",
-		"CLTH-003-GL",
-		"WH-001",
-		"Main Warehouse",
-		0,
-		0,
-		15,
-		"2024-05-28",
-	),
-	makeRow(
-		"inv-012",
-		"Leather Bifold Wallet",
-		"Brown",
-		"ACCS-001-BR",
-		"WH-001",
-		"Main Warehouse",
-		30,
-		5,
-		10,
-		"2024-05-10",
-	),
-	makeRow(
-		"inv-013",
-		"Leather Bifold Wallet",
-		"Black",
-		"ACCS-001-BK",
-		"WH-003",
-		"West Storage",
-		25,
-		3,
-		10,
-		"2024-05-10",
-	),
-	makeRow(
-		"inv-014",
-		"Scented Soy Candle Set",
-		"Lavender",
-		"HOME-002-LV",
-		"WH-001",
-		"Main Warehouse",
-		2,
-		0,
-		5,
-		"2024-06-08",
-	),
-	makeRow(
-		"inv-015",
-		"Adjustable Dumbbell Set",
-		"Standard",
-		"SPRT-001",
-		"WH-001",
-		"Main Warehouse",
-		15,
-		2,
-		8,
-		"2024-04-01",
-	),
-	makeRow(
-		"inv-016",
-		"Yoga Mat Premium",
-		"Purple",
-		"SPRT-002-PU",
-		"WH-001",
-		"Main Warehouse",
-		1,
-		0,
-		5,
-		"2024-05-30",
-	),
-	makeRow(
-		"inv-017",
-		"Noise-Cancelling Earbuds Pro",
-		"White",
-		"ELEC-006-WH",
-		"WH-002",
-		"East Distribution",
-		0,
-		0,
-		10,
-		"2024-06-01",
-	),
-	makeRow(
-		"inv-018",
-		"Bamboo Desk Organizer",
-		"Natural",
-		"HOME-001-NT",
-		"WH-003",
-		"West Storage",
-		30,
-		0,
-		10,
-		"2024-05-10",
-	),
-];
 
 function getStatusBadge(status: InventoryRow["status"]) {
 	switch (status) {
@@ -321,8 +98,32 @@ export default function InventoryPage() {
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
 	const [selectedItem, setSelectedItem] = useState<InventoryRow | null>(null);
-	const [inventoryData, setInventoryData] =
-		useState<InventoryRow[]>(MOCK_INVENTORY);
+	const [localOverrides, setLocalOverrides] = useState<Record<string, number>>(
+		{},
+	);
+
+	const { data: warehousesData } = useListWarehousesQuery({ limit: 100 });
+	const warehouses = warehousesData?.data ?? [];
+
+	const { data: lowStockData, isLoading } = useGetLowStockItemsQuery(
+		warehouseFilter !== "all" ? warehouseFilter : undefined,
+	);
+
+	const inventoryData: InventoryRow[] = useMemo(() => {
+		const items = (lowStockData ?? []).map(mapInventoryItem);
+		return items.map((row) => {
+			const override = localOverrides[row.id];
+			if (override !== undefined) {
+				return {
+					...row,
+					quantityOnHand: override,
+					quantityAvailable: override - row.quantityReserved,
+					status: computeStatus(override, row.reorderPoint),
+				};
+			}
+			return row;
+		});
+	}, [lowStockData, localOverrides]);
 
 	const lowStockCount = inventoryData.filter(
 		(i) => i.status === "LOW_STOCK",
@@ -338,54 +139,28 @@ export default function InventoryPage() {
 		return inventoryData.filter((item) => {
 			const matchesSearch =
 				!search ||
-				item.productName.toLowerCase().includes(search.toLowerCase()) ||
-				item.sku.toLowerCase().includes(search.toLowerCase()) ||
-				item.variantName.toLowerCase().includes(search.toLowerCase());
-			const matchesWarehouse =
-				warehouseFilter === "all" || item.warehouseId === warehouseFilter;
+				item.variantId.toLowerCase().includes(search.toLowerCase()) ||
+				item.warehouseId.toLowerCase().includes(search.toLowerCase());
 			const matchesStatus =
 				statusFilter === "all" || item.status === statusFilter;
-			return matchesSearch && matchesWarehouse && matchesStatus;
+			return matchesSearch && matchesStatus;
 		});
-	}, [inventoryData, search, warehouseFilter, statusFilter]);
+	}, [inventoryData, search, statusFilter]);
 
 	function handleAdjust(id: string, newQty: number) {
-		setInventoryData((prev) =>
-			prev.map((item) => {
-				if (item.id !== id) return item;
-				const onHand = newQty;
-				const available = onHand - item.quantityReserved;
-				return {
-					...item,
-					quantityOnHand: onHand,
-					quantityAvailable: available,
-					status: computeStatus(onHand, item.reorderPoint),
-					updatedAt: new Date().toISOString().split("T")[0],
-				};
-			}),
-		);
+		setLocalOverrides((prev) => ({ ...prev, [id]: newQty }));
 	}
 
 	const columns: ColumnDef<InventoryRow>[] = [
 		{
 			id: "product",
-			header: "Product",
+			header: "Variant",
 			cell: ({ row }) => (
 				<div>
-					<p className="font-medium text-sm">{row.original.productName}</p>
-					<p className="text-xs text-muted-foreground">
-						{row.original.variantName}
+					<p className="font-mono text-xs text-muted-foreground">
+						{row.original.variantId}
 					</p>
 				</div>
-			),
-		},
-		{
-			accessorKey: "sku",
-			header: "SKU",
-			cell: ({ row }) => (
-				<span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-					{row.original.sku}
-				</span>
 			),
 		},
 		{
@@ -517,7 +292,7 @@ export default function InventoryPage() {
 			{/* Filters */}
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
 				<Input
-					placeholder="Search products, SKUs..."
+					placeholder="Search by variant ID or warehouse..."
 					value={search}
 					onChange={(e) => setSearch(e.target.value)}
 					className="sm:max-w-xs"
@@ -528,9 +303,11 @@ export default function InventoryPage() {
 					</SelectTrigger>
 					<SelectContent>
 						<SelectItem value="all">All Warehouses</SelectItem>
-						<SelectItem value="WH-001">Main Warehouse</SelectItem>
-						<SelectItem value="WH-002">East Distribution</SelectItem>
-						<SelectItem value="WH-003">West Storage</SelectItem>
+						{warehouses.map((w) => (
+							<SelectItem key={w.id} value={w.id}>
+								{w.name}
+							</SelectItem>
+						))}
 					</SelectContent>
 				</Select>
 				<Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -551,6 +328,7 @@ export default function InventoryPage() {
 				<DataTable
 					columns={columns}
 					data={filtered}
+					isLoading={isLoading}
 					filterPlaceholder="Search inventory..."
 					defaultPageSize={20}
 				/>

@@ -3,8 +3,9 @@ import {
 	type ProductVariant,
 	ProductVariantSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export interface ListVariantsParams {
 	page?: number;
@@ -43,17 +44,21 @@ export function useListVariantsByProductQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["variants", productId, params],
+		queryKey: catalogKeys.variants.list(productId, params),
 		queryFn: () => listVariantsByProductFn(productId, params),
 		enabled: !!productId,
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetVariantQuery(id: string) {
 	return useQuery({
-		queryKey: ["variants", id],
+		queryKey: catalogKeys.variants.detail(id),
 		queryFn: () => getVariantFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }

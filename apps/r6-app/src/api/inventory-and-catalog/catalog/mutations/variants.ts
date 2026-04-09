@@ -8,6 +8,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export async function createVariantFn(
 	productId: string,
@@ -45,7 +46,8 @@ export function useCreateVariantMutation() {
 			productId: string;
 			body: CreateProductVariant;
 		}) => createVariantFn(productId, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["variants"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.variants.all() }),
 	});
 }
 
@@ -54,7 +56,8 @@ export function useUpdateVariantMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateProductVariant }) =>
 			updateVariantFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["variants"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.variants.all() }),
 	});
 }
 
@@ -62,6 +65,7 @@ export function useDeleteVariantMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteVariantFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["variants"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.variants.all() }),
 	});
 }

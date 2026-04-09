@@ -8,6 +8,7 @@ import {
 } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export async function createBrandFn(body: CreateBrand): Promise<Brand> {
 	const { data } = await inventoryApi.post<unknown>(
@@ -36,7 +37,8 @@ export function useCreateBrandMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createBrandFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["brands"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.brands.all() }),
 	});
 }
 
@@ -45,7 +47,8 @@ export function useUpdateBrandMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateBrand }) =>
 			updateBrandFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["brands"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.brands.all() }),
 	});
 }
 
@@ -53,6 +56,7 @@ export function useDeleteBrandMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteBrandFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: ["brands"] }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: catalogKeys.brands.all() }),
 	});
 }

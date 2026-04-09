@@ -3,8 +3,9 @@ import {
 	CategorySchema,
 	PaginatedResponseSchema,
 } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { catalogKeys } from "../keys";
 
 export interface ListCategoriesParams {
 	page?: number;
@@ -42,24 +43,29 @@ export function useListCategoriesQuery(
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["categories", params],
+		queryKey: catalogKeys.categories.list(params),
 		queryFn: () => listCategoriesFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }
 
 export function useGetCategoryQuery(id: string) {
 	return useQuery({
-		queryKey: ["categories", id],
+		queryKey: catalogKeys.categories.detail(id),
 		queryFn: () => getCategoryFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }
 
 export function useGetCategoryTreeQuery(id: string) {
 	return useQuery({
-		queryKey: ["categories", id, "tree"],
+		queryKey: catalogKeys.categories.tree(id),
 		queryFn: () => getCategoryTreeFn(id),
 		enabled: !!id,
+		staleTime: 1000 * 60 * 5,
 	});
 }

@@ -1,6 +1,7 @@
 import { type InventoryItem, InventoryItemSchema } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
+import { inventoryKeys } from "../keys";
 
 export async function getStockForVariantFn(
 	variantId: string,
@@ -35,23 +36,28 @@ export function useGetStockForVariantQuery(
 	warehouseId: string,
 ) {
 	return useQuery({
-		queryKey: ["stock", variantId, warehouseId],
+		queryKey: inventoryKeys.stock.forVariant(variantId, warehouseId),
 		queryFn: () => getStockForVariantFn(variantId, warehouseId),
 		enabled: !!variantId && !!warehouseId,
+		staleTime: 1000 * 60 * 2,
 	});
 }
 
 export function useGetStockForProductQuery(productId: string) {
 	return useQuery({
-		queryKey: ["stock", "product", productId],
+		queryKey: inventoryKeys.stock.forProduct(productId),
 		queryFn: () => getStockForProductFn(productId),
 		enabled: !!productId,
+		staleTime: 1000 * 60 * 2,
 	});
 }
 
 export function useGetLowStockItemsQuery(warehouseId?: string) {
 	return useQuery({
-		queryKey: ["stock", "low-stock", warehouseId],
+		queryKey: inventoryKeys.stock.lowStock(warehouseId),
 		queryFn: () => getLowStockItemsFn(warehouseId),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
 	});
 }

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAdjustStockMutation } from "@/api/inventory-and-catalog";
+import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -40,6 +42,8 @@ export function StockAdjustSheet({
 	item,
 	onAdjust,
 }: StockAdjustSheetProps) {
+	const { profile } = useAuth();
+	const adjustMutation = useAdjustStockMutation();
 	const [adjustment, setAdjustment] = useState("");
 	const [reason, setReason] = useState("RECOUNT");
 
@@ -51,15 +55,29 @@ export function StockAdjustSheet({
 	}, [open]);
 
 	const current = item?.quantityOnHand ?? 0;
-	const delta = parseInt(adjustment || "0", 10);
+	const delta = Number.parseInt(adjustment || "0", 10);
 	const newQty = current + delta;
 
 	function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
 		if (!item) return;
-		onAdjust(item.id, newQty);
-		toast.success(`Stock adjusted to ${newQty} units.`);
-		onOpenChange(false);
+		adjustMutation.mutate(
+			{
+				variantId: item.variantId,
+				warehouseId: item.warehouseId,
+				delta,
+				notes: reason,
+				performedBy: profile?.username ?? "system",
+			},
+			{
+				onSuccess: () => {
+					onAdjust(item.id, newQty);
+					toast.success(`Stock adjusted to ${newQty} units.`);
+					onOpenChange(false);
+				},
+				onError: () => toast.error("Failed to adjust stock."),
+			},
+		);
 	}
 
 	return (
@@ -125,8 +143,11 @@ export function StockAdjustSheet({
 						>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={!adjustment || newQty < 0}>
-							Apply Adjustment
+						<Button
+							type="submit"
+							disabled={!adjustment || newQty < 0 || adjustMutation.isPending}
+						>
+							{adjustMutation.isPending ? "Saving..." : "Apply Adjustment"}
 						</Button>
 					</SheetFooter>
 				</form>
