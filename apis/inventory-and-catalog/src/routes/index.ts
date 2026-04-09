@@ -20,13 +20,13 @@ router.get("/", (_req: Request, res: Response) => {
 // vice-versa.  Procurement, seasons and analytics are guarded by auth
 // alone — no additional fine-grained scope is required for these routes.
 router.use(
-  "x",
+  "/catalog",
   authMiddleware(),
   // requirePermission("catalog:*:*"),
   catalogController,
 );
 router.use(
-  "x",
+  "/inventory",
   authMiddleware(),
   // requirePermission("inventory:*:*"),
   inventoryController,
