@@ -52,11 +52,10 @@ const listStockItems = async (
   // When status filter is set, get matching IDs via findRaw (Prisma can't express field comparisons)
   let statusFilteredIds: string[] | undefined;
   if (input.status) {
-    const rawFilter = buildStatusFilter(
-      tenantSlug,
-      input.warehouseId,
-      input.status,
-    )!;
+    const rawFilter = buildStatusFilter(tenantSlug, input.warehouseId, input.status);
+    if (!rawFilter) {
+      return { data: [], total: 0, page: input.page, limit: input.limit };
+    }
     const rawResults = (await prisma.inventoryItem.findRaw({
       filter: rawFilter,
       options: { projection: { _id: 1 } },
