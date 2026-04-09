@@ -7,7 +7,7 @@ import { errorHandler } from "./shared/middleware";
 const app: Express = express();
 
 app.disable("x-powered-by");
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 app.use(helmet());
 app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use(express.json());

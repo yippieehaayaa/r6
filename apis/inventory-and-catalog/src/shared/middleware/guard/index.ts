@@ -34,8 +34,16 @@ export const requirePermission =
       return next(new UnauthorizedError("Authentication required"));
     }
 
-    // ADMIN bypasses all permission checks
-    if (payload.kind === "ADMIN") return next();
+    // ADMIN bypasses all permission checks, but we validate the expected
+    // claim invariants first.  An ADMIN token must carry a subject and must
+    // not have a tenant scope.  Failing closed here prevents a spoofed or
+    // misconfigured upstream payload from escalating to full platform access.
+    if (payload.kind === "ADMIN") {
+      if (!payload.sub || payload.tenantSlug !== null) {
+        return next(new ForbiddenError("Malformed identity claims"));
+      }
+      return next();
+    }
 
     const granted: string[] = Array.isArray(payload.permissions)
       ? payload.permissions

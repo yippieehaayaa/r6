@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
+import { createRemoteJWKSet, errors as JoseErrors, jwtVerify } from "jose";
 import { env } from "../../../config";
-import { ForbiddenError, UnauthorizedError } from "../../errors";
+import { UnauthorizedError } from "../../errors";
 
 // JWT payload shape as issued by identity-and-access.
-// Defined locally so inventory-and-catalog has no dependency on jose.
 export type AuthJwtPayload = {
   /** Identity primary key */
   sub?: string;
@@ -23,9 +23,21 @@ export type AuthJwtPayload = {
   iat?: number;
 };
 
-// Validates the Bearer token by forwarding it to the identity-and-access
-// service via the API Gateway.  No JWT crypto lives here — all signing and
-// verification is owned by identity-and-access.
+// JWKS set is created once at module load and cached in memory.
+// jose handles:
+//   - lazy initial fetch on first token verification
+//   - automatic key refresh when a new kid appears (key rotation)
+//   - rate-limiting of JWKS re-fetches to prevent hammering IAM
+// IAM does NOT need to be reachable at startup — only at first auth request.
+// If IAM goes down after the first successful fetch, previously cached keys
+// continue to work, so IAC auth is resilient to short IAM outages.
+const JWKS = createRemoteJWKSet(
+  new URL(`${env.IAM_INTERNAL_URL}/.well-known/jwks.json`),
+);
+
+// Verifies the Bearer token locally using RS256 cryptographic verification
+// against IAM's public key.  Zero network hop per request — eliminates the
+// per-request IAM dependency that remote introspection would introduce.
 export const authMiddleware =
   () => async (req: Request, _res: Response, next: NextFunction) => {
     const authHeader = req.header("Authorization");
@@ -34,33 +46,27 @@ export const authMiddleware =
       return next(new UnauthorizedError("Missing or invalid Authorization header"));
     }
 
+    const token = authHeader.slice(7);
+
     try {
-      const response = await fetch(
-        `${env.API_GATEWAY_URL}/identity-and-access/auth/validate`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: authHeader,
-          },
-        },
-      );
+      const { payload } = await jwtVerify<AuthJwtPayload>(token, JWKS, {
+        issuer: env.JWT_ISSUER,
+        audience: env.JWT_AUDIENCE,
+        algorithms: ["RS256"],
+      });
 
-      if (!response.ok) {
-        const body = (await response.json().catch(() => ({}))) as {
-          error?: { code?: string; message?: string };
-        };
-
-        if (response.status === 401) {
-          return next(new UnauthorizedError(body?.error?.message ?? "Unauthorized"));
-        }
-
-        return next(new ForbiddenError(body?.error?.message ?? "Forbidden"));
+      // Require jti — tokens without it cannot participate in the Redis
+      // revocation denylist and must be rejected to fail closed.
+      if (!payload.jti) {
+        return next(new UnauthorizedError("Token missing required jti claim"));
       }
 
-      const { payload } = (await response.json()) as { payload: AuthJwtPayload };
       req.jwtPayload = payload;
       return next();
-    } catch {
-      return next(new UnauthorizedError("Authentication service unavailable"));
+    } catch (err) {
+      if (err instanceof JoseErrors.JWTExpired) {
+        return next(new UnauthorizedError("Token has expired"));
+      }
+      return next(new UnauthorizedError("Invalid or expired token"));
     }
   };
