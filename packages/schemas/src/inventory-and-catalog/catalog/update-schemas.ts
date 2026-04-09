@@ -10,6 +10,7 @@ export const UpdateCategorySchema = CreateCategorySchema.partial();
 export const UpdateBrandSchema = CreateBrandSchema.partial();
 export const UpdateProductSchema = CreateProductSchema.partial();
 export const UpdateProductVariantSchema = CreateProductVariantSchema.partial();
+export type UpdateCategory = z.infer<typeof UpdateCategorySchema>;
 export type UpdateBrand = z.infer<typeof UpdateBrandSchema>;
 export type UpdateProduct = z.infer<typeof UpdateProductSchema>;
 export type UpdateProductVariant = z.infer<typeof UpdateProductVariantSchema>;

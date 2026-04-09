@@ -119,7 +119,8 @@ export function useCreatePurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -128,7 +129,8 @@ export function useUpdatePurchaseOrderMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdatePurchaseOrder }) =>
 			updatePurchaseOrderFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -136,7 +138,8 @@ export function useDeletePurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deletePurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -144,7 +147,8 @@ export function useSendPurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: sendPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -152,7 +156,8 @@ export function useConfirmPurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: confirmPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -160,7 +165,8 @@ export function useCancelPurchaseOrderMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: cancelPurchaseOrderFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -193,7 +199,8 @@ export function useAddItemToOrderMutation() {
 			orderId: string;
 			body: CreatePurchaseOrderItem;
 		}) => addItemToOrderFn(orderId, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -209,7 +216,8 @@ export function useUpdateOrderItemMutation() {
 			variantId: string;
 			body: UpdatePurchaseOrderItem;
 		}) => updateOrderItemFn(orderId, variantId, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }
 
@@ -223,6 +231,7 @@ export function useRemoveItemFromOrderMutation() {
 			orderId: string;
 			variantId: string;
 		}) => removeItemFromOrderFn(orderId, variantId),
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.orders.all() }),
 	});
 }

@@ -39,7 +39,8 @@ export function useCreateSupplierMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: createSupplierFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
 	});
 }
 
@@ -48,7 +49,8 @@ export function useUpdateSupplierMutation() {
 	return useMutation({
 		mutationFn: ({ id, body }: { id: string; body: UpdateSupplier }) =>
 			updateSupplierFn(id, body),
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
 	});
 }
 
@@ -56,6 +58,7 @@ export function useDeleteSupplierMutation() {
 	const qc = useQueryClient();
 	return useMutation({
 		mutationFn: deleteSupplierFn,
-		onSuccess: () => qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
+		onSuccess: () =>
+			qc.invalidateQueries({ queryKey: procurementKeys.suppliers.all() }),
 	});
 }
