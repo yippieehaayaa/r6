@@ -1,13 +1,8 @@
 import { type Prisma, prisma } from "../../../utils/prisma";
 
-const getLowStockItems = async (tenantSlug: string, warehouseId?: string) => {
+const getInStockItems = async (tenantSlug: string, warehouseId?: string) => {
   const filter: Prisma.InputJsonObject = {
-    $expr: {
-      $and: [
-        { $gt: ["$quantityOnHand", 0] },
-        { $lte: ["$quantityOnHand", "$reorderPoint"] },
-      ],
-    },
+    $expr: { $gt: ["$quantityOnHand", "$reorderPoint"] },
     tenantSlug,
     ...(warehouseId && { warehouseId: { $oid: warehouseId } }),
   };
@@ -34,4 +29,4 @@ const getLowStockItems = async (tenantSlug: string, warehouseId?: string) => {
   }));
 };
 
-export default getLowStockItems;
+export default getInStockItems;

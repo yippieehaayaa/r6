@@ -52,6 +52,15 @@ export const getStockForProduct = (tenantSlug: string, productId: string) =>
 export const getLowStockItems = (tenantSlug: string, warehouseId?: string) =>
   inventoryRepo.getLowStockItems(tenantSlug, warehouseId);
 
+export const getInStockItems = (tenantSlug: string, warehouseId?: string) =>
+  inventoryRepo.getInStockItems(tenantSlug, warehouseId);
+
+export const getOutOfStockItems = (tenantSlug: string, warehouseId?: string) =>
+  inventoryRepo.getOutOfStockItems(tenantSlug, warehouseId);
+
+export const getStockCounts = (tenantSlug: string, warehouseId?: string) =>
+  inventoryRepo.getStockCounts(tenantSlug, warehouseId);
+
 // --- Stock Mutations ---
 
 export const receiveGoods = (

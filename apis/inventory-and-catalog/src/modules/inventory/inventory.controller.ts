@@ -18,7 +18,7 @@ const router = Router();
 // ─── Warehouses ──────────────────────────────────────────────────────────────
 
 router.get("/warehouses", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const search = req.query.search as string | undefined;
@@ -37,7 +37,7 @@ router.get("/warehouses", async (req: Request, res: Response) => {
 });
 
 router.get("/warehouses/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const warehouse = await inventoryService.getWarehouseById(
     tenantSlug,
     req.params.id as string,
@@ -49,7 +49,7 @@ router.post(
   "/warehouses",
   validate(createWarehouseSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const warehouse = await inventoryService.createWarehouse(
       tenantSlug,
       req.body,
@@ -62,7 +62,7 @@ router.patch(
   "/warehouses/:id",
   validate(updateWarehouseSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const warehouse = await inventoryService.updateWarehouse(
       tenantSlug,
       req.params.id as string,
@@ -73,7 +73,7 @@ router.patch(
 );
 
 router.delete("/warehouses/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   await inventoryService.deleteWarehouse(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
@@ -83,7 +83,7 @@ router.delete("/warehouses/:id", async (req: Request, res: Response) => {
 router.get(
   "/stock/:variantId/:warehouseId",
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const item = await inventoryService.getStockForVariant(
       tenantSlug,
       req.params.variantId as string,
@@ -94,7 +94,7 @@ router.get(
 );
 
 router.get("/stock/product/:productId", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const items = await inventoryService.getStockForProduct(
     tenantSlug,
     req.params.productId as string,
@@ -103,7 +103,7 @@ router.get("/stock/product/:productId", async (req: Request, res: Response) => {
 });
 
 router.get("/low-stock", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const warehouseId = req.query.warehouseId as string | undefined;
   const items = await inventoryService.getLowStockItems(
     tenantSlug,
@@ -112,13 +112,37 @@ router.get("/low-stock", async (req: Request, res: Response) => {
   res.json(items);
 });
 
+router.get("/in-stock", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
+  const warehouseId = req.query.warehouseId as string | undefined;
+  const items = await inventoryService.getInStockItems(tenantSlug, warehouseId);
+  res.json(items);
+});
+
+router.get("/out-of-stock", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
+  const warehouseId = req.query.warehouseId as string | undefined;
+  const items = await inventoryService.getOutOfStockItems(
+    tenantSlug,
+    warehouseId,
+  );
+  res.json(items);
+});
+
+router.get("/stock-counts", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
+  const warehouseId = req.query.warehouseId as string | undefined;
+  const counts = await inventoryService.getStockCounts(tenantSlug, warehouseId);
+  res.json(counts);
+});
+
 // ─── Stock Mutations ─────────────────────────────────────────────────────────
 
 router.post(
   "/stock/reserve",
   validate(reserveStockSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { variantId, warehouseId, qty, performedBy } = req.body;
     const result = await inventoryService.reserveStock(
       tenantSlug,
@@ -135,7 +159,7 @@ router.post(
   "/stock/release",
   validate(releaseReservationSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { variantId, warehouseId, qty, performedBy } = req.body;
     const result = await inventoryService.releaseReservation(
       tenantSlug,
@@ -152,7 +176,7 @@ router.post(
   "/stock/commit-sale",
   validate(commitSaleSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { variantId, warehouseId, qty, referenceId, performedBy } = req.body;
     const result = await inventoryService.commitSale(
       tenantSlug,
@@ -170,7 +194,7 @@ router.post(
   "/stock/adjust",
   validate(adjustStockSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { variantId, warehouseId, delta, notes, performedBy } = req.body;
     const result = await inventoryService.adjustStock(
       tenantSlug,
@@ -188,7 +212,7 @@ router.post(
   "/stock/transfer",
   validate(transferStockSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { variantId, fromWarehouseId, toWarehouseId, qty, performedBy } =
       req.body;
     const result = await inventoryService.transferStock(
@@ -206,7 +230,7 @@ router.post(
 // ─── Damage & Losses ─────────────────────────────────────────────────────────
 
 router.get("/damages", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const variantId = req.query.variantId as string | undefined;
@@ -226,7 +250,7 @@ router.get("/damages", async (req: Request, res: Response) => {
 });
 
 router.get("/damages/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const record = await inventoryService.getDamage(
     tenantSlug,
     req.params.id as string,
@@ -238,7 +262,7 @@ router.post(
   "/stock/record-damage",
   validate(recordDamageSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { variantId, warehouseId, qty, notes, performedBy } = req.body;
     const result = await inventoryService.recordDamage(
       tenantSlug,
@@ -255,7 +279,7 @@ router.post(
 // ─── Movement History ────────────────────────────────────────────────────────
 
 router.get("/movements/:variantId", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const type = req.query.type as MovementType | undefined;

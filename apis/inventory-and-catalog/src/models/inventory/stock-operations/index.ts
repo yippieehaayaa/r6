@@ -1,6 +1,9 @@
 export { default as adjustStock } from "./adjustStock";
 export { default as commitSale } from "./commitSale";
+export { default as getInStockItems } from "./getInStockItems";
 export { default as getLowStockItems } from "./getLowStockItems";
+export { default as getOutOfStockItems } from "./getOutOfStockItems";
+export { default as getStockCounts } from "./getStockCounts";
 export { default as getStockForProduct } from "./getStockForProduct";
 export { default as getStockForVariant } from "./getStockForVariant";
 export {

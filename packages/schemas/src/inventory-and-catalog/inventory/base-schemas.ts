@@ -31,6 +31,12 @@ export const InventoryItemSchema = z.strictObject({
   updatedAt: z.string(),
 });
 
+export const InventoryItemEnrichedSchema = InventoryItemSchema.extend({
+  variantName: z.string(),
+  sku: z.string(),
+  warehouseName: z.string(),
+});
+
 // StockMovement is append-only — only createdAt
 export const StockMovementSchema = z.strictObject({
   id: z.string().readonly(),
@@ -50,4 +56,5 @@ export const StockMovementSchema = z.strictObject({
 
 export type Warehouse = z.infer<typeof WarehouseSchema>;
 export type InventoryItem = z.infer<typeof InventoryItemSchema>;
+export type InventoryItemEnriched = z.infer<typeof InventoryItemEnrichedSchema>;
 export type StockMovement = z.infer<typeof StockMovementSchema>;

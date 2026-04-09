@@ -10,7 +10,10 @@ export {
 export {
   adjustStock,
   commitSale,
+  getInStockItems,
   getLowStockItems,
+  getOutOfStockItems,
+  getStockCounts,
   getStockForProduct,
   getStockForVariant,
   type ReceiveGoodsInput,

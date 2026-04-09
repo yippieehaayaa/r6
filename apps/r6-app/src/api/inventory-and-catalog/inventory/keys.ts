@@ -11,8 +11,14 @@ export const inventoryKeys = {
 			] as const,
 		forProduct: (productId: string) =>
 			[...inventoryKeys.stock.all(), "product", productId] as const,
+		inStock: (warehouseId?: string) =>
+			[...inventoryKeys.stock.all(), "in-stock", warehouseId] as const,
 		lowStock: (warehouseId?: string) =>
 			[...inventoryKeys.stock.all(), "low-stock", warehouseId] as const,
+		outOfStock: (warehouseId?: string) =>
+			[...inventoryKeys.stock.all(), "out-of-stock", warehouseId] as const,
+		counts: (warehouseId?: string) =>
+			[...inventoryKeys.stock.all(), "counts", warehouseId] as const,
 	},
 	warehouses: {
 		all: () => [...inventoryKeys.all, "warehouses"] as const,
