@@ -61,7 +61,7 @@ export function StockDetailSheet({
 		<Sheet open={open} onOpenChange={onOpenChange}>
 			<SheetContent
 				side="right"
-				className="sm:max-w-[480px] overflow-y-auto flex flex-col gap-0 p-0"
+				className="sm:max-w-120 overflow-y-auto flex flex-col gap-0 p-0"
 			>
 				{/* Header */}
 				<SheetHeader className="px-6 pt-6 pb-4">
