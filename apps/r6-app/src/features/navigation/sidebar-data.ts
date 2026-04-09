@@ -55,7 +55,7 @@ export const data = {
 			items: [
 				{
 					title: "Stock Overview",
-					url: "#",
+					url: "/r6/inventory-and-catalog/inventory",
 					permission: "inventory:stock:read",
 				},
 				{
@@ -82,7 +82,7 @@ export const data = {
 			items: [
 				{
 					title: "Products",
-					url: "#",
+					url: "/r6/inventory-and-catalog/products",
 					permission: "catalog:product:read",
 				},
 				{
@@ -92,7 +92,7 @@ export const data = {
 				},
 				{
 					title: "Categories",
-					url: "#",
+					url: "/r6/inventory-and-catalog/categories",
 					permission: "catalog:category:read",
 				},
 				{
@@ -221,7 +221,7 @@ export const data = {
 		},
 		{
 			name: "Add Product",
-			url: "#",
+			url: "/r6/inventory-and-catalog/products",
 			icon: Tag,
 			permission: "catalog:product:create",
 		},
