@@ -57,7 +57,13 @@ export async function seedCategories(
     const parent = await prisma.category.upsert({
       where: { tenantSlug_slug: { tenantSlug, slug: def.slug } },
       update: {},
-      create: { tenantSlug, name: def.name, slug: def.slug, isActive: true, sortOrder: i },
+      create: {
+        tenantSlug,
+        name: def.name,
+        slug: def.slug,
+        isActive: true,
+        sortOrder: i,
+      },
     });
     result.push(parent);
 

@@ -1,11 +1,10 @@
-import type { InventoryItemEnriched } from "@r6/schemas";
+import type { PaginationState } from "@tanstack/react-table";
 import { AlertTriangle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
+import type { StockStatus } from "@/api/inventory-and-catalog";
 import {
-	useGetInStockItemsQuery,
-	useGetLowStockItemsQuery,
-	useGetOutOfStockItemsQuery,
 	useGetStockCountsQuery,
+	useListStockItemsQuery,
 	useListWarehousesQuery,
 } from "@/api/inventory-and-catalog";
 import { Button } from "@/components/ui/button";
@@ -21,25 +20,11 @@ function computeStatus(
 	return "IN_STOCK";
 }
 
-function mapInventoryItem(item: InventoryItemEnriched): InventoryRow {
-	return {
-		id: item.id,
-		variantName: item.variantName,
-		sku: item.sku,
-		variantId: item.variantId,
-		warehouseId: item.warehouseId,
-		warehouseName: item.warehouseName,
-		quantityOnHand: item.quantityOnHand,
-		quantityReserved: item.quantityReserved,
-		quantityAvailable: item.quantityOnHand - item.quantityReserved,
-		reorderPoint: item.reorderPoint,
-		status: computeStatus(item.quantityOnHand, item.reorderPoint),
-		updatedAt: item.updatedAt,
-	};
-}
+const PAGE_SIZE = 20;
 
 export default function InventoryPage() {
 	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [warehouseFilter, setWarehouseFilter] = useState("all");
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [adjustSheetOpen, setAdjustSheetOpen] = useState(false);
@@ -47,51 +32,59 @@ export default function InventoryPage() {
 	const [localOverrides, setLocalOverrides] = useState<Record<string, number>>(
 		{},
 	);
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: PAGE_SIZE,
+	});
 
-	const warehouseId =
-		warehouseFilter !== "all" ? warehouseFilter : undefined;
+	useEffect(() => {
+		const id = setTimeout(() => setDebouncedSearch(search), 300);
+		return () => clearTimeout(id);
+	}, [search]);
+
+	const warehouseId = warehouseFilter !== "all" ? warehouseFilter : undefined;
+	const status =
+		statusFilter !== "all" ? (statusFilter as StockStatus) : undefined;
 
 	const { data: warehousesData } = useListWarehousesQuery({ limit: 100 });
 	const warehouses = warehousesData?.data ?? [];
 
 	const { data: counts } = useGetStockCountsQuery(warehouseId);
-	const { data: inStockData, isLoading: inStockLoading } =
-		useGetInStockItemsQuery(warehouseId);
-	const { data: lowStockData, isLoading: lowStockLoading } =
-		useGetLowStockItemsQuery(warehouseId);
-	const { data: outOfStockData, isLoading: outOfStockLoading } =
-		useGetOutOfStockItemsQuery(warehouseId);
 
-	const isLoading = inStockLoading || lowStockLoading || outOfStockLoading;
+	const { data, isLoading } = useListStockItemsQuery({
+		page: pagination.pageIndex + 1,
+		limit: pagination.pageSize,
+		search: debouncedSearch || undefined,
+		warehouseId,
+		status,
+	});
 
-	const allItems = useMemo(() => {
-		const raw = [
-			...(inStockData ?? []),
-			...(lowStockData ?? []),
-			...(outOfStockData ?? []),
-		].map(mapInventoryItem);
-
-		return raw.map((row) => {
-			const override = localOverrides[row.id];
-			if (override !== undefined) {
-				return {
-					...row,
-					quantityOnHand: override,
-					quantityAvailable: override - row.quantityReserved,
-					status: computeStatus(override, row.reorderPoint),
-				};
-			}
-			return row;
-		});
-	}, [inStockData, lowStockData, outOfStockData, localOverrides]);
-
-	const filtered = useMemo(() => {
-		return allItems.filter((item) => {
-			const matchesStatus =
-				statusFilter === "all" || item.status === statusFilter;
-			return matchesStatus;
-		});
-	}, [allItems, statusFilter]);
+	const rows: InventoryRow[] = (data?.data ?? []).map((item) => {
+		const base: InventoryRow = {
+			id: item.id,
+			variantName: item.variantName,
+			sku: item.sku,
+			variantId: item.variantId,
+			warehouseId: item.warehouseId,
+			warehouseName: item.warehouseName,
+			quantityOnHand: item.quantityOnHand,
+			quantityReserved: item.quantityReserved,
+			quantityAvailable: item.quantityOnHand - item.quantityReserved,
+			reorderPoint: item.reorderPoint,
+			status: computeStatus(item.quantityOnHand, item.reorderPoint),
+			updatedAt: item.updatedAt,
+		};
+		const override = localOverrides[item.id];
+		if (override !== undefined) {
+			return {
+				...base,
+				quantityOnHand: override,
+				quantityAvailable: override - item.quantityReserved,
+				status: computeStatus(override, item.reorderPoint),
+			};
+		}
+		return base;
+	});
 
 	function handleAdjust(item: InventoryRow) {
 		setSelectedItem(item);
@@ -100,6 +93,16 @@ export default function InventoryPage() {
 
 	function handleStockAdjust(id: string, newQty: number) {
 		setLocalOverrides((prev) => ({ ...prev, [id]: newQty }));
+	}
+
+	function handleWarehouseFilterChange(value: string) {
+		setWarehouseFilter(value);
+		setPagination((p) => ({ ...p, pageIndex: 0 }));
+	}
+
+	function handleStatusFilterChange(value: string) {
+		setStatusFilter(value);
+		setPagination((p) => ({ ...p, pageIndex: 0 }));
 	}
 
 	return (
@@ -132,7 +135,10 @@ export default function InventoryPage() {
 					<Button
 						variant="link"
 						className="text-amber-800 underline p-0 h-auto ml-auto"
-						onClick={() => setStatusFilter("LOW_STOCK")}
+						onClick={() => {
+							setStatusFilter("LOW_STOCK");
+							setPagination((p) => ({ ...p, pageIndex: 0 }));
+						}}
 					>
 						Review
 					</Button>
@@ -157,19 +163,24 @@ export default function InventoryPage() {
 			{/* Table */}
 			<div className="rounded-xl border bg-card p-4">
 				<InventoryTable
-					data={filtered}
+					data={rows}
 					isLoading={isLoading}
 					onAdjust={handleAdjust}
 					warehouses={warehouses}
 					warehouseFilter={warehouseFilter}
-					onWarehouseFilterChange={setWarehouseFilter}
+					onWarehouseFilterChange={handleWarehouseFilterChange}
 					statusFilter={statusFilter}
-					onStatusFilterChange={setStatusFilter}
+					onStatusFilterChange={handleStatusFilterChange}
 					filterValue={search}
-					onFilterChange={setSearch}
+					onFilterChange={(v) => {
+						setSearch(v);
+						setPagination((p) => ({ ...p, pageIndex: 0 }));
+					}}
+					rowCount={data?.total}
+					paginationState={pagination}
+					onPaginationChange={setPagination}
 				/>
 			</div>
 		</div>
 	);
 }
-

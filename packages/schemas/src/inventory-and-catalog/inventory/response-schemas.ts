@@ -13,5 +13,7 @@ export const StockMovementResponseSchema = StockMovementSchema;
 
 export type WarehouseResponse = z.infer<typeof WarehouseResponseSchema>;
 export type InventoryItemResponse = z.infer<typeof InventoryItemResponseSchema>;
-export type InventoryItemEnrichedResponse = z.infer<typeof InventoryItemEnrichedResponseSchema>;
+export type InventoryItemEnrichedResponse = z.infer<
+  typeof InventoryItemEnrichedResponseSchema
+>;
 export type StockMovementResponse = z.infer<typeof StockMovementResponseSchema>;

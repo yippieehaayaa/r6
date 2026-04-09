@@ -1,4 +1,8 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type {
+	ColumnDef,
+	OnChangeFn,
+	PaginationState,
+} from "@tanstack/react-table";
 import { MoreHorizontal, Warehouse } from "lucide-react";
 import { useMemo } from "react";
 import { DataTable } from "@/components/table/data-table";
@@ -73,6 +77,9 @@ interface Props {
 	onStatusFilterChange: (value: string) => void;
 	filterValue: string;
 	onFilterChange: (value: string) => void;
+	rowCount?: number;
+	paginationState?: PaginationState;
+	onPaginationChange?: OnChangeFn<PaginationState>;
 }
 
 export function InventoryTable({
@@ -86,6 +93,9 @@ export function InventoryTable({
 	onStatusFilterChange,
 	filterValue,
 	onFilterChange,
+	rowCount,
+	paginationState,
+	onPaginationChange,
 }: Props) {
 	const columns = useMemo<ColumnDef<InventoryRow>[]>(
 		() => [
@@ -193,10 +203,10 @@ export function InventoryTable({
 				</Select>
 				<Select value={statusFilter} onValueChange={onStatusFilterChange}>
 					<SelectTrigger className="w-44">
-						<SelectValue placeholder="All Statuses" />
+						<SelectValue placeholder="All Status" />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">All Statuses</SelectItem>
+						<SelectItem value="all">All Status</SelectItem>
 						<SelectItem value="IN_STOCK">In Stock</SelectItem>
 						<SelectItem value="LOW_STOCK">Low Stock</SelectItem>
 						<SelectItem value="OUT_OF_STOCK">Out of Stock</SelectItem>
@@ -207,10 +217,12 @@ export function InventoryTable({
 				columns={columns}
 				data={data}
 				isLoading={isLoading}
-				filterPlaceholder="Search by name, SKU or warehouse…"
+				filterPlaceholder="Search by name or SKU…"
 				globalFilterValue={filterValue}
 				onGlobalFilterChange={onFilterChange}
-				defaultPageSize={20}
+				rowCount={rowCount}
+				paginationState={paginationState}
+				onPaginationChange={onPaginationChange}
 			/>
 		</div>
 	);

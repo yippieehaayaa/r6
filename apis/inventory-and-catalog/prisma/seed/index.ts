@@ -62,10 +62,27 @@ async function main(): Promise<void> {
   );
 
   console.log("\n── Inventory & Stock Movements ─────────────────");
-  await seedInventory(prisma, TENANT_SLUG, variants, warehouses, EPOCH, NOW, isFresh, log);
+  await seedInventory(
+    prisma,
+    TENANT_SLUG,
+    variants,
+    warehouses,
+    EPOCH,
+    NOW,
+    isFresh,
+    log,
+  );
 
   console.log("\n── Purchase Orders ─────────────────────────────");
-  await seedPurchaseOrders(prisma, TENANT_SLUG, suppliers, warehouses, variants, NOW, log);
+  await seedPurchaseOrders(
+    prisma,
+    TENANT_SLUG,
+    suppliers,
+    warehouses,
+    variants,
+    NOW,
+    log,
+  );
 
   console.log("\n── Done ─────────────────────────────────────────\n");
 }

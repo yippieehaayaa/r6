@@ -7,6 +7,11 @@ export { default as getStockCounts } from "./getStockCounts";
 export { default as getStockForProduct } from "./getStockForProduct";
 export { default as getStockForVariant } from "./getStockForVariant";
 export {
+  default as listStockItems,
+  type ListStockItemsInput,
+  type StockStatus,
+} from "./listStockItems";
+export {
   default as receiveGoods,
   type ReceiveGoodsInput,
 } from "./receiveGoods";

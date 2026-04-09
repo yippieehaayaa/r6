@@ -146,7 +146,13 @@ export async function seedInventory(
   if (existingMovementCount === 0) {
     const allMovements = variants.flatMap((variant) =>
       warehouses.flatMap((warehouse) =>
-        buildMovementsForVariantWarehouse(tenantSlug, variant.id, warehouse.id, epoch, now),
+        buildMovementsForVariantWarehouse(
+          tenantSlug,
+          variant.id,
+          warehouse.id,
+          epoch,
+          now,
+        ),
       ),
     );
     await prisma.stockMovement.createMany({ data: allMovements }); // append-only; no unique key — guarded by count check above

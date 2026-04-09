@@ -2,6 +2,8 @@ export const inventoryKeys = {
 	all: ["inventory"] as const,
 	stock: {
 		all: () => [...inventoryKeys.all, "stock"] as const,
+		list: (params: object) =>
+			[...inventoryKeys.stock.all(), "list", params] as const,
 		forVariant: (variantId: string, warehouseId: string) =>
 			[
 				...inventoryKeys.stock.all(),

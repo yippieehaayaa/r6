@@ -3,10 +3,53 @@ import {
 	type InventoryItemEnriched,
 	InventoryItemEnrichedSchema,
 	InventoryItemSchema,
+	PaginatedResponseSchema,
 } from "@r6/schemas";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 import { inventoryKeys } from "../keys";
+
+export type StockStatus = "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
+
+export interface ListStockItemsParams {
+	page?: number;
+	limit?: number;
+	search?: string;
+	warehouseId?: string;
+	status?: StockStatus;
+}
+
+const ListStockItemsResponseSchema = PaginatedResponseSchema(
+	InventoryItemEnrichedSchema,
+);
+
+export async function listStockItemsFn(
+	params: ListStockItemsParams = {},
+): Promise<{
+	data: InventoryItemEnriched[];
+	page: number;
+	limit: number;
+	total: number;
+}> {
+	const { data } = await inventoryApi.get<unknown>("/inventory/stock", {
+		params,
+	});
+	return ListStockItemsResponseSchema.parse(data);
+}
+
+export function useListStockItemsQuery(
+	params: ListStockItemsParams = {},
+	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
+) {
+	return useQuery({
+		queryKey: inventoryKeys.stock.list(params),
+		queryFn: () => listStockItemsFn(params),
+		staleTime: 1000 * 60 * 2,
+		gcTime: 1000 * 60 * 10,
+		placeholderData: keepPreviousData,
+		...options,
+	});
+}
 
 export async function getStockForVariantFn(
 	variantId: string,
@@ -54,13 +97,21 @@ export async function getOutOfStockItemsFn(
 	return InventoryItemEnrichedSchema.array().parse(data);
 }
 
-export async function getStockCountsFn(
-	warehouseId?: string,
-): Promise<{ total: number; inStock: number; lowStock: number; outOfStock: number }> {
+export async function getStockCountsFn(warehouseId?: string): Promise<{
+	total: number;
+	inStock: number;
+	lowStock: number;
+	outOfStock: number;
+}> {
 	const { data } = await inventoryApi.get<unknown>("/inventory/stock-counts", {
 		params: warehouseId ? { warehouseId } : undefined,
 	});
-	return data as { total: number; inStock: number; lowStock: number; outOfStock: number };
+	return data as {
+		total: number;
+		inStock: number;
+		lowStock: number;
+		outOfStock: number;
+	};
 }
 
 export function useGetStockForVariantQuery(
@@ -123,4 +174,3 @@ export function useGetStockCountsQuery(warehouseId?: string) {
 		placeholderData: keepPreviousData,
 	});
 }
-

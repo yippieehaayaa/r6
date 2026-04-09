@@ -5,7 +5,9 @@ import * as warehouseRepo from "./warehouse.repository";
 export type {
   ListDamagesInput,
   ListMovementsInput,
+  ListStockItemsInput,
   ReceiveGoodsInput,
+  StockStatus,
 } from "./inventory.repository";
 
 export type {
@@ -60,6 +62,11 @@ export const getOutOfStockItems = (tenantSlug: string, warehouseId?: string) =>
 
 export const getStockCounts = (tenantSlug: string, warehouseId?: string) =>
   inventoryRepo.getStockCounts(tenantSlug, warehouseId);
+
+export const listStockItems = (
+  tenantSlug: string,
+  input: inventoryRepo.ListStockItemsInput,
+) => inventoryRepo.listStockItems(tenantSlug, input);
 
 // --- Stock Mutations ---
 

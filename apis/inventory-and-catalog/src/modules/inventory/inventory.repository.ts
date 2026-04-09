@@ -16,10 +16,13 @@ export {
   getStockCounts,
   getStockForProduct,
   getStockForVariant,
+  type ListStockItemsInput,
+  listStockItems,
   type ReceiveGoodsInput,
   receiveGoods,
   recordDamage,
   releaseReservation,
   reserveStock,
+  type StockStatus,
   transferStock,
 } from "../../models/inventory/stock-operations";

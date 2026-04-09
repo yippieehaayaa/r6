@@ -136,6 +136,28 @@ router.get("/stock-counts", async (req: Request, res: Response) => {
   res.json(counts);
 });
 
+router.get("/stock", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
+  const page = Number(req.query.page ?? 1);
+  const limit = Number(req.query.limit ?? 20);
+  const search = req.query.search as string | undefined;
+  const warehouseId = req.query.warehouseId as string | undefined;
+  const status = req.query.status as
+    | "IN_STOCK"
+    | "LOW_STOCK"
+    | "OUT_OF_STOCK"
+    | undefined;
+
+  const result = await inventoryService.listStockItems(tenantSlug, {
+    page,
+    limit,
+    search,
+    warehouseId,
+    status,
+  });
+  res.json(result);
+});
+
 // ─── Stock Mutations ─────────────────────────────────────────────────────────
 
 router.post(
