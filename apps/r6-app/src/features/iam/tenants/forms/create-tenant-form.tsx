@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useCreateTenantMutation } from "@/api/tenants";
+import { useCreateTenantMutation } from "@/api/identity-and-access/tenants";
 import {
 	AlertDialog,
 	AlertDialogAction,

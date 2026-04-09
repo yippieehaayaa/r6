@@ -8,8 +8,8 @@ import {
 	useListIdentitiesQuery,
 	useRemoveIdentityMutation,
 	useRestoreIdentityMutation,
-} from "@/api/identities";
-import { useListTenantsQuery } from "@/api/tenants";
+} from "@/api/identity-and-access/identities";
+import { useListTenantsQuery } from "@/api/identity-and-access/tenants";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,

@@ -10,7 +10,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useUpdatePolicyMutation } from "@/api/policies";
+import { useUpdatePolicyMutation } from "@/api/identity-and-access/policies";
 import { Button } from "@/components/ui/button";
 import {
 	Field,

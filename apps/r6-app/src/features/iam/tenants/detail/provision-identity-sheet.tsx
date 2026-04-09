@@ -7,7 +7,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useProvisionIdentityMutation } from "@/api/tenants";
+import { useProvisionIdentityMutation } from "@/api/identity-and-access/tenants";
 import { Button } from "@/components/ui/button";
 import {
 	Field,

@@ -3,7 +3,7 @@ import { type CreateRoleInput, CreateRoleSchema } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useCreateRoleMutation } from "@/api/roles";
+import { useCreateRoleMutation } from "@/api/identity-and-access/roles";
 import { Button } from "@/components/ui/button";
 import {
 	Field,

@@ -9,7 +9,7 @@ import {
 	useListTenantsQuery,
 	useRemoveTenantMutation,
 	useRestoreTenantMutation,
-} from "@/api/tenants";
+} from "@/api/identity-and-access/tenants";
 import {
 	AlertDialog,
 	AlertDialogAction,

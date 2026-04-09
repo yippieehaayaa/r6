@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import type { AuthJwtPayload } from "../auth";
 import { ForbiddenError, UnauthorizedError } from "../../errors";
+import type { AuthJwtPayload } from "../auth";
 
 // Checks whether a required permission string is satisfied by the granted
 // permission strings from the JWT payload. Supports wildcard * segments.
@@ -50,7 +50,9 @@ export const requirePermission =
       : [];
 
     if (!checkPermission(required, granted)) {
-      return next(new ForbiddenError("You do not have permission to perform this action"));
+      return next(
+        new ForbiddenError("You do not have permission to perform this action"),
+      );
     }
 
     return next();

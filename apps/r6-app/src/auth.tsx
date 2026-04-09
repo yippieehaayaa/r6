@@ -7,11 +7,11 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { loginFn } from "@/api/auth/mutations/login";
-import { logoutFn } from "@/api/auth/mutations/logout";
-import { refreshFn } from "@/api/auth/mutations/refresh";
-import { verifyTotpFn } from "@/api/auth/mutations/verify-totp";
-import { getMeFn } from "@/api/me/queries/get-me";
+import { loginFn } from "@/api/identity-and-access/auth/mutations/login";
+import { logoutFn } from "@/api/identity-and-access/auth/mutations/logout";
+import { refreshFn } from "@/api/identity-and-access/auth/mutations/refresh";
+import { verifyTotpFn } from "@/api/identity-and-access/auth/mutations/verify-totp";
+import { getMeFn } from "@/api/identity-and-access/me/queries/get-me";
 import { getToken, setToken } from "@/api/token";
 import { parseTokenClaims, type TokenClaims } from "@/lib/parse-token";
 

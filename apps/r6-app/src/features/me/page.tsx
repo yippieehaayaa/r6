@@ -7,7 +7,7 @@ import {
 	ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
-import { useGetSessionsQuery } from "@/api/me";
+import { useGetSessionsQuery } from "@/api/identity-and-access/me";
 import { useAuth } from "@/auth";
 import {
 	Dialog,
