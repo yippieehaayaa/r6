@@ -19,3 +19,11 @@ export class ConflictError extends DomainError {
 export class UnprocessableError extends DomainError {
   readonly httpStatus = 422;
 }
+
+export class UnauthorizedError extends DomainError {
+  readonly httpStatus = 401;
+}
+
+export class ForbiddenError extends DomainError {
+  readonly httpStatus = 403;
+}

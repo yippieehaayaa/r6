@@ -6,6 +6,7 @@ import {
   procurementController,
   seasonsController,
 } from "../modules";
+import { authMiddleware, requirePermission } from "../shared/middleware";
 
 const router = Router();
 
@@ -13,10 +14,15 @@ router.get("/", (_req: Request, res: Response) => {
   res.sendStatus(200);
 });
 
-router.use("/catalog", catalogController);
-router.use("/seasons", seasonsController);
-router.use("/inventory", inventoryController);
-router.use("/procurement", procurementController);
-router.use("/analytics", analyticsController);
+// All routes require authentication.  Inventory and catalog sub-routers
+// additionally require the matching service-level permission so that a
+// token granted only "catalog:*:*" cannot reach inventory endpoints and
+// vice-versa.  Procurement, seasons and analytics are guarded by auth
+// alone — no additional fine-grained scope is required for these routes.
+router.use("/catalog", authMiddleware(), requirePermission("catalog:*:*"), catalogController);
+router.use("/inventory", authMiddleware(), requirePermission("inventory:*:*"), inventoryController);
+router.use("/seasons", authMiddleware(), requirePermission("seasons:*:*"), seasonsController);
+router.use("/procurement", authMiddleware(), requirePermission("procurement:*:*"), procurementController);
+router.use("/analytics", authMiddleware(), requirePermission("analytics:*:*"), analyticsController);
 
 export default router;
