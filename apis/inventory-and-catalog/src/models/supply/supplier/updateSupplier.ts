@@ -15,9 +15,13 @@ export type UpdateSupplierInput = {
   isActive?: boolean;
 };
 
-const updateSupplier = async (id: string, input: UpdateSupplierInput) => {
+const updateSupplier = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateSupplierInput,
+) => {
   const supplier = await prisma.supplier.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!supplier) throw new SupplierNotFoundError();

@@ -12,12 +12,13 @@ export type UpdateOrderItemInput = {
 };
 
 const updateOrderItem = async (
+  tenantSlug: string,
   purchaseOrderId: string,
   variantId: string,
   input: UpdateOrderItemInput,
 ) => {
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, deletedAt: { isSet: false } },
+    where: { id: purchaseOrderId, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!po) throw new PurchaseOrderNotFoundError();
@@ -25,7 +26,13 @@ const updateOrderItem = async (
     throw new PurchaseOrderInvalidStatusTransitionError();
 
   const item = await prisma.purchaseOrderItem.findUnique({
-    where: { purchaseOrderId_variantId: { purchaseOrderId, variantId } },
+    where: {
+      tenantSlug_purchaseOrderId_variantId: {
+        tenantSlug,
+        purchaseOrderId,
+        variantId,
+      },
+    },
   });
 
   if (!item) throw new PurchaseOrderItemNotFoundError();
@@ -33,7 +40,13 @@ const updateOrderItem = async (
   const { unitCost, ...rest } = input;
 
   return await prisma.purchaseOrderItem.update({
-    where: { purchaseOrderId_variantId: { purchaseOrderId, variantId } },
+    where: {
+      tenantSlug_purchaseOrderId_variantId: {
+        tenantSlug,
+        purchaseOrderId,
+        variantId,
+      },
+    },
     data: {
       ...rest,
       ...(unitCost !== undefined && { unitCost: toMinorUnits(unitCost) }),

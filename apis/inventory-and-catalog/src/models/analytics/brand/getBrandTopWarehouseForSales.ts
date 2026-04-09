@@ -1,11 +1,13 @@
 import { prisma, type Season } from "../../../utils/prisma";
 
 const getBrandTopWarehouseForSales = async (
+  tenantSlug: string,
   brandId: string,
   season?: Season,
 ) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { brandId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -20,6 +22,7 @@ const getBrandTopWarehouseForSales = async (
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: "SALE",
       ...(season && {

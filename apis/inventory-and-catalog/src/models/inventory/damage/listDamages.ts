@@ -10,8 +10,10 @@ export type ListDamagesInput = {
 };
 
 const buildWhere = (
+  tenantSlug: string,
   input: Omit<ListDamagesInput, "page" | "limit">,
 ): Prisma.StockMovementWhereInput => ({
+  tenantSlug,
   type: "DAMAGE",
   ...(input.variantId !== undefined && { variantId: input.variantId }),
   ...(input.warehouseId !== undefined && { warehouseId: input.warehouseId }),
@@ -23,8 +25,8 @@ const buildWhere = (
   }),
 });
 
-const listDamages = async (input: ListDamagesInput) => {
-  const where = buildWhere(input);
+const listDamages = async (tenantSlug: string, input: ListDamagesInput) => {
+  const where = buildWhere(tenantSlug, input);
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([

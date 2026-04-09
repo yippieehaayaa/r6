@@ -2,11 +2,13 @@ import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "../brand/types";
 
 const getSupplierFillRate = async (
+  tenantSlug: string,
   supplierId: string,
   dateRange?: DateRange,
 ) => {
   const purchaseOrders = await prisma.purchaseOrder.findMany({
     where: {
+      tenantSlug,
       supplierId,
       deletedAt: { isSet: false },
       ...(dateRange && {

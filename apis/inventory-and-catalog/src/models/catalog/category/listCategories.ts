@@ -9,8 +9,10 @@ export type ListCategoriesInput = {
 };
 
 const buildWhere = (
+  tenantSlug: string,
   input: Omit<ListCategoriesInput, "page" | "limit">,
 ): Prisma.CategoryWhereInput => ({
+  tenantSlug,
   deletedAt: { isSet: false },
   ...(input.isActive !== undefined && { isActive: input.isActive }),
   ...(input.parentId !== undefined && { parentId: input.parentId }),
@@ -19,8 +21,11 @@ const buildWhere = (
   }),
 });
 
-const listCategories = async (input: ListCategoriesInput) => {
-  const where = buildWhere(input);
+const listCategories = async (
+  tenantSlug: string,
+  input: ListCategoriesInput,
+) => {
+  const where = buildWhere(tenantSlug, input);
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([

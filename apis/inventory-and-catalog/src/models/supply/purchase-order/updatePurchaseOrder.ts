@@ -12,11 +12,12 @@ export type UpdatePurchaseOrderInput = {
 };
 
 const updatePurchaseOrder = async (
+  tenantSlug: string,
   id: string,
   input: UpdatePurchaseOrderInput,
 ) => {
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!po) throw new PurchaseOrderNotFoundError();

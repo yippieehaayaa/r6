@@ -9,23 +9,29 @@ import {
 import type { Season } from "../../utils/prisma";
 import type { DateRange } from "./analytics.types";
 
-export const getDailySalesReport = (date: Date) => _getDailySalesReport(date);
+export const getDailySalesReport = (tenantSlug: string, date: Date) =>
+  _getDailySalesReport(tenantSlug, date);
 
-export const getGmv = (dateRange?: DateRange) => _getGmv(dateRange);
+export const getGmv = (tenantSlug: string, dateRange?: DateRange) =>
+  _getGmv(tenantSlug, dateRange);
 
-export const getDeadStockReport = (threshold?: number) =>
-  _getDeadStockReport(threshold);
+export const getDeadStockReport = (tenantSlug: string, threshold?: number) =>
+  _getDeadStockReport(tenantSlug, threshold);
 
 export const getSeasonalDemandReport = (
+  tenantSlug: string,
   season: Season,
   limit: number,
   year?: number,
-) => _getSeasonalDemandReport(season, limit, year);
+) => _getSeasonalDemandReport(tenantSlug, season, limit, year);
 
-export const getPreSeasonInventoryHealth = (season: Season) =>
-  _getPreSeasonInventoryHealth(season);
+export const getPreSeasonInventoryHealth = (
+  tenantSlug: string,
+  season: Season,
+) => _getPreSeasonInventoryHealth(tenantSlug, season);
 
 export const getSupplierFillRate = (
+  tenantSlug: string,
   supplierId: string,
   dateRange?: DateRange,
-) => _getSupplierFillRate(supplierId, dateRange);
+) => _getSupplierFillRate(tenantSlug, supplierId, dateRange);

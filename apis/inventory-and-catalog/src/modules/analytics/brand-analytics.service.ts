@@ -12,37 +12,54 @@ import {
 import type { Season } from "../../utils/prisma";
 import type { DateRange } from "./analytics.types";
 
-export const getBrandRevenue = (brandId: string, dateRange?: DateRange) =>
-  _getBrandRevenue(brandId, dateRange);
+export const getBrandRevenue = (
+  tenantSlug: string,
+  brandId: string,
+  dateRange?: DateRange,
+) => _getBrandRevenue(tenantSlug, brandId, dateRange);
 
-export const getBrandSalesByMonth = (brandId: string, year: number) =>
-  _getBrandSalesByMonth(brandId, year);
+export const getBrandSalesByMonth = (
+  tenantSlug: string,
+  brandId: string,
+  year: number,
+) => _getBrandSalesByMonth(tenantSlug, brandId, year);
 
-export const getBrandSeasonalSales = (brandId: string, seasons: Season[]) =>
-  _getBrandSeasonalSales(brandId, seasons);
+export const getBrandSeasonalSales = (
+  tenantSlug: string,
+  brandId: string,
+  seasons: Season[],
+) => _getBrandSeasonalSales(tenantSlug, brandId, seasons);
 
-export const getBrandStockHealth = (brandId: string) =>
-  _getBrandStockHealth(brandId);
+export const getBrandStockHealth = (tenantSlug: string, brandId: string) =>
+  _getBrandStockHealth(tenantSlug, brandId);
 
 export const getBrandTopProducts = (
+  tenantSlug: string,
   brandId: string,
   limit: number,
   dateRange?: DateRange,
-) => _getBrandTopProducts(brandId, limit, dateRange);
+) => _getBrandTopProducts(tenantSlug, brandId, limit, dateRange);
 
 export const getBrandTopWarehouseForSales = (
+  tenantSlug: string,
   brandId: string,
   season?: Season,
-) => _getBrandTopWarehouseForSales(brandId, season);
+) => _getBrandTopWarehouseForSales(tenantSlug, brandId, season);
 
-export const getBrandWarehouseDistribution = (brandId: string) =>
-  _getBrandWarehouseDistribution(brandId);
+export const getBrandWarehouseDistribution = (
+  tenantSlug: string,
+  brandId: string,
+) => _getBrandWarehouseDistribution(tenantSlug, brandId);
 
 export const getTopSellingBrands = (
+  tenantSlug: string,
   limit: number,
   dateRange?: DateRange,
   season?: Season,
-) => _getTopSellingBrands(limit, dateRange, season);
+) => _getTopSellingBrands(tenantSlug, limit, dateRange, season);
 
-export const getTotalSoldByBrand = (brandId: string, dateRange?: DateRange) =>
-  _getTotalSoldByBrand(brandId, dateRange);
+export const getTotalSoldByBrand = (
+  tenantSlug: string,
+  brandId: string,
+  dateRange?: DateRange,
+) => _getTotalSoldByBrand(tenantSlug, brandId, dateRange);

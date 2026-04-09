@@ -18,9 +18,13 @@ export type UpdateProductInput = {
   brandId?: string;
 };
 
-const updateProduct = async (id: string, input: UpdateProductInput) => {
+const updateProduct = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateProductInput,
+) => {
   const product = await prisma.product.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!product) throw new ProductNotFoundError();

@@ -5,6 +5,7 @@ import {
 import { prisma } from "../../../utils/prisma";
 
 const reserveStock = async (
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   qty: number,
@@ -12,7 +13,13 @@ const reserveStock = async (
 ) => {
   return await prisma.$transaction(async (tx) => {
     const item = await tx.inventoryItem.findUnique({
-      where: { variantId_warehouseId: { variantId, warehouseId } },
+      where: {
+        tenantSlug_variantId_warehouseId: {
+          tenantSlug,
+          variantId,
+          warehouseId,
+        },
+      },
     });
 
     if (!item) throw new InventoryItemNotFoundError();
@@ -22,12 +29,19 @@ const reserveStock = async (
     }
 
     const inventoryItem = await tx.inventoryItem.update({
-      where: { variantId_warehouseId: { variantId, warehouseId } },
+      where: {
+        tenantSlug_variantId_warehouseId: {
+          tenantSlug,
+          variantId,
+          warehouseId,
+        },
+      },
       data: { quantityReserved: { increment: qty } },
     });
 
     const movement = await tx.stockMovement.create({
       data: {
+        tenantSlug,
         type: "RESERVATION",
         quantity: qty,
         variantId,

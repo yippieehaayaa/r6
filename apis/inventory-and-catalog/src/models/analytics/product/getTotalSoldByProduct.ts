@@ -2,11 +2,13 @@ import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
 const getTotalSoldByProduct = async (
+  tenantSlug: string,
   productId: string,
   dateRange?: DateRange,
 ) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -19,6 +21,7 @@ const getTotalSoldByProduct = async (
 
   const result = await prisma.stockMovement.aggregate({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: "SALE",
       ...(dateRange && {

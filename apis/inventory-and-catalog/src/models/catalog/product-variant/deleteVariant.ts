@@ -1,9 +1,9 @@
 import { ProductVariantNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const deleteVariant = async (id: string) => {
+const deleteVariant = async (tenantSlug: string, id: string) => {
   const variant = await prisma.productVariant.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!variant) throw new ProductVariantNotFoundError();

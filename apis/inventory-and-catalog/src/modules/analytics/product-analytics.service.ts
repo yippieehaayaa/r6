@@ -13,40 +13,56 @@ import type { Season } from "../../utils/prisma";
 import type { DateRange } from "./analytics.types";
 
 export const getProductReturnRate = (
+  tenantSlug: string,
   productId: string,
   dateRange?: DateRange,
-) => _getProductReturnRate(productId, dateRange);
+) => _getProductReturnRate(tenantSlug, productId, dateRange);
 
 export const getProductRevenueByBrand = (
+  tenantSlug: string,
   brandId: string,
   dateRange?: DateRange,
-) => _getProductRevenueByBrand(brandId, dateRange);
+) => _getProductRevenueByBrand(tenantSlug, brandId, dateRange);
 
-export const getProductSalesByWarehouse = (productId: string) =>
-  _getProductSalesByWarehouse(productId);
+export const getProductSalesByWarehouse = (
+  tenantSlug: string,
+  productId: string,
+) => _getProductSalesByWarehouse(tenantSlug, productId);
 
 export const getProductSeasonalForecast = (
+  tenantSlug: string,
   productId: string,
   upcomingSeason: Season,
   yearsBack?: number,
-) => _getProductSeasonalForecast(productId, upcomingSeason, yearsBack);
+) =>
+  _getProductSeasonalForecast(tenantSlug, productId, upcomingSeason, yearsBack);
 
-export const getProductSeasonalSales = (productId: string, seasons: Season[]) =>
-  _getProductSeasonalSales(productId, seasons);
+export const getProductSeasonalSales = (
+  tenantSlug: string,
+  productId: string,
+  seasons: Season[],
+) => _getProductSeasonalSales(tenantSlug, productId, seasons);
 
-export const getProductStockTurnover = (productId: string, period: DateRange) =>
-  _getProductStockTurnover(productId, period);
+export const getProductStockTurnover = (
+  tenantSlug: string,
+  productId: string,
+  period: DateRange,
+) => _getProductStockTurnover(tenantSlug, productId, period);
 
-export const getProductVariantSalesSplit = (productId: string) =>
-  _getProductVariantSalesSplit(productId);
+export const getProductVariantSalesSplit = (
+  tenantSlug: string,
+  productId: string,
+) => _getProductVariantSalesSplit(tenantSlug, productId);
 
 export const getTopSellingProducts = (
+  tenantSlug: string,
   limit: number,
   dateRange?: DateRange,
   warehouseId?: string,
-) => _getTopSellingProducts(limit, dateRange, warehouseId);
+) => _getTopSellingProducts(tenantSlug, limit, dateRange, warehouseId);
 
 export const getTotalSoldByProduct = (
+  tenantSlug: string,
   productId: string,
   dateRange?: DateRange,
-) => _getTotalSoldByProduct(productId, dateRange);
+) => _getTotalSoldByProduct(tenantSlug, productId, dateRange);

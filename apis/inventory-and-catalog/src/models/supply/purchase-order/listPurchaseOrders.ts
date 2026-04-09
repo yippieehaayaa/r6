@@ -15,8 +15,10 @@ export type ListPurchaseOrdersInput = {
 };
 
 const buildWhere = (
+  tenantSlug: string,
   input: Omit<ListPurchaseOrdersInput, "page" | "limit">,
 ): Prisma.PurchaseOrderWhereInput => ({
+  tenantSlug,
   deletedAt: { isSet: false },
   ...(input.supplierId !== undefined && { supplierId: input.supplierId }),
   ...(input.warehouseId !== undefined && { warehouseId: input.warehouseId }),
@@ -29,8 +31,11 @@ const buildWhere = (
   }),
 });
 
-const listPurchaseOrders = async (input: ListPurchaseOrdersInput) => {
-  const where = buildWhere(input);
+const listPurchaseOrders = async (
+  tenantSlug: string,
+  input: ListPurchaseOrdersInput,
+) => {
+  const where = buildWhere(tenantSlug, input);
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([

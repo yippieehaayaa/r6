@@ -12,13 +12,14 @@ export type ReceiptItem = {
 };
 
 const receivePurchaseOrder = async (
+  tenantSlug: string,
   id: string,
   receipts: ReceiptItem[],
   performedBy: string,
 ) => {
   return await prisma.$transaction(async (tx) => {
     const po = await tx.purchaseOrder.findUnique({
-      where: { id, deletedAt: { isSet: false } },
+      where: { id, tenantSlug, deletedAt: { isSet: false } },
       include: { items: true },
     });
 
@@ -37,7 +38,8 @@ const receivePurchaseOrder = async (
 
         const updatedItem = await tx.purchaseOrderItem.update({
           where: {
-            purchaseOrderId_variantId: {
+            tenantSlug_purchaseOrderId_variantId: {
+              tenantSlug,
               purchaseOrderId: id,
               variantId: receipt.variantId,
             },
@@ -45,7 +47,7 @@ const receivePurchaseOrder = async (
           data: { quantityReceived: { increment: receipt.quantityReceived } },
         });
 
-        const { inventoryItem, movement } = await receiveGoods(tx, {
+        const { inventoryItem, movement } = await receiveGoods(tenantSlug, tx, {
           variantId: receipt.variantId,
           warehouseId: po.warehouseId,
           quantity: receipt.quantityReceived,

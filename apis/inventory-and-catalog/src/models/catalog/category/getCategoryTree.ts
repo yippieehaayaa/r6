@@ -12,10 +12,11 @@ const buildTree = (
     .map((cat) => ({ ...cat, children: buildTree(categories, cat.id) }));
 
 const getCategoryTree = async (
+  tenantSlug: string,
   id?: string,
 ): Promise<CategoryTree | CategoryTree[]> => {
   const categories = await prisma.category.findMany({
-    where: { deletedAt: { isSet: false }, isActive: true },
+    where: { tenantSlug, deletedAt: { isSet: false }, isActive: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
   });
 

@@ -1,12 +1,13 @@
 import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 
-const getDeadStockReport = async (threshold = 90) => {
+const getDeadStockReport = async (tenantSlug: string, threshold = 90) => {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - threshold);
 
   const recentMovements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       type: "SALE",
       createdAt: { gte: cutoff },
     },
@@ -17,6 +18,7 @@ const getDeadStockReport = async (threshold = 90) => {
 
   const inventoryItems = await prisma.inventoryItem.findMany({
     where: {
+      tenantSlug,
       quantityOnHand: { gt: 0 },
       variant: { deletedAt: { isSet: false } },
     },

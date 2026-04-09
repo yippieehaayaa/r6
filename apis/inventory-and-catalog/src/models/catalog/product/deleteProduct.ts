@@ -1,9 +1,9 @@
 import { ProductNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const deleteProduct = async (id: string) => {
+const deleteProduct = async (tenantSlug: string, id: string) => {
   const product = await prisma.product.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!product) throw new ProductNotFoundError();

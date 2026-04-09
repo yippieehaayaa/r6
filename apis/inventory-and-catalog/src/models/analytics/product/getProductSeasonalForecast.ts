@@ -14,6 +14,7 @@ const shiftDateByYears = (date: Date, offsetYears: number): Date =>
   );
 
 const getProductSeasonalForecast = async (
+  tenantSlug: string,
   productId: string,
   upcomingSeason: Season,
   yearsBack = 3,
@@ -28,6 +29,7 @@ const getProductSeasonalForecast = async (
 
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -45,6 +47,7 @@ const getProductSeasonalForecast = async (
 
       const result = await prisma.stockMovement.aggregate({
         where: {
+          tenantSlug,
           variantId: { in: variantIds },
           type: "SALE",
           createdAt: { gte: from, lte: to },

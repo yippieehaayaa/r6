@@ -1,9 +1,15 @@
 import { InventoryItemNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const getStockForVariant = async (variantId: string, warehouseId: string) => {
+const getStockForVariant = async (
+  tenantSlug: string,
+  variantId: string,
+  warehouseId: string,
+) => {
   const item = await prisma.inventoryItem.findUnique({
-    where: { variantId_warehouseId: { variantId, warehouseId } },
+    where: {
+      tenantSlug_variantId_warehouseId: { tenantSlug, variantId, warehouseId },
+    },
   });
 
   if (!item) throw new InventoryItemNotFoundError();

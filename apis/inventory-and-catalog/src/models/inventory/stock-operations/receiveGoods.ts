@@ -10,18 +10,21 @@ export type ReceiveGoodsInput = {
 };
 
 const receiveGoods = async (
+  tenantSlug: string,
   tx: TransactionClient,
   input: ReceiveGoodsInput,
 ) => {
   const inventoryItem = await tx.inventoryItem.upsert({
     where: {
-      variantId_warehouseId: {
+      tenantSlug_variantId_warehouseId: {
+        tenantSlug,
         variantId: input.variantId,
         warehouseId: input.warehouseId,
       },
     },
     update: { quantityOnHand: { increment: input.quantity } },
     create: {
+      tenantSlug,
       variantId: input.variantId,
       warehouseId: input.warehouseId,
       quantityOnHand: input.quantity,
@@ -30,6 +33,7 @@ const receiveGoods = async (
 
   const movement = await tx.stockMovement.create({
     data: {
+      tenantSlug,
       type: "RECEIPT",
       quantity: input.quantity,
       referenceId: input.referenceId,

@@ -3,11 +3,13 @@ import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
 const getWarehouseSalesByBrand = async (
+  tenantSlug: string,
   warehouseId: string,
   dateRange?: DateRange,
 ) => {
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       warehouseId,
       type: "SALE",
       ...(dateRange && {

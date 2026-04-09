@@ -2,6 +2,7 @@ import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
 const getWarehouseSalesBySeason = async (
+  tenantSlug: string,
   warehouseId: string,
   seasons: Season[],
 ) => {
@@ -9,6 +10,7 @@ const getWarehouseSalesBySeason = async (
     seasons.map(async (season) => {
       const movements = await prisma.stockMovement.findMany({
         where: {
+          tenantSlug,
           warehouseId,
           type: "SALE",
           createdAt: { gte: season.startDate, lte: season.endDate },

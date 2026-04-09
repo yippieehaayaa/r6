@@ -2,9 +2,10 @@ import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "../brand/types";
 
-const getGmv = async (dateRange?: DateRange) => {
+const getGmv = async (tenantSlug: string, dateRange?: DateRange) => {
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       type: "SALE",
       ...(dateRange && {
         createdAt: { gte: dateRange.from, lte: dateRange.to },

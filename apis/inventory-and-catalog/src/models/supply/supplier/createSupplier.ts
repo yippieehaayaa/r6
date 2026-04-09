@@ -14,10 +14,14 @@ export type CreateSupplierInput = {
   isActive?: boolean;
 };
 
-const createSupplier = async (input: CreateSupplierInput) => {
+const createSupplier = async (
+  tenantSlug: string,
+  input: CreateSupplierInput,
+) => {
   try {
     return await prisma.supplier.create({
       data: {
+        tenantSlug,
         name: input.name,
         code: input.code,
         contactName: input.contactName,

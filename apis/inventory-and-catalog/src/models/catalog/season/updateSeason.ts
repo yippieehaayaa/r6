@@ -14,9 +14,13 @@ export type UpdateSeasonInput = {
   isActive?: boolean;
 };
 
-const updateSeason = async (id: string, input: UpdateSeasonInput) => {
+const updateSeason = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateSeasonInput,
+) => {
   const season = await prisma.season.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!season) throw new SeasonNotFoundError();

@@ -8,6 +8,7 @@ const applyYear = (date: Date, year: number): Date => {
 };
 
 const getSeasonalDemandReport = async (
+  tenantSlug: string,
   season: Season,
   limit: number,
   year?: number,
@@ -17,6 +18,7 @@ const getSeasonalDemandReport = async (
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       type: "SALE",
       createdAt: { gte: startDate, lte: endDate },
     },

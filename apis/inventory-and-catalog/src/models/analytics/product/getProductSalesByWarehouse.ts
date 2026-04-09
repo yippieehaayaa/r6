@@ -1,8 +1,12 @@
 import { prisma } from "../../../utils/prisma";
 
-const getProductSalesByWarehouse = async (productId: string) => {
+const getProductSalesByWarehouse = async (
+  tenantSlug: string,
+  productId: string,
+) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -15,6 +19,7 @@ const getProductSalesByWarehouse = async (productId: string) => {
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: "SALE",
     },

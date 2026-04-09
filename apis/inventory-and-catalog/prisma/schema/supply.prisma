@@ -1,8 +1,9 @@
 // Vendor / supplier of goods
 model Supplier {
     id             String        @id @default(auto()) @map("_id") @db.ObjectId
-    name           String        @unique
-    code           String        @unique
+    tenantSlug     String
+    name           String
+    code           String
     contactName    String?
     contactEmail   String?
     contactPhone   String?
@@ -18,7 +19,10 @@ model Supplier {
     deletedAt DateTime?
 
     // Indexes
-    @@index([isActive])
+    @@unique([tenantSlug, name])
+    @@unique([tenantSlug, code])
+    @@index([tenantSlug])
+    @@index([tenantSlug, isActive])
     @@index([deletedAt])
     @@map("suppliers")
 }
@@ -26,7 +30,8 @@ model Supplier {
 // Replenishment order raised against a supplier
 model PurchaseOrder {
     id          String              @id @default(auto()) @map("_id") @db.ObjectId
-    orderNumber String              @unique
+    tenantSlug  String
+    orderNumber String
     status      PurchaseOrderStatus @default(DRAFT)
     expectedAt  DateTime?
     notes       String?
@@ -46,10 +51,12 @@ model PurchaseOrder {
     deletedAt DateTime?
 
     // Indexes
-    @@index([supplierId])
-    @@index([supplierId, status])
-    @@index([warehouseId])
-    @@index([status])
+    @@unique([tenantSlug, orderNumber])
+    @@index([tenantSlug])
+    @@index([tenantSlug, supplierId])
+    @@index([tenantSlug, supplierId, status])
+    @@index([tenantSlug, warehouseId])
+    @@index([tenantSlug, status])
     @@index([deletedAt])
     @@map("purchase_orders")
 }
@@ -57,6 +64,7 @@ model PurchaseOrder {
 // Individual line item on a purchase order — O(1) via composite unique
 model PurchaseOrderItem {
     id               String @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug       String
     quantityOrdered  Int
     quantityReceived Int    @default(0)
     unitCost         Int
@@ -72,8 +80,9 @@ model PurchaseOrderItem {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    // Composite unique → prevents duplicate line items per order
-    @@unique([purchaseOrderId, variantId])
+    // Composite unique → prevents duplicate line items per order, scoped to tenant
+    @@unique([tenantSlug, purchaseOrderId, variantId])
+    @@index([tenantSlug])
     @@index([variantId])
     @@map("purchase_order_items")
 }

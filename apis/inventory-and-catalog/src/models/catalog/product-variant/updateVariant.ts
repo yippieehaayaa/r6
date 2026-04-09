@@ -28,9 +28,13 @@ export type UpdateVariantInput = {
   isActive?: boolean;
 };
 
-const updateVariant = async (id: string, input: UpdateVariantInput) => {
+const updateVariant = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateVariantInput,
+) => {
   const variant = await prisma.productVariant.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!variant) throw new ProductVariantNotFoundError();

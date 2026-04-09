@@ -1,15 +1,15 @@
 import { prisma } from "../../../utils/prisma";
 
-const getStockForProduct = async (productId: string) => {
+const getStockForProduct = async (tenantSlug: string, productId: string) => {
   const variants = await prisma.productVariant.findMany({
-    where: { productId, deletedAt: { isSet: false } },
+    where: { tenantSlug, productId, deletedAt: { isSet: false } },
     select: { id: true },
   });
 
   const variantIds = variants.map((v) => v.id);
 
   const items = await prisma.inventoryItem.findMany({
-    where: { variantId: { in: variantIds } },
+    where: { tenantSlug, variantId: { in: variantIds } },
     include: { variant: true, warehouse: true },
   });
 

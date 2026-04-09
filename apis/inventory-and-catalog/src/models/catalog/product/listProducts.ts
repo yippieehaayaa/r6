@@ -11,8 +11,10 @@ export type ListProductsInput = {
 };
 
 const buildWhere = (
+  tenantSlug: string,
   input: Omit<ListProductsInput, "page" | "limit">,
 ): Prisma.ProductWhereInput => ({
+  tenantSlug,
   deletedAt: { isSet: false },
   ...(input.categoryId !== undefined && { categoryId: input.categoryId }),
   ...(input.brandId !== undefined && { brandId: input.brandId }),
@@ -23,8 +25,8 @@ const buildWhere = (
   }),
 });
 
-const listProducts = async (input: ListProductsInput) => {
-  const where = buildWhere(input);
+const listProducts = async (tenantSlug: string, input: ListProductsInput) => {
+  const where = buildWhere(tenantSlug, input);
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([

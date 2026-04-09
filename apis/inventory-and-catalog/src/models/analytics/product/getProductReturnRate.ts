@@ -2,11 +2,13 @@ import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
 const getProductReturnRate = async (
+  tenantSlug: string,
   productId: string,
   dateRange?: DateRange,
 ) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -21,6 +23,7 @@ const getProductReturnRate = async (
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: { in: ["SALE", "RETURN"] },
       ...(dateRange && {

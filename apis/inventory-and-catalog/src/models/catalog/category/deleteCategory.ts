@@ -5,19 +5,19 @@ import {
 } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const deleteCategory = async (id: string) => {
+const deleteCategory = async (tenantSlug: string, id: string) => {
   const category = await prisma.category.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!category) throw new CategoryNotFoundError();
 
   const [productCount, childCount] = await Promise.all([
     prisma.product.count({
-      where: { categoryId: id, deletedAt: { isSet: false } },
+      where: { tenantSlug, categoryId: id, deletedAt: { isSet: false } },
     }),
     prisma.category.count({
-      where: { parentId: id, deletedAt: { isSet: false } },
+      where: { tenantSlug, parentId: id, deletedAt: { isSet: false } },
     }),
   ]);
 

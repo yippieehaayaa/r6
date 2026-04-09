@@ -16,56 +16,82 @@ export type {
 
 // --- Warehouses ---
 
-export const createWarehouse = (input: warehouseRepo.CreateWarehouseInput) =>
-  warehouseRepo.createWarehouse(input);
+export const createWarehouse = (
+  tenantSlug: string,
+  input: warehouseRepo.CreateWarehouseInput,
+) => warehouseRepo.createWarehouse(tenantSlug, input);
 
-export const listWarehouses = (input: warehouseRepo.ListWarehousesInput) =>
-  warehouseRepo.listWarehouses(input);
+export const listWarehouses = (
+  tenantSlug: string,
+  input: warehouseRepo.ListWarehousesInput,
+) => warehouseRepo.listWarehouses(tenantSlug, input);
 
-export const getWarehouseById = (id: string) =>
-  warehouseRepo.getWarehouseById(id);
+export const getWarehouseById = (tenantSlug: string, id: string) =>
+  warehouseRepo.getWarehouseById(tenantSlug, id);
 
 export const updateWarehouse = (
+  tenantSlug: string,
   id: string,
   input: warehouseRepo.UpdateWarehouseInput,
-) => warehouseRepo.updateWarehouse(id, input);
+) => warehouseRepo.updateWarehouse(tenantSlug, id, input);
 
-export const deleteWarehouse = (id: string) =>
-  warehouseRepo.deleteWarehouse(id);
+export const deleteWarehouse = (tenantSlug: string, id: string) =>
+  warehouseRepo.deleteWarehouse(tenantSlug, id);
 
 // --- Stock Queries ---
 
-export const getStockForVariant = (variantId: string, warehouseId: string) =>
-  inventoryRepo.getStockForVariant(variantId, warehouseId);
+export const getStockForVariant = (
+  tenantSlug: string,
+  variantId: string,
+  warehouseId: string,
+) => inventoryRepo.getStockForVariant(tenantSlug, variantId, warehouseId);
 
-export const getStockForProduct = (productId: string) =>
-  inventoryRepo.getStockForProduct(productId);
+export const getStockForProduct = (tenantSlug: string, productId: string) =>
+  inventoryRepo.getStockForProduct(tenantSlug, productId);
 
-export const getLowStockItems = (warehouseId?: string) =>
-  inventoryRepo.getLowStockItems(warehouseId);
+export const getLowStockItems = (tenantSlug: string, warehouseId?: string) =>
+  inventoryRepo.getLowStockItems(tenantSlug, warehouseId);
 
 // --- Stock Mutations ---
 
 export const receiveGoods = (
+  tenantSlug: string,
   tx: TransactionClient,
   input: inventoryRepo.ReceiveGoodsInput,
-) => inventoryRepo.receiveGoods(tx, input);
+) => inventoryRepo.receiveGoods(tenantSlug, tx, input);
 
 export const reserveStock = (
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   qty: number,
   performedBy: string,
-) => inventoryRepo.reserveStock(variantId, warehouseId, qty, performedBy);
+) =>
+  inventoryRepo.reserveStock(
+    tenantSlug,
+    variantId,
+    warehouseId,
+    qty,
+    performedBy,
+  );
 
 export const releaseReservation = (
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   qty: number,
   performedBy: string,
-) => inventoryRepo.releaseReservation(variantId, warehouseId, qty, performedBy);
+) =>
+  inventoryRepo.releaseReservation(
+    tenantSlug,
+    variantId,
+    warehouseId,
+    qty,
+    performedBy,
+  );
 
 export const commitSale = (
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   qty: number,
@@ -73,6 +99,7 @@ export const commitSale = (
   performedBy: string,
 ) =>
   inventoryRepo.commitSale(
+    tenantSlug,
     variantId,
     warehouseId,
     qty,
@@ -81,15 +108,24 @@ export const commitSale = (
   );
 
 export const adjustStock = (
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   delta: number,
   notes: string,
   performedBy: string,
 ) =>
-  inventoryRepo.adjustStock(variantId, warehouseId, delta, notes, performedBy);
+  inventoryRepo.adjustStock(
+    tenantSlug,
+    variantId,
+    warehouseId,
+    delta,
+    notes,
+    performedBy,
+  );
 
 export const transferStock = (
+  tenantSlug: string,
   variantId: string,
   fromWarehouseId: string,
   toWarehouseId: string,
@@ -97,6 +133,7 @@ export const transferStock = (
   performedBy: string,
 ) =>
   inventoryRepo.transferStock(
+    tenantSlug,
     variantId,
     fromWarehouseId,
     toWarehouseId,
@@ -105,20 +142,33 @@ export const transferStock = (
   );
 
 export const recordDamage = (
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   qty: number,
   notes: string,
   performedBy: string,
 ) =>
-  inventoryRepo.recordDamage(variantId, warehouseId, qty, notes, performedBy);
+  inventoryRepo.recordDamage(
+    tenantSlug,
+    variantId,
+    warehouseId,
+    qty,
+    notes,
+    performedBy,
+  );
 
-export const listDamages = (input: inventoryRepo.ListDamagesInput) =>
-  inventoryRepo.listDamages(input);
+export const listDamages = (
+  tenantSlug: string,
+  input: inventoryRepo.ListDamagesInput,
+) => inventoryRepo.listDamages(tenantSlug, input);
 
-export const getDamage = (id: string) => inventoryRepo.getDamage(id);
+export const getDamage = (tenantSlug: string, id: string) =>
+  inventoryRepo.getDamage(tenantSlug, id);
 
 // --- Movement History ---
 
-export const listMovements = (input: inventoryRepo.ListMovementsInput) =>
-  inventoryRepo.listMovements(input);
+export const listMovements = (
+  tenantSlug: string,
+  input: inventoryRepo.ListMovementsInput,
+) => inventoryRepo.listMovements(tenantSlug, input);

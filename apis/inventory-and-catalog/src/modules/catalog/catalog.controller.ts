@@ -18,6 +18,7 @@ const router = Router();
 // ─── Categories ──────────────────────────────────────────────────────────────
 
 router.get("/categories", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const search = req.query.search as string | undefined;
@@ -27,7 +28,7 @@ router.get("/categories", async (req: Request, res: Response) => {
       ? req.query.isActive === "true"
       : undefined;
 
-  const result = await catalogService.listCategories({
+  const result = await catalogService.listCategories(tenantSlug, {
     page,
     limit,
     search,
@@ -38,12 +39,18 @@ router.get("/categories", async (req: Request, res: Response) => {
 });
 
 router.get("/categories/:id/tree", async (req: Request, res: Response) => {
-  const tree = await catalogService.getCategoryTree(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tree = await catalogService.getCategoryTree(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(tree);
 });
 
 router.get("/categories/:id", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const category = await catalogService.getCategoryById(
+    tenantSlug,
     req.params.id as string,
   );
   res.json(category);
@@ -53,7 +60,8 @@ router.post(
   "/categories",
   validate(createCategorySchema),
   async (req: Request, res: Response) => {
-    const category = await catalogService.createCategory(req.body);
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const category = await catalogService.createCategory(tenantSlug, req.body);
     res.status(201).json(category);
   },
 );
@@ -62,7 +70,9 @@ router.patch(
   "/categories/:id",
   validate(updateCategorySchema),
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const category = await catalogService.updateCategory(
+      tenantSlug,
       req.params.id as string,
       req.body,
     );
@@ -71,13 +81,15 @@ router.patch(
 );
 
 router.delete("/categories/:id", async (req: Request, res: Response) => {
-  await catalogService.deleteCategory(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  await catalogService.deleteCategory(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
 
 // ─── Brands ──────────────────────────────────────────────────────────────────
 
 router.get("/brands", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const search = req.query.search as string | undefined;
@@ -86,7 +98,7 @@ router.get("/brands", async (req: Request, res: Response) => {
       ? req.query.isActive === "true"
       : undefined;
 
-  const result = await catalogService.listBrands({
+  const result = await catalogService.listBrands(tenantSlug, {
     page,
     limit,
     search,
@@ -96,7 +108,11 @@ router.get("/brands", async (req: Request, res: Response) => {
 });
 
 router.get("/brands/:id", async (req: Request, res: Response) => {
-  const brand = await catalogService.getBrandById(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const brand = await catalogService.getBrandById(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(brand);
 });
 
@@ -104,7 +120,8 @@ router.post(
   "/brands",
   validate(createBrandSchema),
   async (req: Request, res: Response) => {
-    const brand = await catalogService.createBrand(req.body);
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const brand = await catalogService.createBrand(tenantSlug, req.body);
     res.status(201).json(brand);
   },
 );
@@ -113,7 +130,9 @@ router.patch(
   "/brands/:id",
   validate(updateBrandSchema),
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const brand = await catalogService.updateBrand(
+      tenantSlug,
       req.params.id as string,
       req.body,
     );
@@ -122,13 +141,15 @@ router.patch(
 );
 
 router.delete("/brands/:id", async (req: Request, res: Response) => {
-  await catalogService.deleteBrand(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  await catalogService.deleteBrand(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
 
 // ─── Products ────────────────────────────────────────────────────────────────
 
 router.get("/products", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const search = req.query.search as string | undefined;
@@ -139,7 +160,7 @@ router.get("/products", async (req: Request, res: Response) => {
     ? (req.query.tags as string).split(",")
     : undefined;
 
-  const result = await catalogService.listProducts({
+  const result = await catalogService.listProducts(tenantSlug, {
     page,
     limit,
     search,
@@ -152,14 +173,20 @@ router.get("/products", async (req: Request, res: Response) => {
 });
 
 router.get("/products/slug/:slug", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const product = await catalogService.getProductBySlug(
+    tenantSlug,
     req.params.slug as string,
   );
   res.json(product);
 });
 
 router.get("/products/:id", async (req: Request, res: Response) => {
-  const product = await catalogService.getProductById(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const product = await catalogService.getProductById(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(product);
 });
 
@@ -167,7 +194,8 @@ router.post(
   "/products",
   validate(createProductSchema),
   async (req: Request, res: Response) => {
-    const product = await catalogService.createProduct(req.body);
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const product = await catalogService.createProduct(tenantSlug, req.body);
     res.status(201).json(product);
   },
 );
@@ -176,7 +204,9 @@ router.patch(
   "/products/:id",
   validate(updateProductSchema),
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const product = await catalogService.updateProduct(
+      tenantSlug,
       req.params.id as string,
       req.body,
     );
@@ -185,14 +215,20 @@ router.patch(
 );
 
 router.post("/products/:id/publish", async (req: Request, res: Response) => {
-  const product = await catalogService.publishProduct(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const product = await catalogService.publishProduct(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(product);
 });
 
 router.post(
   "/products/:id/discontinue",
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const product = await catalogService.discontinueProduct(
+      tenantSlug,
       req.params.id as string,
     );
     res.json(product);
@@ -200,12 +236,17 @@ router.post(
 );
 
 router.post("/products/:id/archive", async (req: Request, res: Response) => {
-  const product = await catalogService.archiveProduct(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const product = await catalogService.archiveProduct(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(product);
 });
 
 router.delete("/products/:id", async (req: Request, res: Response) => {
-  await catalogService.deleteProduct(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  await catalogService.deleteProduct(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
 
@@ -214,6 +255,7 @@ router.delete("/products/:id", async (req: Request, res: Response) => {
 router.get(
   "/products/:productId/variants",
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const page = Number(req.query.page ?? 1);
     const limit = Number(req.query.limit ?? 20);
     const search = req.query.search as string | undefined;
@@ -222,7 +264,7 @@ router.get(
         ? req.query.isActive === "true"
         : undefined;
 
-    const result = await catalogService.listVariantsByProduct({
+    const result = await catalogService.listVariantsByProduct(tenantSlug, {
       productId: req.params.productId as string,
       page,
       limit,
@@ -234,7 +276,11 @@ router.get(
 );
 
 router.get("/variants/:id", async (req: Request, res: Response) => {
-  const variant = await catalogService.getVariantById(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const variant = await catalogService.getVariantById(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(variant);
 });
 
@@ -242,7 +288,8 @@ router.post(
   "/products/:productId/variants",
   validate(createVariantSchema),
   async (req: Request, res: Response) => {
-    const variant = await catalogService.createVariant({
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const variant = await catalogService.createVariant(tenantSlug, {
       ...req.body,
       productId: req.params.productId as string,
     });
@@ -254,7 +301,9 @@ router.patch(
   "/variants/:id",
   validate(updateVariantSchema),
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const variant = await catalogService.updateVariant(
+      tenantSlug,
       req.params.id as string,
       req.body,
     );
@@ -263,7 +312,8 @@ router.patch(
 );
 
 router.delete("/variants/:id", async (req: Request, res: Response) => {
-  await catalogService.deleteVariant(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  await catalogService.deleteVariant(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
 

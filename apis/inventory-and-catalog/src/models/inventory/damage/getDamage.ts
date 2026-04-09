@@ -1,9 +1,9 @@
 import { DamageRecordNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const getDamage = async (id: string) => {
+const getDamage = async (tenantSlug: string, id: string) => {
   const record = await prisma.stockMovement.findFirst({
-    where: { id, type: "DAMAGE" },
+    where: { tenantSlug, id, type: "DAMAGE" },
   });
 
   if (!record) throw new DamageRecordNotFoundError();

@@ -1,8 +1,9 @@
 // Hierarchical product taxonomy (self-referencing)
 model Category {
     id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug  String
     name        String
-    slug        String   @unique
+    slug        String
     description String?
     parentId    String?  @db.ObjectId
     isActive    Boolean  @default(true)
@@ -19,8 +20,10 @@ model Category {
     products Product[]
 
     // Indexes — O(1) equality filters per access pattern
-    @@index([parentId])
-    @@index([isActive])
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, parentId])
+    @@index([tenantSlug, isActive])
     @@index([deletedAt])
     @@map("categories")
 }
@@ -28,8 +31,9 @@ model Category {
 // Product brand / manufacturer
 model Brand {
     id          String  @id @default(auto()) @map("_id") @db.ObjectId
-    name        String  @unique
-    slug        String  @unique
+    tenantSlug  String
+    name        String
+    slug        String
     description String?
     logoUrl     String?
     isActive    Boolean @default(true)
@@ -43,7 +47,10 @@ model Brand {
     products Product[]
 
     // Indexes
-    @@index([isActive])
+    @@unique([tenantSlug, name])
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, isActive])
     @@index([deletedAt])
     @@map("brands")
 }
@@ -51,9 +58,10 @@ model Brand {
 // Base product (contains shared attributes across all variants)
 model Product {
     id          String        @id @default(auto()) @map("_id") @db.ObjectId
-    sku         String        @unique
+    tenantSlug  String
+    sku         String
     name        String
-    slug        String        @unique
+    slug        String
     description String?
     tags        String[]
     status      ProductStatus @default(DRAFT)
@@ -74,9 +82,12 @@ model Product {
     deletedAt DateTime?
 
     // Indexes
-    @@index([categoryId])
-    @@index([brandId])
-    @@index([status])
+    @@unique([tenantSlug, sku])
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, categoryId])
+    @@index([tenantSlug, brandId])
+    @@index([tenantSlug, status])
     @@index([deletedAt])
     @@map("products")
 }
@@ -84,7 +95,8 @@ model Product {
 // Purchasable / stockable unit of a product (e.g. size + colour combination)
 model ProductVariant {
     id             String       @id @default(auto()) @map("_id") @db.ObjectId
-    sku            String       @unique
+    tenantSlug     String
+    sku            String
     name           String
     options        Json         // { "color": "red", "size": "M" }
     price          Int
@@ -114,8 +126,10 @@ model ProductVariant {
     deletedAt DateTime?
 
     // Indexes
-    @@index([productId])
-    @@index([isActive])
+    @@unique([tenantSlug, sku])
+    @@index([tenantSlug])
+    @@index([tenantSlug, productId])
+    @@index([tenantSlug, isActive])
     @@index([deletedAt])
     @@map("product_variants")
 }

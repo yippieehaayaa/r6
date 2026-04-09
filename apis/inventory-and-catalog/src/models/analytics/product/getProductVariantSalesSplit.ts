@@ -1,9 +1,13 @@
 import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 
-const getProductVariantSalesSplit = async (productId: string) => {
+const getProductVariantSalesSplit = async (
+  tenantSlug: string,
+  productId: string,
+) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -17,6 +21,7 @@ const getProductVariantSalesSplit = async (productId: string) => {
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: "SALE",
     },

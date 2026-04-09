@@ -2,11 +2,13 @@ import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
 const getProductStockTurnover = async (
+  tenantSlug: string,
   productId: string,
   period: DateRange,
 ) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -28,6 +30,7 @@ const getProductStockTurnover = async (
   const [salesResult, inventoryItems] = await Promise.all([
     prisma.stockMovement.aggregate({
       where: {
+        tenantSlug,
         variantId: { in: variantIds },
         type: "SALE",
         createdAt: { gte: period.from, lte: period.to },
@@ -35,7 +38,7 @@ const getProductStockTurnover = async (
       _sum: { quantity: true },
     }),
     prisma.inventoryItem.findMany({
-      where: { variantId: { in: variantIds } },
+      where: { tenantSlug, variantId: { in: variantIds } },
       select: { quantityOnHand: true },
     }),
   ]);

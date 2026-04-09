@@ -2,6 +2,7 @@ import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
 const getWarehouseThroughput = async (
+  tenantSlug: string,
   warehouseId: string,
   dateRange?: DateRange,
 ) => {
@@ -12,6 +13,7 @@ const getWarehouseThroughput = async (
   const [inbound, outbound] = await Promise.all([
     prisma.stockMovement.aggregate({
       where: {
+        tenantSlug,
         warehouseId,
         type: "RECEIPT",
         ...dateFilter,
@@ -20,6 +22,7 @@ const getWarehouseThroughput = async (
     }),
     prisma.stockMovement.aggregate({
       where: {
+        tenantSlug,
         warehouseId,
         type: { in: ["SALE", "TRANSFER_OUT"] },
         ...dateFilter,

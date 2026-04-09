@@ -13,9 +13,13 @@ export type UpdateBrandInput = {
   isActive?: boolean;
 };
 
-const updateBrand = async (id: string, input: UpdateBrandInput) => {
+const updateBrand = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateBrandInput,
+) => {
   const brand = await prisma.brand.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!brand) throw new BrandNotFoundError();

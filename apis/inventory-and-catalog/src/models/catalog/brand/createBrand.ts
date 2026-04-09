@@ -12,10 +12,11 @@ export type CreateBrandInput = {
   isActive?: boolean;
 };
 
-const createBrand = async (input: CreateBrandInput) => {
+const createBrand = async (tenantSlug: string, input: CreateBrandInput) => {
   try {
     return await prisma.brand.create({
       data: {
+        tenantSlug,
         name: input.name,
         slug: input.slug,
         description: input.description,

@@ -6,13 +6,17 @@ const shiftYearBack = (date: Date): Date => {
   return d;
 };
 
-const getPreSeasonInventoryHealth = async (season: Season) => {
+const getPreSeasonInventoryHealth = async (
+  tenantSlug: string,
+  season: Season,
+) => {
   const prevYearStart = shiftYearBack(season.startDate);
   const prevYearEnd = shiftYearBack(season.endDate);
 
   const [inventoryItems, lastSeasonMovements] = await Promise.all([
     prisma.inventoryItem.findMany({
       where: {
+        tenantSlug,
         variant: { deletedAt: { isSet: false } },
       },
       select: {
@@ -32,6 +36,7 @@ const getPreSeasonInventoryHealth = async (season: Season) => {
     }),
     prisma.stockMovement.findMany({
       where: {
+        tenantSlug,
         type: "SALE",
         createdAt: { gte: prevYearStart, lte: prevYearEnd },
       },

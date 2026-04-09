@@ -11,10 +11,14 @@ export type CreateWarehouseInput = {
   isActive?: boolean;
 };
 
-const createWarehouse = async (input: CreateWarehouseInput) => {
+const createWarehouse = async (
+  tenantSlug: string,
+  input: CreateWarehouseInput,
+) => {
   try {
     return await prisma.warehouse.create({
       data: {
+        tenantSlug,
         name: input.name,
         code: input.code,
         address: input.address,

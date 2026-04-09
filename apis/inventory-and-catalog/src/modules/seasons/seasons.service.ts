@@ -6,20 +6,27 @@ export type {
   UpdateSeasonInput,
 } from "./seasons.repository";
 
-export const createSeason = (input: seasonsRepo.CreateSeasonInput) =>
-  seasonsRepo.createSeason(input);
+export const createSeason = (
+  tenantSlug: string,
+  input: seasonsRepo.CreateSeasonInput,
+) => seasonsRepo.createSeason(tenantSlug, input);
 
-export const listSeasons = (input: seasonsRepo.ListSeasonsInput) =>
-  seasonsRepo.listSeasons(input);
+export const listSeasons = (
+  tenantSlug: string,
+  input: seasonsRepo.ListSeasonsInput,
+) => seasonsRepo.listSeasons(tenantSlug, input);
 
-export const getSeasonById = (id: string) => seasonsRepo.getSeasonById(id);
+export const getSeasonById = (tenantSlug: string, id: string) =>
+  seasonsRepo.getSeasonById(tenantSlug, id);
 
-export const getSeasonBySlug = (slug: string) =>
-  seasonsRepo.getSeasonBySlug(slug);
+export const getSeasonBySlug = (tenantSlug: string, slug: string) =>
+  seasonsRepo.getSeasonBySlug(tenantSlug, slug);
 
 export const updateSeason = (
+  tenantSlug: string,
   id: string,
   input: seasonsRepo.UpdateSeasonInput,
-) => seasonsRepo.updateSeason(id, input);
+) => seasonsRepo.updateSeason(tenantSlug, id, input);
 
-export const deleteSeason = (id: string) => seasonsRepo.deleteSeason(id);
+export const deleteSeason = (tenantSlug: string, id: string) =>
+  seasonsRepo.deleteSeason(tenantSlug, id);

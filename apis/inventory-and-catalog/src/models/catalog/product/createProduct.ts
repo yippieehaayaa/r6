@@ -18,7 +18,7 @@ export type CreateProductInput = {
   brandId?: string;
 };
 
-const createProduct = async (input: CreateProductInput) => {
+const createProduct = async (tenantSlug: string, input: CreateProductInput) => {
   const category = await prisma.category.findUnique({
     where: { id: input.categoryId, deletedAt: { isSet: false } },
   });
@@ -35,6 +35,7 @@ const createProduct = async (input: CreateProductInput) => {
   try {
     return await prisma.product.create({
       data: {
+        tenantSlug,
         sku: input.sku,
         name: input.name,
         slug: input.slug,

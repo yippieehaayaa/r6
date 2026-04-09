@@ -6,6 +6,7 @@ import { createSeasonSchema, updateSeasonSchema } from "./seasons.validator";
 const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const search = req.query.search as string | undefined;
@@ -16,7 +17,7 @@ router.get("/", async (req: Request, res: Response) => {
   const year =
     req.query.year !== undefined ? Number(req.query.year) : undefined;
 
-  const result = await seasonsService.listSeasons({
+  const result = await seasonsService.listSeasons(tenantSlug, {
     page,
     limit,
     search,
@@ -27,14 +28,20 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 router.get("/slug/:slug", async (req: Request, res: Response) => {
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
   const season = await seasonsService.getSeasonBySlug(
+    tenantSlug,
     req.params.slug as string,
   );
   res.json(season);
 });
 
 router.get("/:id", async (req: Request, res: Response) => {
-  const season = await seasonsService.getSeasonById(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const season = await seasonsService.getSeasonById(
+    tenantSlug,
+    req.params.id as string,
+  );
   res.json(season);
 });
 
@@ -42,7 +49,8 @@ router.post(
   "/",
   validate(createSeasonSchema),
   async (req: Request, res: Response) => {
-    const season = await seasonsService.createSeason(req.body);
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const season = await seasonsService.createSeason(tenantSlug, req.body);
     res.status(201).json(season);
   },
 );
@@ -51,7 +59,9 @@ router.patch(
   "/:id",
   validate(updateSeasonSchema),
   async (req: Request, res: Response) => {
+    const tenantSlug = req.jwtPayload!.tenantSlug as string;
     const season = await seasonsService.updateSeason(
+      tenantSlug,
       req.params.id as string,
       req.body,
     );
@@ -60,7 +70,8 @@ router.patch(
 );
 
 router.delete("/:id", async (req: Request, res: Response) => {
-  await seasonsService.deleteSeason(req.params.id as string);
+  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  await seasonsService.deleteSeason(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
 

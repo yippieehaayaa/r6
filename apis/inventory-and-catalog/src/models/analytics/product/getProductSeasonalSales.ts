@@ -2,11 +2,13 @@ import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
 const getProductSeasonalSales = async (
+  tenantSlug: string,
   productId: string,
   seasons: Season[],
 ) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { id: productId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -24,6 +26,7 @@ const getProductSeasonalSales = async (
     seasons.map(async (season) => {
       const movements = await prisma.stockMovement.findMany({
         where: {
+          tenantSlug,
           variantId: { in: variantIds },
           type: "SALE",
           createdAt: { gte: season.startDate, lte: season.endDate },

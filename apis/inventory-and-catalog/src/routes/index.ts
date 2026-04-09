@@ -6,7 +6,7 @@ import {
   procurementController,
   seasonsController,
 } from "../modules";
-import { authMiddleware, requirePermission } from "../shared/middleware";
+import { authMiddleware } from "../shared/middleware";
 
 const router = Router();
 

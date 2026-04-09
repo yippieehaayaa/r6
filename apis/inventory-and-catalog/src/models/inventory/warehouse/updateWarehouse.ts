@@ -12,9 +12,13 @@ export type UpdateWarehouseInput = {
   isActive?: boolean;
 };
 
-const updateWarehouse = async (id: string, input: UpdateWarehouseInput) => {
+const updateWarehouse = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateWarehouseInput,
+) => {
   const warehouse = await prisma.warehouse.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!warehouse) throw new WarehouseNotFoundError();

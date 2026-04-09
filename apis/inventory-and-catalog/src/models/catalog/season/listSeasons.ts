@@ -9,8 +9,10 @@ export type ListSeasonsInput = {
 };
 
 const buildWhere = (
+  tenantSlug: string,
   input: Omit<ListSeasonsInput, "page" | "limit">,
 ): Prisma.SeasonWhereInput => ({
+  tenantSlug,
   deletedAt: { isSet: false },
   ...(input.year !== undefined && { year: input.year }),
   ...(input.isActive !== undefined && { isActive: input.isActive }),
@@ -19,8 +21,8 @@ const buildWhere = (
   }),
 });
 
-const listSeasons = async (input: ListSeasonsInput) => {
-  const where = buildWhere(input);
+const listSeasons = async (tenantSlug: string, input: ListSeasonsInput) => {
+  const where = buildWhere(tenantSlug, input);
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([

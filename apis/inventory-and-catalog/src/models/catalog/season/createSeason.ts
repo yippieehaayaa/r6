@@ -13,10 +13,11 @@ export type CreateSeasonInput = {
   isActive?: boolean;
 };
 
-const createSeason = async (input: CreateSeasonInput) => {
+const createSeason = async (tenantSlug: string, input: CreateSeasonInput) => {
   try {
     return await prisma.season.create({
       data: {
+        tenantSlug,
         name: input.name,
         slug: input.slug,
         description: input.description,

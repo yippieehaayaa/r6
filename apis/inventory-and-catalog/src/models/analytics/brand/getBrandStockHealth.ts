@@ -1,8 +1,9 @@
 import { prisma } from "../../../utils/prisma";
 
-const getBrandStockHealth = async (brandId: string) => {
+const getBrandStockHealth = async (tenantSlug: string, brandId: string) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { brandId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -29,7 +30,7 @@ const getBrandStockHealth = async (brandId: string) => {
   const variantInfoMap = new Map(variants.map((v) => [v.id, v]));
 
   const inventoryItems = await prisma.inventoryItem.findMany({
-    where: { variantId: { in: variantIds } },
+    where: { tenantSlug, variantId: { in: variantIds } },
     select: {
       variantId: true,
       quantityOnHand: true,

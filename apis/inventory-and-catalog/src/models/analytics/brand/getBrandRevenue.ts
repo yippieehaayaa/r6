@@ -2,9 +2,14 @@ import { toMajorUnits } from "../../../utils/currency";
 import { prisma } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
-const getBrandRevenue = async (brandId: string, dateRange?: DateRange) => {
+const getBrandRevenue = async (
+  tenantSlug: string,
+  brandId: string,
+  dateRange?: DateRange,
+) => {
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       product: { brandId, deletedAt: { isSet: false } },
       deletedAt: { isSet: false },
     },
@@ -18,6 +23,7 @@ const getBrandRevenue = async (brandId: string, dateRange?: DateRange) => {
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: "SALE",
       ...(dateRange && {

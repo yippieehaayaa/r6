@@ -1,9 +1,12 @@
 import { toMajorUnits } from "../../../utils/currency";
 import { prisma, type Season } from "../../../utils/prisma";
 
-const compareWarehousesBySeasonalDemand = async (season: Season) => {
+const compareWarehousesBySeasonalDemand = async (
+  tenantSlug: string,
+  season: Season,
+) => {
   const warehouses = await prisma.warehouse.findMany({
-    where: { deletedAt: { isSet: false }, isActive: true },
+    where: { tenantSlug, deletedAt: { isSet: false }, isActive: true },
     select: { id: true, name: true, code: true },
   });
 
@@ -20,6 +23,7 @@ const compareWarehousesBySeasonalDemand = async (season: Season) => {
     warehouses.map(async (wh) => {
       const movements = await prisma.stockMovement.findMany({
         where: {
+          tenantSlug,
           warehouseId: wh.id,
           type: "SALE",
           createdAt: { gte: season.startDate, lte: season.endDate },

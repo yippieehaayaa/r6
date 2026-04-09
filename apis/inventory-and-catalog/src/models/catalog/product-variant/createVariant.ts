@@ -29,7 +29,7 @@ export type CreateVariantInput = {
   productId: string;
 };
 
-const createVariant = async (input: CreateVariantInput) => {
+const createVariant = async (tenantSlug: string, input: CreateVariantInput) => {
   const product = await prisma.product.findUnique({
     where: { id: input.productId, deletedAt: { isSet: false } },
   });
@@ -39,6 +39,7 @@ const createVariant = async (input: CreateVariantInput) => {
   try {
     return await prisma.productVariant.create({
       data: {
+        tenantSlug,
         sku: input.sku,
         name: input.name,
         options: input.options,

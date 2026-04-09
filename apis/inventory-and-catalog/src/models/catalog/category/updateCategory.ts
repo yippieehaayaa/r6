@@ -14,9 +14,13 @@ export type UpdateCategoryInput = {
   sortOrder?: number;
 };
 
-const updateCategory = async (id: string, input: UpdateCategoryInput) => {
+const updateCategory = async (
+  tenantSlug: string,
+  id: string,
+  input: UpdateCategoryInput,
+) => {
   const category = await prisma.category.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!category) throw new CategoryNotFoundError();

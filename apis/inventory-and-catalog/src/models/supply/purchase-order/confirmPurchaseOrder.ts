@@ -4,9 +4,9 @@ import {
 } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const confirmPurchaseOrder = async (id: string) => {
+const confirmPurchaseOrder = async (tenantSlug: string, id: string) => {
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id, deletedAt: { isSet: false } },
+    where: { id, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!po) throw new PurchaseOrderNotFoundError();

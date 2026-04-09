@@ -55,7 +55,10 @@ export type DailySalesReport = {
   topVariants: DailySalesTopVariant[];
 };
 
-const getDailySalesReport = async (date: Date): Promise<DailySalesReport> => {
+const getDailySalesReport = async (
+  tenantSlug: string,
+  date: Date,
+): Promise<DailySalesReport> => {
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
 
@@ -64,6 +67,7 @@ const getDailySalesReport = async (date: Date): Promise<DailySalesReport> => {
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       type: "SALE",
       createdAt: {
         gte: startOfDay,

@@ -14,11 +14,12 @@ export type AddItemToOrderInput = {
 };
 
 const addItemToOrder = async (
+  tenantSlug: string,
   purchaseOrderId: string,
   input: AddItemToOrderInput,
 ) => {
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, deletedAt: { isSet: false } },
+    where: { id: purchaseOrderId, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!po) throw new PurchaseOrderNotFoundError();
@@ -34,6 +35,7 @@ const addItemToOrder = async (
   try {
     return await prisma.purchaseOrderItem.create({
       data: {
+        tenantSlug,
         purchaseOrderId,
         variantId: input.variantId,
         quantityOrdered: input.quantityOrdered,

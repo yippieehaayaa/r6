@@ -1,11 +1,13 @@
 import { prisma } from "../../../utils/prisma";
 
 const getWarehouseLowStockByBrand = async (
+  tenantSlug: string,
   warehouseId: string,
   brandId: string,
 ) => {
   const inventoryItems = await prisma.inventoryItem.findMany({
     where: {
+      tenantSlug,
       warehouseId,
       variant: {
         deletedAt: { isSet: false },

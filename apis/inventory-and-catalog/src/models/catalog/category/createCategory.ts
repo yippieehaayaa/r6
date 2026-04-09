@@ -13,7 +13,10 @@ export type CreateCategoryInput = {
   sortOrder?: number;
 };
 
-const createCategory = async (input: CreateCategoryInput) => {
+const createCategory = async (
+  tenantSlug: string,
+  input: CreateCategoryInput,
+) => {
   if (input.parentId) {
     const parent = await prisma.category.findUnique({
       where: { id: input.parentId, deletedAt: { isSet: false } },
@@ -24,6 +27,7 @@ const createCategory = async (input: CreateCategoryInput) => {
   try {
     return await prisma.category.create({
       data: {
+        tenantSlug,
         name: input.name,
         slug: input.slug,
         description: input.description,

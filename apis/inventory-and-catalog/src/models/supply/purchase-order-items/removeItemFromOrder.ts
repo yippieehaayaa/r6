@@ -6,11 +6,12 @@ import {
 import { prisma } from "../../../utils/prisma";
 
 const removeItemFromOrder = async (
+  tenantSlug: string,
   purchaseOrderId: string,
   variantId: string,
 ) => {
   const po = await prisma.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, deletedAt: { isSet: false } },
+    where: { id: purchaseOrderId, tenantSlug, deletedAt: { isSet: false } },
   });
 
   if (!po) throw new PurchaseOrderNotFoundError();
@@ -18,13 +19,25 @@ const removeItemFromOrder = async (
     throw new PurchaseOrderInvalidStatusTransitionError();
 
   const item = await prisma.purchaseOrderItem.findUnique({
-    where: { purchaseOrderId_variantId: { purchaseOrderId, variantId } },
+    where: {
+      tenantSlug_purchaseOrderId_variantId: {
+        tenantSlug,
+        purchaseOrderId,
+        variantId,
+      },
+    },
   });
 
   if (!item) throw new PurchaseOrderItemNotFoundError();
 
   return await prisma.purchaseOrderItem.delete({
-    where: { purchaseOrderId_variantId: { purchaseOrderId, variantId } },
+    where: {
+      tenantSlug_purchaseOrderId_variantId: {
+        tenantSlug,
+        purchaseOrderId,
+        variantId,
+      },
+    },
   });
 };
 

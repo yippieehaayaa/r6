@@ -18,70 +18,87 @@ export type {
 
 // --- Suppliers ---
 
-export const createSupplier = (input: supplierRepo.CreateSupplierInput) =>
-  supplierRepo.createSupplier(input);
+export const createSupplier = (
+  tenantSlug: string,
+  input: supplierRepo.CreateSupplierInput,
+) => supplierRepo.createSupplier(tenantSlug, input);
 
-export const listSuppliers = (input: supplierRepo.ListSuppliersInput) =>
-  supplierRepo.listSuppliers(input);
+export const listSuppliers = (
+  tenantSlug: string,
+  input: supplierRepo.ListSuppliersInput,
+) => supplierRepo.listSuppliers(tenantSlug, input);
 
-export const getSupplierById = (id: string) => supplierRepo.getSupplierById(id);
+export const getSupplierById = (tenantSlug: string, id: string) =>
+  supplierRepo.getSupplierById(tenantSlug, id);
 
 export const updateSupplier = (
+  tenantSlug: string,
   id: string,
   input: supplierRepo.UpdateSupplierInput,
-) => supplierRepo.updateSupplier(id, input);
+) => supplierRepo.updateSupplier(tenantSlug, id, input);
 
-export const deleteSupplier = (id: string) => supplierRepo.deleteSupplier(id);
+export const deleteSupplier = (tenantSlug: string, id: string) =>
+  supplierRepo.deleteSupplier(tenantSlug, id);
 
 // --- Purchase Orders ---
 
-export const createPurchaseOrder = (input: poRepo.CreatePurchaseOrderInput) =>
-  poRepo.createPurchaseOrder(input);
+export const createPurchaseOrder = (
+  tenantSlug: string,
+  input: poRepo.CreatePurchaseOrderInput,
+) => poRepo.createPurchaseOrder(tenantSlug, input);
 
-export const listPurchaseOrders = (input: poRepo.ListPurchaseOrdersInput) =>
-  poRepo.listPurchaseOrders(input);
+export const listPurchaseOrders = (
+  tenantSlug: string,
+  input: poRepo.ListPurchaseOrdersInput,
+) => poRepo.listPurchaseOrders(tenantSlug, input);
 
-export const getPurchaseOrderById = (id: string) =>
-  poRepo.getPurchaseOrderById(id);
+export const getPurchaseOrderById = (tenantSlug: string, id: string) =>
+  poRepo.getPurchaseOrderById(tenantSlug, id);
 
 export const updatePurchaseOrder = (
+  tenantSlug: string,
   id: string,
   input: poRepo.UpdatePurchaseOrderInput,
-) => poRepo.updatePurchaseOrder(id, input);
+) => poRepo.updatePurchaseOrder(tenantSlug, id, input);
 
-export const deletePurchaseOrder = (id: string) =>
-  poRepo.deletePurchaseOrder(id);
+export const deletePurchaseOrder = (tenantSlug: string, id: string) =>
+  poRepo.deletePurchaseOrder(tenantSlug, id);
 
 // --- Purchase Order Lifecycle ---
 
-export const sendPurchaseOrder = (id: string) => poRepo.sendPurchaseOrder(id);
+export const sendPurchaseOrder = (tenantSlug: string, id: string) =>
+  poRepo.sendPurchaseOrder(tenantSlug, id);
 
-export const confirmPurchaseOrder = (id: string) =>
-  poRepo.confirmPurchaseOrder(id);
+export const confirmPurchaseOrder = (tenantSlug: string, id: string) =>
+  poRepo.confirmPurchaseOrder(tenantSlug, id);
 
-export const cancelPurchaseOrder = (id: string) =>
-  poRepo.cancelPurchaseOrder(id);
+export const cancelPurchaseOrder = (tenantSlug: string, id: string) =>
+  poRepo.cancelPurchaseOrder(tenantSlug, id);
 
 export const receivePurchaseOrder = (
+  tenantSlug: string,
   id: string,
   receipts: poRepo.ReceiptItem[],
   performedBy: string,
-) => poRepo.receivePurchaseOrder(id, receipts, performedBy);
+) => poRepo.receivePurchaseOrder(tenantSlug, id, receipts, performedBy);
 
 // --- Purchase Order Items ---
 
 export const addItemToOrder = (
+  tenantSlug: string,
   purchaseOrderId: string,
   input: poRepo.AddItemToOrderInput,
-) => poRepo.addItemToOrder(purchaseOrderId, input);
+) => poRepo.addItemToOrder(tenantSlug, purchaseOrderId, input);
 
 export const removeItemFromOrder = (
+  tenantSlug: string,
   purchaseOrderId: string,
   variantId: string,
-) => poRepo.removeItemFromOrder(purchaseOrderId, variantId);
+) => poRepo.removeItemFromOrder(tenantSlug, purchaseOrderId, variantId);
 
 export const updateOrderItem = (
+  tenantSlug: string,
   purchaseOrderId: string,
   variantId: string,
   input: poRepo.UpdateOrderItemInput,
-) => poRepo.updateOrderItem(purchaseOrderId, variantId, input);
+) => poRepo.updateOrderItem(tenantSlug, purchaseOrderId, variantId, input);

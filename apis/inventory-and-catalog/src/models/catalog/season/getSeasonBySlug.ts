@@ -1,9 +1,12 @@
 import { SeasonNotFoundError } from "../../../utils/errors";
 import { prisma } from "../../../utils/prisma";
 
-const getSeasonBySlug = async (slug: string) => {
+const getSeasonBySlug = async (tenantSlug: string, slug: string) => {
   const season = await prisma.season.findUnique({
-    where: { slug, deletedAt: { isSet: false } },
+    where: {
+      tenantSlug_slug: { tenantSlug, slug },
+      deletedAt: { isSet: false },
+    },
   });
 
   if (!season) throw new SeasonNotFoundError();

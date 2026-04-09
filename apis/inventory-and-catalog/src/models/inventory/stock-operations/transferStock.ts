@@ -5,6 +5,7 @@ import {
 import { prisma } from "../../../utils/prisma";
 
 const transferStock = async (
+  tenantSlug: string,
   variantId: string,
   fromWarehouseId: string,
   toWarehouseId: string,
@@ -14,7 +15,11 @@ const transferStock = async (
   return await prisma.$transaction(async (tx) => {
     const source = await tx.inventoryItem.findUnique({
       where: {
-        variantId_warehouseId: { variantId, warehouseId: fromWarehouseId },
+        tenantSlug_variantId_warehouseId: {
+          tenantSlug,
+          variantId,
+          warehouseId: fromWarehouseId,
+        },
       },
     });
 
@@ -23,7 +28,11 @@ const transferStock = async (
 
     const destination = await tx.inventoryItem.findUnique({
       where: {
-        variantId_warehouseId: { variantId, warehouseId: toWarehouseId },
+        tenantSlug_variantId_warehouseId: {
+          tenantSlug,
+          variantId,
+          warehouseId: toWarehouseId,
+        },
       },
     });
 
@@ -33,12 +42,17 @@ const transferStock = async (
       await Promise.all([
         tx.inventoryItem.update({
           where: {
-            variantId_warehouseId: { variantId, warehouseId: fromWarehouseId },
+            tenantSlug_variantId_warehouseId: {
+              tenantSlug,
+              variantId,
+              warehouseId: fromWarehouseId,
+            },
           },
           data: { quantityOnHand: { decrement: qty } },
         }),
         tx.stockMovement.create({
           data: {
+            tenantSlug,
             type: "TRANSFER_OUT",
             quantity: -qty,
             variantId,
@@ -48,12 +62,17 @@ const transferStock = async (
         }),
         tx.inventoryItem.update({
           where: {
-            variantId_warehouseId: { variantId, warehouseId: toWarehouseId },
+            tenantSlug_variantId_warehouseId: {
+              tenantSlug,
+              variantId,
+              warehouseId: toWarehouseId,
+            },
           },
           data: { quantityOnHand: { increment: qty } },
         }),
         tx.stockMovement.create({
           data: {
+            tenantSlug,
             type: "TRANSFER_IN",
             quantity: qty,
             variantId,

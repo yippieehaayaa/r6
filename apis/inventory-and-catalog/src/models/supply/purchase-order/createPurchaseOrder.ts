@@ -22,7 +22,10 @@ export type CreatePurchaseOrderInput = {
   items: CreatePurchaseOrderItem[];
 };
 
-const createPurchaseOrder = async (input: CreatePurchaseOrderInput) => {
+const createPurchaseOrder = async (
+  tenantSlug: string,
+  input: CreatePurchaseOrderInput,
+) => {
   const [supplier, warehouse] = await Promise.all([
     prisma.supplier.findUnique({
       where: { id: input.supplierId, deletedAt: { isSet: false } },
@@ -37,7 +40,7 @@ const createPurchaseOrder = async (input: CreatePurchaseOrderInput) => {
 
   const variantIds = input.items.map((i) => i.variantId);
   const variants = await prisma.productVariant.findMany({
-    where: { id: { in: variantIds }, deletedAt: { isSet: false } },
+    where: { tenantSlug, id: { in: variantIds }, deletedAt: { isSet: false } },
     select: { id: true },
   });
 
@@ -49,6 +52,7 @@ const createPurchaseOrder = async (input: CreatePurchaseOrderInput) => {
     return await prisma.$transaction(async (tx) => {
       const po = await tx.purchaseOrder.create({
         data: {
+          tenantSlug,
           orderNumber: input.orderNumber,
           supplierId: input.supplierId,
           warehouseId: input.warehouseId,
@@ -61,6 +65,7 @@ const createPurchaseOrder = async (input: CreatePurchaseOrderInput) => {
         input.items.map((item) =>
           tx.purchaseOrderItem.create({
             data: {
+              tenantSlug,
               purchaseOrderId: po.id,
               variantId: item.variantId,
               quantityOrdered: item.quantityOrdered,

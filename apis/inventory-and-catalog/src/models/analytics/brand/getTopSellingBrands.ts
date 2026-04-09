@@ -3,6 +3,7 @@ import { prisma, type Season } from "../../../utils/prisma";
 import type { DateRange } from "./types";
 
 const getTopSellingBrands = async (
+  tenantSlug: string,
   limit: number,
   dateRange?: DateRange,
   season?: Season,
@@ -13,6 +14,7 @@ const getTopSellingBrands = async (
 
   const variants = await prisma.productVariant.findMany({
     where: {
+      tenantSlug,
       deletedAt: { isSet: false },
       product: { deletedAt: { isSet: false }, brandId: { isSet: true } },
     },
@@ -48,6 +50,7 @@ const getTopSellingBrands = async (
 
   const movements = await prisma.stockMovement.findMany({
     where: {
+      tenantSlug,
       variantId: { in: variantIds },
       type: "SALE",
       ...(effectiveRange && {

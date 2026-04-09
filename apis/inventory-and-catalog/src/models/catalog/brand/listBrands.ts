@@ -8,8 +8,10 @@ export type ListBrandsInput = {
 };
 
 const buildWhere = (
+  tenantSlug: string,
   input: Omit<ListBrandsInput, "page" | "limit">,
 ): Prisma.BrandWhereInput => ({
+  tenantSlug,
   deletedAt: { isSet: false },
   ...(input.isActive !== undefined && { isActive: input.isActive }),
   ...(input.search && {
@@ -17,8 +19,8 @@ const buildWhere = (
   }),
 });
 
-const listBrands = async (input: ListBrandsInput) => {
-  const where = buildWhere(input);
+const listBrands = async (tenantSlug: string, input: ListBrandsInput) => {
+  const where = buildWhere(tenantSlug, input);
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([
