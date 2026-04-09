@@ -15,6 +15,8 @@ const prisma = new PrismaClient();
 const log = (msg: string) => console.log(`  ✓ ${msg}`);
 const isFresh = process.argv.includes("--fresh");
 
+const TENANT_SLUG = "demo-corpo";
+
 const EPOCH = new Date("2020-01-01T00:00:00.000Z");
 const NOW = new Date();
 
@@ -38,19 +40,20 @@ async function main(): Promise<void> {
   if (isFresh) await clearDatabase();
 
   console.log("\n── Categories ──────────────────────────────────");
-  const categories = await seedCategories(prisma, log);
+  const categories = await seedCategories(prisma, TENANT_SLUG, log);
 
   console.log("\n── Brands · Warehouses · Suppliers · Seasons ───");
   const [brands, warehouses, suppliers] = await Promise.all([
-    seedBrands(prisma, log),
-    seedWarehouses(prisma, log),
-    seedSuppliers(prisma, log),
-    seedSeasons(prisma, log),
+    seedBrands(prisma, TENANT_SLUG, log),
+    seedWarehouses(prisma, TENANT_SLUG, log),
+    seedSuppliers(prisma, TENANT_SLUG, log),
+    seedSeasons(prisma, TENANT_SLUG, log),
   ]);
 
   console.log("\n── Products & Variants ─────────────────────────");
   const variants = await seedProducts(
     prisma,
+    TENANT_SLUG,
     categories,
     brands,
     EPOCH,
@@ -59,10 +62,10 @@ async function main(): Promise<void> {
   );
 
   console.log("\n── Inventory & Stock Movements ─────────────────");
-  await seedInventory(prisma, variants, warehouses, EPOCH, NOW, isFresh, log);
+  await seedInventory(prisma, TENANT_SLUG, variants, warehouses, EPOCH, NOW, isFresh, log);
 
   console.log("\n── Purchase Orders ─────────────────────────────");
-  await seedPurchaseOrders(prisma, suppliers, warehouses, variants, NOW, log);
+  await seedPurchaseOrders(prisma, TENANT_SLUG, suppliers, warehouses, variants, NOW, log);
 
   console.log("\n── Done ─────────────────────────────────────────\n");
 }

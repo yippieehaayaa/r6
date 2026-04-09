@@ -56,14 +56,16 @@ const SUPPLIER_DEFS = [
 
 export async function seedSuppliers(
   prisma: PrismaClient,
+  tenantSlug: string,
   log: (msg: string) => void,
 ): Promise<{ id: string }[]> {
   const suppliers = await Promise.all(
     SUPPLIER_DEFS.map((def) =>
       prisma.supplier.upsert({
-        where: { code: def.code },
+        where: { tenantSlug_code: { tenantSlug, code: def.code } },
         update: {},
         create: {
+          tenantSlug,
           name: def.name,
           code: def.code,
           contactEmail: def.contactEmail,

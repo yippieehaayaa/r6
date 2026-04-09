@@ -29,6 +29,7 @@ function poStatusForYear(year: number) {
 
 export async function seedPurchaseOrders(
   prisma: PrismaClient,
+  tenantSlug: string,
   suppliers: { id: string }[],
   warehouses: { id: string }[],
   variants: { id: string }[],
@@ -50,9 +51,10 @@ export async function seedPurchaseOrders(
       const orderNumber = `PO-${year}-${String(p + 1).padStart(4, "0")}-${faker.string.alphanumeric(4).toUpperCase()}`;
 
       const po = await prisma.purchaseOrder.upsert({
-        where: { orderNumber },
+        where: { tenantSlug_orderNumber: { tenantSlug, orderNumber } },
         update: {},
         create: {
+          tenantSlug,
           orderNumber,
           status,
           supplierId: faker.helpers.arrayElement(suppliers).id,
@@ -80,6 +82,7 @@ export async function seedPurchaseOrders(
               : 0;
 
         return {
+          tenantSlug,
           purchaseOrderId: po.id,
           variantId: v.id,
           quantityOrdered: ordered,
@@ -98,7 +101,8 @@ export async function seedPurchaseOrders(
         items.map((item) =>
           prisma.purchaseOrderItem.upsert({
             where: {
-              purchaseOrderId_variantId: {
+              tenantSlug_purchaseOrderId_variantId: {
+                tenantSlug,
                 purchaseOrderId: item.purchaseOrderId,
                 variantId: item.variantId,
               },

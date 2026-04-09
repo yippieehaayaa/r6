@@ -17,6 +17,7 @@ const PRODUCTS_PER_LEAF_CATEGORY = 6;
 
 export async function seedProducts(
   prisma: PrismaClient,
+  tenantSlug: string,
   categories: { id: string; slug: string }[],
   brands: { id: string }[],
   epoch: Date,
@@ -39,9 +40,10 @@ export async function seedProducts(
       const createdAt = faker.date.between({ from: epoch, to: now });
 
       const product = await prisma.product.upsert({
-        where: { sku },
+        where: { tenantSlug_sku: { tenantSlug, sku } },
         update: {},
         create: {
+          tenantSlug,
           sku,
           name,
           slug: `${slugBase}-${sku.toLowerCase()}`,
@@ -109,9 +111,10 @@ export async function seedProducts(
         });
 
         const variant = await prisma.productVariant.upsert({
-          where: { sku: vSku },
+          where: { tenantSlug_sku: { tenantSlug, sku: vSku } },
           update: {},
           create: {
+            tenantSlug,
             sku: vSku,
             name: `${name} — ${optionVal}`,
             options: option,

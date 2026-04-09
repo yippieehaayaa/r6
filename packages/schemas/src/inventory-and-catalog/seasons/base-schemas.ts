@@ -10,7 +10,7 @@ export const SeasonSchema = z.strictObject({
   tenantSlug: z.string().readonly(),
   name: z.string(),
   slug: z.string(),
-  description: z.string().optional(),
+  description: z.string().nullish(),
   startDate: dateTimeField,
   endDate: dateTimeField,
   year: z.number().int(),

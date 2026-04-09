@@ -18,14 +18,16 @@ const WAREHOUSE_DEFS = [
 
 export async function seedWarehouses(
   prisma: PrismaClient,
+  tenantSlug: string,
   log: (msg: string) => void,
 ): Promise<{ id: string }[]> {
   const warehouses = await Promise.all(
     WAREHOUSE_DEFS.map((def) =>
       prisma.warehouse.upsert({
-        where: { code: def.code },
+        where: { tenantSlug_code: { tenantSlug, code: def.code } },
         update: {},
         create: {
+          tenantSlug,
           name: def.name,
           code: def.code,
           address: { country: "US", city: def.city, state: def.state },

@@ -32,22 +32,22 @@ export const data = {
 				{
 					title: "Stock Overview",
 					url: "/r6/inventory-and-catalog/inventory",
-					permission: "inventory:stock:read",
+					// permission: "inventory:stock:read",
 				},
 				{
 					title: "Warehouses",
 					url: "/r6/inventory-and-catalog/warehouses",
-					permission: "inventory:warehouse:read",
+					// permission: "inventory:warehouse:read",
 				},
 				{
 					title: "Movements",
 					url: "/r6/inventory-and-catalog/movements",
-					permission: "inventory:movement:read",
+					// permission: "inventory:movement:read",
 				},
 				{
 					title: "Damage & Losses",
 					url: "/r6/inventory-and-catalog/damage-losses",
-					permission: "inventory:damage:read",
+					// permission: "inventory:damage:read",
 				},
 			],
 		},
@@ -59,22 +59,22 @@ export const data = {
 				{
 					title: "Products",
 					url: "/r6/inventory-and-catalog/products",
-					permission: "catalog:product:read",
+					// permission: "catalog:product:read",
 				},
 				{
 					title: "Variants",
 					url: "/r6/inventory-and-catalog/variants",
-					permission: "catalog:variant:read",
+					// permission: "catalog:variant:read",
 				},
 				{
 					title: "Categories",
 					url: "/r6/inventory-and-catalog/categories",
-					permission: "catalog:category:read",
+					// permission: "catalog:category:read",
 				},
 				{
 					title: "Brands",
 					url: "/r6/inventory-and-catalog/brands",
-					permission: "catalog:brand:read",
+					// permission: "catalog:brand:read",
 				},
 			],
 		},
@@ -86,17 +86,17 @@ export const data = {
 				{
 					title: "Purchase Orders",
 					url: "#",
-					permission: "procurement:order:read",
+					// permission: "procurement:order:read",
 				},
 				{
 					title: "Suppliers",
 					url: "#",
-					permission: "procurement:supplier:read",
+					// permission: "procurement:supplier:read",
 				},
 				{
 					title: "Receive Items",
 					url: "#",
-					permission: "procurement:receiving:create",
+					// permission: "procurement:receiving:create",
 				},
 			],
 		},
@@ -108,27 +108,27 @@ export const data = {
 				{
 					title: "Overview / GMV",
 					url: "#",
-					permission: "report:gmv:read",
+					// permission: "report:gmv:read",
 				},
 				{
 					title: "By Product",
 					url: "#",
-					permission: "report:product:read",
+					// permission: "report:product:read",
 				},
 				{
 					title: "By Brand",
 					url: "#",
-					permission: "report:brand:read",
+					// permission: "report:brand:read",
 				},
 				{
 					title: "By Warehouse",
 					url: "#",
-					permission: "report:warehouse:read",
+					// permission: "report:warehouse:read",
 				},
 				{
 					title: "Dead Stock",
 					url: "#",
-					permission: "report:deadstock:read",
+					// permission: "report:deadstock:read",
 				},
 				{
 					title: "Seasonal Demand",

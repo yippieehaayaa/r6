@@ -18,7 +18,6 @@ const getLowStockItems = async (tenantSlug: string, warehouseId?: string) => {
 
   return prisma.inventoryItem.findMany({
     where: { tenantSlug, id: { in: ids } },
-    include: { variant: true, warehouse: true },
   });
 };
 

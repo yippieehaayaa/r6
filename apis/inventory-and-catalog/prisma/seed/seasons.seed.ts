@@ -78,10 +78,12 @@ const SEED_YEARS = [2024, 2025, 2026];
 
 export async function seedSeasons(
   prisma: PrismaClient,
+  tenantSlug: string,
   log: (msg: string) => void,
 ): Promise<void> {
   const records = SEED_YEARS.flatMap((year) =>
     SEASON_DEFS.map((def) => ({
+      tenantSlug,
       name: `${def.name} ${year}`,
       slug: `${def.slug}-${year}`,
       description: def.description,
@@ -97,7 +99,7 @@ export async function seedSeasons(
   const created = await Promise.all(
     records.map((r) =>
       prisma.season.upsert({
-        where: { slug: r.slug },
+        where: { tenantSlug_slug: { tenantSlug: r.tenantSlug, slug: r.slug } },
         update: {},
         create: r,
       }),

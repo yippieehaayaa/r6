@@ -20,14 +20,15 @@ const BRAND_DEFS = [
 
 export async function seedBrands(
   prisma: PrismaClient,
+  tenantSlug: string,
   log: (msg: string) => void,
 ): Promise<{ id: string }[]> {
   const brands = await Promise.all(
     BRAND_DEFS.map((def) =>
       prisma.brand.upsert({
-        where: { slug: def.slug },
+        where: { tenantSlug_slug: { tenantSlug, slug: def.slug } },
         update: {},
-        create: { name: def.name, slug: def.slug, isActive: true },
+        create: { tenantSlug, name: def.name, slug: def.slug, isActive: true },
       }),
     ),
   );

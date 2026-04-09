@@ -13,6 +13,7 @@ const ADJUSTMENT_NOTES = [
 ] as const;
 
 function buildMovementsForVariantWarehouse(
+  tenantSlug: string,
   variantId: string,
   warehouseId: string,
   epoch: Date,
@@ -22,6 +23,7 @@ function buildMovementsForVariantWarehouse(
 
   // Opening stock
   movements.push({
+    tenantSlug,
     type: "RECEIPT",
     quantity: faker.number.int({ min: 150, max: 500 }),
     variantId,
@@ -40,6 +42,7 @@ function buildMovementsForVariantWarehouse(
     const windowEnd = quarterEnd < now ? quarterEnd : now;
 
     movements.push({
+      tenantSlug,
       type: "RECEIPT",
       quantity: faker.number.int({ min: 50, max: 250 }),
       variantId,
@@ -52,6 +55,7 @@ function buildMovementsForVariantWarehouse(
     });
 
     movements.push({
+      tenantSlug,
       type: "SALE",
       quantity: -faker.number.int({ min: 10, max: 90 }),
       variantId,
@@ -72,6 +76,7 @@ function buildMovementsForVariantWarehouse(
   for (let i = 0; i < adjCount; i++) {
     const adjType = faker.helpers.arrayElement(adjTypes);
     movements.push({
+      tenantSlug,
       type: adjType,
       quantity:
         adjType === "RETURN"
@@ -92,6 +97,7 @@ function buildMovementsForVariantWarehouse(
 
 export async function seedInventory(
   prisma: PrismaClient,
+  tenantSlug: string,
   variants: { id: string }[],
   warehouses: { id: string }[],
   epoch: Date,
@@ -110,13 +116,15 @@ export async function seedInventory(
         });
         return prisma.inventoryItem.upsert({
           where: {
-            variantId_warehouseId: {
+            tenantSlug_variantId_warehouseId: {
+              tenantSlug,
               variantId: variant.id,
               warehouseId: warehouse.id,
             },
           },
           update: {},
           create: {
+            tenantSlug,
             variantId: variant.id,
             warehouseId: warehouse.id,
             quantityOnHand,
@@ -138,7 +146,7 @@ export async function seedInventory(
   if (existingMovementCount === 0) {
     const allMovements = variants.flatMap((variant) =>
       warehouses.flatMap((warehouse) =>
-        buildMovementsForVariantWarehouse(variant.id, warehouse.id, epoch, now),
+        buildMovementsForVariantWarehouse(tenantSlug, variant.id, warehouse.id, epoch, now),
       ),
     );
     await prisma.stockMovement.createMany({ data: allMovements }); // append-only; no unique key — guarded by count check above
