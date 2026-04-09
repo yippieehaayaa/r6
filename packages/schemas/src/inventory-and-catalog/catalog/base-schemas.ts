@@ -23,6 +23,7 @@ export const ImageEmbedSchema = z.strictObject({
 
 export const CategorySchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   name: z.string(),
   slug: z.string(),
   description: z.string().optional(),
@@ -35,6 +36,7 @@ export const CategorySchema = z.strictObject({
 
 export const BrandSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   name: z.string(),
   slug: z.string(),
   description: z.string().optional(),
@@ -46,6 +48,7 @@ export const BrandSchema = z.strictObject({
 
 export const ProductSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   sku: z.string(),
   name: z.string(),
   slug: z.string(),
@@ -61,6 +64,7 @@ export const ProductSchema = z.strictObject({
 
 export const ProductVariantSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   sku: z.string(),
   name: z.string(),
   options: z.unknown(),

@@ -6,7 +6,7 @@ import {
   procurementController,
   seasonsController,
 } from "../modules";
-import { authMiddleware } from "../shared/middleware";
+import { authMiddleware, requireTenantAccess } from "../shared/middleware";
 
 const router = Router();
 
@@ -14,38 +14,44 @@ router.get("/", (_req: Request, res: Response) => {
   res.sendStatus(200);
 });
 
-// All routes require authentication.  Inventory and catalog sub-routers
-// additionally require the matching service-level permission so that a
-// token granted only "catalog:*:*" cannot reach inventory endpoints and
-// vice-versa.  Procurement, seasons and analytics are guarded by auth
-// alone — no additional fine-grained scope is required for these routes.
+// All routes require authentication and a valid tenant scope. The
+// requireTenantAccess guard ensures non-ADMIN tokens carry a tenantSlug so
+// no identity can reach or mutate another tenant's data. Inventory and catalog
+// sub-routers additionally accept a fine-grained service-level permission guard
+// (currently commented out pending rollout).
+
 router.use(
   "/catalog",
   authMiddleware(),
+  requireTenantAccess(),
   // requirePermission("catalog:*:*"),
   catalogController,
 );
 router.use(
   "/inventory",
   authMiddleware(),
+  requireTenantAccess(),
   // requirePermission("inventory:*:*"),
   inventoryController,
 );
 router.use(
   "/seasons",
   authMiddleware(),
+  requireTenantAccess(),
   // requirePermission("seasons:*:*"),
   seasonsController,
 );
 router.use(
   "/procurement",
   authMiddleware(),
+  requireTenantAccess(),
   // requirePermission("procurement:*:*"),
   procurementController,
 );
 router.use(
   "/analytics",
   authMiddleware(),
+  requireTenantAccess(),
   // requirePermission("analytics:*:*"),
   analyticsController,
 );

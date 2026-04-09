@@ -9,6 +9,7 @@ import { MovementTypeSchema } from "./enums";
 
 export const WarehouseSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   name: z.string(),
   code: z.string(),
   address: AddressEmbedSchema.optional(),
@@ -19,6 +20,7 @@ export const WarehouseSchema = z.strictObject({
 
 export const InventoryItemSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   quantityOnHand: z.number().int(),
   quantityReserved: z.number().int(),
   reorderPoint: z.number().int(),
@@ -32,6 +34,7 @@ export const InventoryItemSchema = z.strictObject({
 // StockMovement is append-only — only createdAt
 export const StockMovementSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   type: MovementTypeSchema,
   quantity: z.number().int(),
   referenceId: z.string().optional(),

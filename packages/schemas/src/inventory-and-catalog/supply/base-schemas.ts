@@ -15,6 +15,7 @@ const dateTimeField = z
 
 export const SupplierSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   name: z.string(),
   code: z.string(),
   contactName: z.string().optional(),
@@ -28,6 +29,7 @@ export const SupplierSchema = z.strictObject({
 
 export const PurchaseOrderSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   orderNumber: z.string(),
   status: PurchaseOrderStatusSchema,
   expectedAt: dateTimeField.optional(),
@@ -40,6 +42,7 @@ export const PurchaseOrderSchema = z.strictObject({
 
 export const PurchaseOrderItemSchema = z.strictObject({
   id: z.string().readonly(),
+  tenantSlug: z.string().readonly(),
   quantityOrdered: z.number().int(),
   quantityReceived: z.number().int(),
   unitCost: PriceSchema,
