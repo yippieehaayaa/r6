@@ -17,7 +17,7 @@ const router = Router();
 // ─── Suppliers ───────────────────────────────────────────────────────────────
 
 router.get("/suppliers", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const search = req.query.search as string | undefined;
@@ -36,7 +36,7 @@ router.get("/suppliers", async (req: Request, res: Response) => {
 });
 
 router.get("/suppliers/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const supplier = await procurementService.getSupplierById(
     tenantSlug,
     req.params.id as string,
@@ -48,7 +48,7 @@ router.post(
   "/suppliers",
   validate(createSupplierSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const supplier = await procurementService.createSupplier(
       tenantSlug,
       req.body,
@@ -61,7 +61,7 @@ router.patch(
   "/suppliers/:id",
   validate(updateSupplierSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const supplier = await procurementService.updateSupplier(
       tenantSlug,
       req.params.id as string,
@@ -72,7 +72,7 @@ router.patch(
 );
 
 router.delete("/suppliers/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   await procurementService.deleteSupplier(tenantSlug, req.params.id as string);
   res.sendStatus(204);
 });
@@ -80,7 +80,7 @@ router.delete("/suppliers/:id", async (req: Request, res: Response) => {
 // ─── Purchase Orders ─────────────────────────────────────────────────────────
 
 router.get("/orders", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const page = Number(req.query.page ?? 1);
   const limit = Number(req.query.limit ?? 20);
   const supplierId = req.query.supplierId as string | undefined;
@@ -102,7 +102,7 @@ router.get("/orders", async (req: Request, res: Response) => {
 });
 
 router.get("/orders/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const order = await procurementService.getPurchaseOrderById(
     tenantSlug,
     req.params.id as string,
@@ -114,7 +114,7 @@ router.post(
   "/orders",
   validate(createPurchaseOrderSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const order = await procurementService.createPurchaseOrder(
       tenantSlug,
       req.body,
@@ -127,7 +127,7 @@ router.patch(
   "/orders/:id",
   validate(updatePurchaseOrderSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const order = await procurementService.updatePurchaseOrder(
       tenantSlug,
       req.params.id as string,
@@ -138,7 +138,7 @@ router.patch(
 );
 
 router.delete("/orders/:id", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   await procurementService.deletePurchaseOrder(
     tenantSlug,
     req.params.id as string,
@@ -149,7 +149,7 @@ router.delete("/orders/:id", async (req: Request, res: Response) => {
 // ─── Purchase Order Lifecycle ────────────────────────────────────────────────
 
 router.post("/orders/:id/send", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const order = await procurementService.sendPurchaseOrder(
     tenantSlug,
     req.params.id as string,
@@ -158,7 +158,7 @@ router.post("/orders/:id/send", async (req: Request, res: Response) => {
 });
 
 router.post("/orders/:id/confirm", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const order = await procurementService.confirmPurchaseOrder(
     tenantSlug,
     req.params.id as string,
@@ -167,7 +167,7 @@ router.post("/orders/:id/confirm", async (req: Request, res: Response) => {
 });
 
 router.post("/orders/:id/cancel", async (req: Request, res: Response) => {
-  const tenantSlug = req.jwtPayload!.tenantSlug as string;
+  const tenantSlug = req.jwtPayload?.tenantSlug as string;
   const order = await procurementService.cancelPurchaseOrder(
     tenantSlug,
     req.params.id as string,
@@ -179,7 +179,7 @@ router.post(
   "/orders/:id/receive",
   validate(receiveItemsSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const { receipts, performedBy } = req.body;
     const result = await procurementService.receivePurchaseOrder(
       tenantSlug,
@@ -197,7 +197,7 @@ router.post(
   "/orders/:id/items",
   validate(addItemToOrderSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const item = await procurementService.addItemToOrder(
       tenantSlug,
       req.params.id as string,
@@ -211,7 +211,7 @@ router.patch(
   "/orders/:id/items/:variantId",
   validate(updateOrderItemSchema),
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     const item = await procurementService.updateOrderItem(
       tenantSlug,
       req.params.id as string,
@@ -225,7 +225,7 @@ router.patch(
 router.delete(
   "/orders/:id/items/:variantId",
   async (req: Request, res: Response) => {
-    const tenantSlug = req.jwtPayload!.tenantSlug as string;
+    const tenantSlug = req.jwtPayload?.tenantSlug as string;
     await procurementService.removeItemFromOrder(
       tenantSlug,
       req.params.id as string,
