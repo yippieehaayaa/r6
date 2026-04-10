@@ -1,0 +1,72 @@
+// ============================================================
+//  AUDIT LOG
+//  Immutable, append-only record of all master data changes
+//  across the Inventory Service.
+//
+//  Purpose:
+//    — Regulatory compliance and financial audit trail
+//    — Chain-of-custody evidence for stock master data
+//    — Forensic investigation of production data changes
+//    — Debugging support by preserving full before/after record
+//
+//  Scope:
+//    Covers master data mutations on critical models:
+//      Product, ProductVariant, Category, Brand,
+//      UnitOfMeasure, UomConversion,
+//      Warehouse, WarehouseZone, BinLocation,
+//      InventoryItem (reorder thresholds),
+//      StockAlert (status transitions),
+//      InventoryLot (quarantine changes)
+//
+//    Quantity changes are handled by StockMovement (the financial
+//    ledger). AuditLog captures everything else: status changes,
+//    threshold edits, deactivations, category restructuring, etc.
+//
+//  before / after snapshots:
+//    The application layer captures the full record BEFORE and
+//    AFTER the mutation and stores it as JSON.
+//    IMPORTANT: sensitive fields (e.g. any secrets, PII beyond
+//    business necessity) must be redacted by the application
+//    before writing to before/after.
+//
+//  Immutability:
+//    No updatedAt. No deletedAt. Rows are never modified after insert.
+//    Retention and cold-storage archival are handled outside the DB
+//    (e.g. nightly export to S3 / Azure Blob + periodic table partition pruning).
+//
+//  Multi-tenancy:
+//    tenantId? — null allows platform ADMIN to query across all tenants
+//    for cross-tenant forensic investigations.
+// ============================================================
+
+model AuditLog {
+    id         String      @id @default(uuid()) @db.Uuid
+    // Nullable: null = written by platform ADMIN (cross-tenant context)
+    tenantId   String?     @db.Uuid
+    entityType String      // e.g. "ProductVariant" | "InventoryItem" | "Warehouse"
+    entityId   String      // UUID of the changed record
+    action     AuditAction
+    // IAM identity ID of the actor — no cross-DB foreign key
+    changedBy  String
+
+    // Full record snapshots for diff reconstruction
+    before Json?  // Full record state BEFORE the change (null on CREATE)
+    after  Json?  // Full record state AFTER the change  (null on DELETE)
+
+    // Request-level context for security audit and correlation
+    ipAddress String?  // Remote IP of the API request
+    userAgent String?  // HTTP User-Agent header value
+    requestId String?  // Correlates with API Gateway and service access logs
+
+    // Append-only: createdAt only — no updatedAt, no deletedAt
+    createdAt DateTime @default(now())
+
+    @@index([tenantId])
+    @@index([tenantId, entityType, entityId])
+    @@index([tenantId, entityId])
+    @@index([tenantId, changedBy])
+    @@index([tenantId, createdAt])
+    @@index([tenantId, action])
+    @@index([tenantId, entityType, action])
+    @@map("audit_logs")
+}

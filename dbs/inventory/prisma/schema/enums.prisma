@@ -1,0 +1,228 @@
+// ============================================================
+//  INVENTORY SERVICE — ENUMS
+//  All enumerated types for the Inventory microservice.
+//  Covers both Catalog domain and Inventory domain concerns.
+// ============================================================
+
+// ─── Catalog ─────────────────────────────────────────────────
+
+// Product lifecycle. Controls visibility across all services.
+// DRAFT        — being set up, not visible in POS or Request System
+// ACTIVE       — live, available for sale and procurement
+// DISCONTINUED — no longer reordered; existing stock may still be sold
+// ARCHIVED     — fully retired, hidden from all views
+enum ProductStatus {
+    DRAFT
+    ACTIVE
+    DISCONTINUED
+    ARCHIVED
+}
+
+// Inventory tracking granularity applied to a product variant.
+// NONE   — standard quantity tracking (default for most goods)
+// SERIAL — each unit has a unique serial number (electronics, medical devices)
+// BATCH  — units grouped by lot/batch with expiry (food, pharma, chemicals)
+enum TrackingType {
+    NONE
+    SERIAL
+    BATCH
+}
+
+// Physical dimension unit for shipping and storage configuration.
+enum DimensionUnit {
+    CM
+    MM
+    IN
+    FT
+    M
+}
+
+// Weight unit for shipping weight calculations.
+enum WeightUnit {
+    G
+    KG
+    LB
+    OZ
+}
+
+// Role of a Unit of Measure within the conversion chain.
+// BASE     — the internal tracking unit (e.g. PCS); all stock movements use this
+// PURCHASE — how suppliers ship (e.g. CASE, CARTON); converted to BASE on GRN
+// SALE     — how customers buy (e.g. PACK, BOTTLE); converted to BASE on sale
+enum UomType {
+    BASE
+    PURCHASE
+    SALE
+}
+
+// ─── Inventory ───────────────────────────────────────────────
+
+// Direction and business reason for every stock quantity change.
+//
+// Sign convention:
+//   positive (+) = stock in  (RECEIPT, RETURN, TRANSFER_IN, RESERVATION_RELEASE, +ADJUSTMENT)
+//   negative (-) = stock out (SALE, DAMAGE, TRANSFER_OUT, RESERVATION, -ADJUSTMENT)
+//
+// Originating service per type:
+//   RECEIPT             ← Procurement Service (GRN accepted units)
+//   SALE                ← Transaction Service (confirmed sale)
+//   RETURN              ← Transaction or Procurement (customer / supplier return)
+//   ADJUSTMENT          ← Inventory internal (count variance, ad-hoc correction)
+//   TRANSFER_IN         ← Inventory internal (arrived from source warehouse)
+//   TRANSFER_OUT        ← Inventory internal (dispatched to destination warehouse)
+//   DAMAGE              ← Inventory internal (physical damage, expiry, shrinkage write-off)
+//   RESERVATION         ← Transaction (POS cart hold) or Request Service (approved request)
+//   RESERVATION_RELEASE ← Transaction (cart expired/abandoned) or Request (cancelled)
+enum MovementType {
+    RECEIPT
+    SALE
+    RETURN
+    ADJUSTMENT
+    TRANSFER_IN
+    TRANSFER_OUT
+    DAMAGE
+    RESERVATION
+    RESERVATION_RELEASE
+}
+
+// Lifecycle of a warehouse-to-warehouse stock transfer document.
+// DRAFT              — created, items listed, not yet dispatched
+// IN_TRANSIT         — dispatched from source; destination has not yet received
+// PARTIALLY_RECEIVED — some items received; transfer remains open for the rest
+// COMPLETED          — all items received at destination
+// CANCELLED          — voided before dispatch or while in transit (reversal movements written)
+enum TransferStatus {
+    DRAFT
+    IN_TRANSIT
+    PARTIALLY_RECEIVED
+    COMPLETED
+    CANCELLED
+}
+
+// Lifecycle of a physical stock count session.
+// DRAFT       — created, count sheet prepared, counting not yet started
+// IN_PROGRESS — counters are actively recording physical quantities
+// COMPLETED   — counts finalized; ADJUSTMENT movements written for variances
+// CANCELLED   — session voided; no movements written
+enum StockCountStatus {
+    DRAFT
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+// Disposition decision for a returned item after physical receipt.
+// RESTOCK            — item is resaleable; returned to available stock
+// DAMAGE             — item is written off (damage, contamination, etc.)
+// RETURN_TO_SUPPLIER — item is sent back to the supplier via Procurement
+enum ReturnDisposition {
+    RESTOCK
+    DAMAGE
+    RETURN_TO_SUPPLIER
+}
+
+// Lifecycle of a return merchandise authorization (RMA) document.
+// REQUESTED — submitted, awaiting review and approval
+// APPROVED  — authorized; customer instructed to ship item back
+// RECEIVED  — physical item accepted at warehouse; pending disposition
+// COMPLETED — disposition applied; stock movements written
+// REJECTED  — return denied (outside return window, no defect found, etc.)
+// CANCELLED — cancelled by requester before item was shipped
+enum ReturnRequestStatus {
+    REQUESTED
+    APPROVED
+    RECEIVED
+    COMPLETED
+    REJECTED
+    CANCELLED
+}
+
+// Type of stock alert condition detected by the Inventory Service.
+// LOW_STOCK      — quantityAvailable ≤ reorderPoint (triggers PO suggestion)
+// OUT_OF_STOCK   — quantityAvailable = 0
+// OVERSTOCK      — quantityOnHand ≥ overstockThreshold (suppresses reorder)
+// LOT_EXPIRING   — lot.expiresAt is within the configured warning window
+// LOT_EXPIRED    — lot.expiresAt has passed and stock remains
+// COUNT_VARIANCE — cycle count variance exceeds configured threshold
+enum AlertType {
+    LOW_STOCK
+    OUT_OF_STOCK
+    OVERSTOCK
+    LOT_EXPIRING
+    LOT_EXPIRED
+    COUNT_VARIANCE
+}
+
+// Lifecycle of a stock alert record.
+// OPEN         — condition active, no action taken yet
+// ACKNOWLEDGED — reviewed by staff, action in progress
+// RESOLVED     — condition cleared (stock replenished, lot disposed, etc.)
+enum AlertStatus {
+    OPEN
+    ACKNOWLEDGED
+    RESOLVED
+}
+
+// Lifecycle of an individual serialized (serial-number-tracked) unit.
+// AVAILABLE   — in stock, ready to pick and sell
+// SOLD        — sold to a customer (saleReferenceId is set)
+// RETURNED    — returned by a customer, pending disposition
+// DAMAGED     — written off
+// QUARANTINED — held for inspection (quality hold, regulatory, etc.)
+// TRANSFERRED — dispatched to another warehouse; resolves to AVAILABLE on receipt
+enum SerializedUnitStatus {
+    AVAILABLE
+    SOLD
+    RETURNED
+    DAMAGED
+    QUARANTINED
+    TRANSFERRED
+}
+
+// Lifecycle of an explicit stock reservation.
+// ACTIVE    — quantity is currently held against available stock
+// FULFILLED — reservation was consumed (sale confirmed, request dispatched)
+// RELEASED  — reservation was manually cancelled (cart abandoned, request cancelled)
+// EXPIRED   — reservation passed its expiresAt; auto-released by a sweeper job
+enum ReservationStatus {
+    ACTIVE
+    FULFILLED
+    RELEASED
+    EXPIRED
+}
+
+// ─── Inventory Configuration ────────────────────────────────
+
+// Inventory costing method applied when depleting stock from lots.
+// Stored on TenantInventoryConfig — not in IAM — because it is an
+// inventory domain concern, not an access-control concern.
+//
+// FIFO — First In, First Out
+//   Oldest lot (receivedAt ASC) is depleted first.
+//   Standard for most goods; required by many accounting frameworks.
+//
+// AVCO — Average Cost (Weighted Average)
+//   Cost = SUM(quantityRemaining × unitCost) / SUM(quantityRemaining)
+//   across all active lots. Computed at depletion time.
+//   Common for commodities where lot tracking adds little value.
+//
+// FEFO — First Expired, First Out
+//   Earliest-expiry lot (expiresAt ASC) is depleted first.
+//   Mandatory for food, pharma, and any perishable goods.
+//   Falls back to FIFO ordering when expiresAt is null on a lot.
+enum CostingMethod {
+    FIFO
+    AVCO
+    FEFO
+}
+
+// ─── Audit ───────────────────────────────────────────────────
+
+// Type of master data change recorded in AuditLog.
+// RESTORE — soft-delete reversal (sets deletedAt back to null)
+enum AuditAction {
+    CREATE
+    UPDATE
+    DELETE
+    RESTORE
+}

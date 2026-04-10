@@ -1,0 +1,49 @@
+{
+	"name": "@r6/db-inventory",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "prisma generate && tsup src",
+		"check": "biome check --write .",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"db:push": "prisma db push",
+		"db:seed": "prisma db seed",
+		"db:studio": "prisma studio",
+		"format": "biome format --write .",
+		"lint": "biome lint --write ."
+	},
+	"dependencies": {
+		"@prisma/adapter-pg": "^7.6.0",
+		"@prisma/client": "7.6.0",
+		"@r6/bcrypt": "*",
+		"@r6/crypto": "*",
+		"dotenv": "^17.4.0",
+		"pg": "8.20.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@r6/typescript-config": "*",
+		"@types/pg": "8.20.0",
+		"prisma": "7.6.0",
+		"tsx": "^4.21.0",
+		"typescript": "6.0.2"
+	},
+	"author": "Joshua Dave E. Oropilla",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"import": "./build/index.mjs",
+			"require": "./build/index.js",
+			"default": "./build/index.js"
+		},
+		"./use-cases/*": {
+			"types": "./src/use-cases/*.ts",
+			"import": "./build/use-cases/*.mjs",
+			"require": "./build/use-cases/*.js",
+			"default": "./build/use-cases/*.js"
+		}
+	},
+	"license": "MIT"
+}
