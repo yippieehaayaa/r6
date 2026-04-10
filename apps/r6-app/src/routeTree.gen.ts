@@ -20,15 +20,6 @@ import { Route as R6AuthenticatedIamTenantsRouteImport } from './routes/r6/_auth
 import { Route as R6AuthenticatedIamRolesRouteImport } from './routes/r6/_authenticated/iam/roles'
 import { Route as R6AuthenticatedIamPoliciesRouteImport } from './routes/r6/_authenticated/iam/policies'
 import { Route as R6AuthenticatedIamIdentitiesRouteImport } from './routes/r6/_authenticated/iam/identities'
-import { Route as R6AuthenticatedInventoryAndCatalogWarehousesIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/warehouses/index'
-import { Route as R6AuthenticatedInventoryAndCatalogVariantsIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/variants/index'
-import { Route as R6AuthenticatedInventoryAndCatalogProductsIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/products/index'
-import { Route as R6AuthenticatedInventoryAndCatalogMovementsIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/movements/index'
-import { Route as R6AuthenticatedInventoryAndCatalogInventoryIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/inventory/index'
-import { Route as R6AuthenticatedInventoryAndCatalogDamageLossesIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/damage-losses/index'
-import { Route as R6AuthenticatedInventoryAndCatalogCategoriesIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/categories/index'
-import { Route as R6AuthenticatedInventoryAndCatalogBrandsIndexRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/brands/index'
-import { Route as R6AuthenticatedInventoryAndCatalogProductsProductIdRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/products/$productId'
 import { Route as R6AuthenticatedIamTenantsTenantSlugRouteImport } from './routes/r6/_authenticated/iam/tenants_.$tenantSlug'
 
 const IndexRoute = IndexRouteImport.update({
@@ -91,60 +82,6 @@ const R6AuthenticatedIamIdentitiesRoute =
     path: '/iam/identities',
     getParentRoute: () => R6AuthenticatedRoute,
   } as any)
-const R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute =
-  R6AuthenticatedInventoryAndCatalogWarehousesIndexRouteImport.update({
-    id: '/inventory-and-catalog/warehouses/',
-    path: '/inventory-and-catalog/warehouses/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogVariantsIndexRoute =
-  R6AuthenticatedInventoryAndCatalogVariantsIndexRouteImport.update({
-    id: '/inventory-and-catalog/variants/',
-    path: '/inventory-and-catalog/variants/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogProductsIndexRoute =
-  R6AuthenticatedInventoryAndCatalogProductsIndexRouteImport.update({
-    id: '/inventory-and-catalog/products/',
-    path: '/inventory-and-catalog/products/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogMovementsIndexRoute =
-  R6AuthenticatedInventoryAndCatalogMovementsIndexRouteImport.update({
-    id: '/inventory-and-catalog/movements/',
-    path: '/inventory-and-catalog/movements/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogInventoryIndexRoute =
-  R6AuthenticatedInventoryAndCatalogInventoryIndexRouteImport.update({
-    id: '/inventory-and-catalog/inventory/',
-    path: '/inventory-and-catalog/inventory/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute =
-  R6AuthenticatedInventoryAndCatalogDamageLossesIndexRouteImport.update({
-    id: '/inventory-and-catalog/damage-losses/',
-    path: '/inventory-and-catalog/damage-losses/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute =
-  R6AuthenticatedInventoryAndCatalogCategoriesIndexRouteImport.update({
-    id: '/inventory-and-catalog/categories/',
-    path: '/inventory-and-catalog/categories/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogBrandsIndexRoute =
-  R6AuthenticatedInventoryAndCatalogBrandsIndexRouteImport.update({
-    id: '/inventory-and-catalog/brands/',
-    path: '/inventory-and-catalog/brands/',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
-const R6AuthenticatedInventoryAndCatalogProductsProductIdRoute =
-  R6AuthenticatedInventoryAndCatalogProductsProductIdRouteImport.update({
-    id: '/inventory-and-catalog/products/$productId',
-    path: '/inventory-and-catalog/products/$productId',
-    getParentRoute: () => R6AuthenticatedRoute,
-  } as any)
 const R6AuthenticatedIamTenantsTenantSlugRoute =
   R6AuthenticatedIamTenantsTenantSlugRouteImport.update({
     id: '/iam/tenants_/$tenantSlug',
@@ -165,15 +102,6 @@ export interface FileRoutesByFullPath {
   '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
   '/r6/iam/': typeof R6AuthenticatedIamIndexRoute
   '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
-  '/r6/inventory-and-catalog/products/$productId': typeof R6AuthenticatedInventoryAndCatalogProductsProductIdRoute
-  '/r6/inventory-and-catalog/brands/': typeof R6AuthenticatedInventoryAndCatalogBrandsIndexRoute
-  '/r6/inventory-and-catalog/categories/': typeof R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute
-  '/r6/inventory-and-catalog/damage-losses/': typeof R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute
-  '/r6/inventory-and-catalog/inventory/': typeof R6AuthenticatedInventoryAndCatalogInventoryIndexRoute
-  '/r6/inventory-and-catalog/movements/': typeof R6AuthenticatedInventoryAndCatalogMovementsIndexRoute
-  '/r6/inventory-and-catalog/products/': typeof R6AuthenticatedInventoryAndCatalogProductsIndexRoute
-  '/r6/inventory-and-catalog/variants/': typeof R6AuthenticatedInventoryAndCatalogVariantsIndexRoute
-  '/r6/inventory-and-catalog/warehouses/': typeof R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -187,15 +115,6 @@ export interface FileRoutesByTo {
   '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
   '/r6/iam': typeof R6AuthenticatedIamIndexRoute
   '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
-  '/r6/inventory-and-catalog/products/$productId': typeof R6AuthenticatedInventoryAndCatalogProductsProductIdRoute
-  '/r6/inventory-and-catalog/brands': typeof R6AuthenticatedInventoryAndCatalogBrandsIndexRoute
-  '/r6/inventory-and-catalog/categories': typeof R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute
-  '/r6/inventory-and-catalog/damage-losses': typeof R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute
-  '/r6/inventory-and-catalog/inventory': typeof R6AuthenticatedInventoryAndCatalogInventoryIndexRoute
-  '/r6/inventory-and-catalog/movements': typeof R6AuthenticatedInventoryAndCatalogMovementsIndexRoute
-  '/r6/inventory-and-catalog/products': typeof R6AuthenticatedInventoryAndCatalogProductsIndexRoute
-  '/r6/inventory-and-catalog/variants': typeof R6AuthenticatedInventoryAndCatalogVariantsIndexRoute
-  '/r6/inventory-and-catalog/warehouses': typeof R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -211,15 +130,6 @@ export interface FileRoutesById {
   '/r6/_authenticated/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
   '/r6/_authenticated/iam/': typeof R6AuthenticatedIamIndexRoute
   '/r6/_authenticated/iam/tenants_/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
-  '/r6/_authenticated/inventory-and-catalog/products/$productId': typeof R6AuthenticatedInventoryAndCatalogProductsProductIdRoute
-  '/r6/_authenticated/inventory-and-catalog/brands/': typeof R6AuthenticatedInventoryAndCatalogBrandsIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/categories/': typeof R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/damage-losses/': typeof R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/inventory/': typeof R6AuthenticatedInventoryAndCatalogInventoryIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/movements/': typeof R6AuthenticatedInventoryAndCatalogMovementsIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/products/': typeof R6AuthenticatedInventoryAndCatalogProductsIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/variants/': typeof R6AuthenticatedInventoryAndCatalogVariantsIndexRoute
-  '/r6/_authenticated/inventory-and-catalog/warehouses/': typeof R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -236,15 +146,6 @@ export interface FileRouteTypes {
     | '/r6/iam/tenants'
     | '/r6/iam/'
     | '/r6/iam/tenants/$tenantSlug'
-    | '/r6/inventory-and-catalog/products/$productId'
-    | '/r6/inventory-and-catalog/brands/'
-    | '/r6/inventory-and-catalog/categories/'
-    | '/r6/inventory-and-catalog/damage-losses/'
-    | '/r6/inventory-and-catalog/inventory/'
-    | '/r6/inventory-and-catalog/movements/'
-    | '/r6/inventory-and-catalog/products/'
-    | '/r6/inventory-and-catalog/variants/'
-    | '/r6/inventory-and-catalog/warehouses/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -258,15 +159,6 @@ export interface FileRouteTypes {
     | '/r6/iam/tenants'
     | '/r6/iam'
     | '/r6/iam/tenants/$tenantSlug'
-    | '/r6/inventory-and-catalog/products/$productId'
-    | '/r6/inventory-and-catalog/brands'
-    | '/r6/inventory-and-catalog/categories'
-    | '/r6/inventory-and-catalog/damage-losses'
-    | '/r6/inventory-and-catalog/inventory'
-    | '/r6/inventory-and-catalog/movements'
-    | '/r6/inventory-and-catalog/products'
-    | '/r6/inventory-and-catalog/variants'
-    | '/r6/inventory-and-catalog/warehouses'
   id:
     | '__root__'
     | '/'
@@ -281,15 +173,6 @@ export interface FileRouteTypes {
     | '/r6/_authenticated/iam/tenants'
     | '/r6/_authenticated/iam/'
     | '/r6/_authenticated/iam/tenants_/$tenantSlug'
-    | '/r6/_authenticated/inventory-and-catalog/products/$productId'
-    | '/r6/_authenticated/inventory-and-catalog/brands/'
-    | '/r6/_authenticated/inventory-and-catalog/categories/'
-    | '/r6/_authenticated/inventory-and-catalog/damage-losses/'
-    | '/r6/_authenticated/inventory-and-catalog/inventory/'
-    | '/r6/_authenticated/inventory-and-catalog/movements/'
-    | '/r6/_authenticated/inventory-and-catalog/products/'
-    | '/r6/_authenticated/inventory-and-catalog/variants/'
-    | '/r6/_authenticated/inventory-and-catalog/warehouses/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -377,69 +260,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R6AuthenticatedIamIdentitiesRouteImport
       parentRoute: typeof R6AuthenticatedRoute
     }
-    '/r6/_authenticated/inventory-and-catalog/warehouses/': {
-      id: '/r6/_authenticated/inventory-and-catalog/warehouses/'
-      path: '/inventory-and-catalog/warehouses'
-      fullPath: '/r6/inventory-and-catalog/warehouses/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogWarehousesIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/variants/': {
-      id: '/r6/_authenticated/inventory-and-catalog/variants/'
-      path: '/inventory-and-catalog/variants'
-      fullPath: '/r6/inventory-and-catalog/variants/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogVariantsIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/products/': {
-      id: '/r6/_authenticated/inventory-and-catalog/products/'
-      path: '/inventory-and-catalog/products'
-      fullPath: '/r6/inventory-and-catalog/products/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogProductsIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/movements/': {
-      id: '/r6/_authenticated/inventory-and-catalog/movements/'
-      path: '/inventory-and-catalog/movements'
-      fullPath: '/r6/inventory-and-catalog/movements/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogMovementsIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/inventory/': {
-      id: '/r6/_authenticated/inventory-and-catalog/inventory/'
-      path: '/inventory-and-catalog/inventory'
-      fullPath: '/r6/inventory-and-catalog/inventory/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogInventoryIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/damage-losses/': {
-      id: '/r6/_authenticated/inventory-and-catalog/damage-losses/'
-      path: '/inventory-and-catalog/damage-losses'
-      fullPath: '/r6/inventory-and-catalog/damage-losses/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogDamageLossesIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/categories/': {
-      id: '/r6/_authenticated/inventory-and-catalog/categories/'
-      path: '/inventory-and-catalog/categories'
-      fullPath: '/r6/inventory-and-catalog/categories/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogCategoriesIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/brands/': {
-      id: '/r6/_authenticated/inventory-and-catalog/brands/'
-      path: '/inventory-and-catalog/brands'
-      fullPath: '/r6/inventory-and-catalog/brands/'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogBrandsIndexRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
-    '/r6/_authenticated/inventory-and-catalog/products/$productId': {
-      id: '/r6/_authenticated/inventory-and-catalog/products/$productId'
-      path: '/inventory-and-catalog/products/$productId'
-      fullPath: '/r6/inventory-and-catalog/products/$productId'
-      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogProductsProductIdRouteImport
-      parentRoute: typeof R6AuthenticatedRoute
-    }
     '/r6/_authenticated/iam/tenants_/$tenantSlug': {
       id: '/r6/_authenticated/iam/tenants_/$tenantSlug'
       path: '/iam/tenants/$tenantSlug'
@@ -460,15 +280,6 @@ interface R6AuthenticatedRouteChildren {
   R6AuthenticatedIamTenantsRoute: typeof R6AuthenticatedIamTenantsRoute
   R6AuthenticatedIamIndexRoute: typeof R6AuthenticatedIamIndexRoute
   R6AuthenticatedIamTenantsTenantSlugRoute: typeof R6AuthenticatedIamTenantsTenantSlugRoute
-  R6AuthenticatedInventoryAndCatalogProductsProductIdRoute: typeof R6AuthenticatedInventoryAndCatalogProductsProductIdRoute
-  R6AuthenticatedInventoryAndCatalogBrandsIndexRoute: typeof R6AuthenticatedInventoryAndCatalogBrandsIndexRoute
-  R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute: typeof R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute
-  R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute: typeof R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute
-  R6AuthenticatedInventoryAndCatalogInventoryIndexRoute: typeof R6AuthenticatedInventoryAndCatalogInventoryIndexRoute
-  R6AuthenticatedInventoryAndCatalogMovementsIndexRoute: typeof R6AuthenticatedInventoryAndCatalogMovementsIndexRoute
-  R6AuthenticatedInventoryAndCatalogProductsIndexRoute: typeof R6AuthenticatedInventoryAndCatalogProductsIndexRoute
-  R6AuthenticatedInventoryAndCatalogVariantsIndexRoute: typeof R6AuthenticatedInventoryAndCatalogVariantsIndexRoute
-  R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute: typeof R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute
 }
 
 const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
@@ -482,24 +293,6 @@ const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
   R6AuthenticatedIamIndexRoute: R6AuthenticatedIamIndexRoute,
   R6AuthenticatedIamTenantsTenantSlugRoute:
     R6AuthenticatedIamTenantsTenantSlugRoute,
-  R6AuthenticatedInventoryAndCatalogProductsProductIdRoute:
-    R6AuthenticatedInventoryAndCatalogProductsProductIdRoute,
-  R6AuthenticatedInventoryAndCatalogBrandsIndexRoute:
-    R6AuthenticatedInventoryAndCatalogBrandsIndexRoute,
-  R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute:
-    R6AuthenticatedInventoryAndCatalogCategoriesIndexRoute,
-  R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute:
-    R6AuthenticatedInventoryAndCatalogDamageLossesIndexRoute,
-  R6AuthenticatedInventoryAndCatalogInventoryIndexRoute:
-    R6AuthenticatedInventoryAndCatalogInventoryIndexRoute,
-  R6AuthenticatedInventoryAndCatalogMovementsIndexRoute:
-    R6AuthenticatedInventoryAndCatalogMovementsIndexRoute,
-  R6AuthenticatedInventoryAndCatalogProductsIndexRoute:
-    R6AuthenticatedInventoryAndCatalogProductsIndexRoute,
-  R6AuthenticatedInventoryAndCatalogVariantsIndexRoute:
-    R6AuthenticatedInventoryAndCatalogVariantsIndexRoute,
-  R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute:
-    R6AuthenticatedInventoryAndCatalogWarehousesIndexRoute,
 }
 
 const R6AuthenticatedRouteWithChildren = R6AuthenticatedRoute._addFileChildren(

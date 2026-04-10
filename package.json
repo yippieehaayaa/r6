@@ -24,9 +24,10 @@
 		"node": ">=18"
 	},
 	"workspaces": [
-		"apis/*",
+		"apis/identity-and-access",
+		"apis/api-gateway",
 		"apps/*",
-		"dbs/*",
+		"dbs/identity-and-access",
 		"packages/*"
 	],
 	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",
