@@ -26,9 +26,15 @@ export type {
   ReceiveStockResult,
 } from "./use-cases/stock-in/types.js";
 export { expireReservations } from "./use-cases/stock-out/expire-reservations.js";
+export { fulfillSale } from "./use-cases/stock-out/fulfill-sale.js";
 export { reserveStock } from "./use-cases/stock-out/reserve-stock.js";
 export type {
   ExpireReservationsResult,
+  FulfillSaleInput,
+  FulfillSaleLineInput,
+  FulfillSaleLineResult,
+  FulfillSaleResult,
+  LotConsumption,
   ReserveStockInput,
   ReserveStockLineInput,
   ReserveStockLineResult,
