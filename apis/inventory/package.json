@@ -24,7 +24,7 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.4",
-		"@r6/db-identity": "*",
+		"@r6/db-inventory": "*",
 		"@r6/schemas": "*",
 		"@r6/typescript-config": "*",
 		"@types/cors": "^2.8.19",
