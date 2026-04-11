@@ -7,11 +7,7 @@ import { resolveAlertHandler } from "./controller/resolve";
 
 const router: Router = Router({ mergeParams: true });
 
-router.post(
-  "/process-expiry",
-  requireAdmin(),
-  processExpiryHandler,
-);
+router.post("/process-expiry", requireAdmin(), processExpiryHandler);
 
 router.post(
   "/:alertId/acknowledge",

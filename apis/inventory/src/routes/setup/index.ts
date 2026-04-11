@@ -11,39 +11,39 @@ import { warehouseSetupHandler } from "./controller/warehouse";
 const router: Router = Router({ mergeParams: true });
 
 router.post(
-	"/onboard",
-	requirePermission(INVENTORY_PERMISSIONS.SETUP_CREATE),
-	onboardTenantHandler,
+  "/onboard",
+  requirePermission(INVENTORY_PERMISSIONS.SETUP_CREATE),
+  onboardTenantHandler,
 );
 
 router.get(
-	"/status",
-	requirePermission(INVENTORY_PERMISSIONS.SETUP_READ),
-	setupStatusHandler,
+  "/status",
+  requirePermission(INVENTORY_PERMISSIONS.SETUP_READ),
+  setupStatusHandler,
 );
 
 router.post(
-	"/catalog",
-	requirePermission(INVENTORY_PERMISSIONS.SETUP_CREATE),
-	catalogSetupHandler,
+  "/catalog",
+  requirePermission(INVENTORY_PERMISSIONS.SETUP_CREATE),
+  catalogSetupHandler,
 );
 
 router.post(
-	"/categories-brands",
-	requirePermission(INVENTORY_PERMISSIONS.SETUP_CREATE),
-	categoryBrandSetupHandler,
+  "/categories-brands",
+  requirePermission(INVENTORY_PERMISSIONS.SETUP_CREATE),
+  categoryBrandSetupHandler,
 );
 
 router.post(
-	"/products",
-	requirePermission(INVENTORY_PERMISSIONS.CATALOG_CREATE),
-	productSetupHandler,
+  "/products",
+  requirePermission(INVENTORY_PERMISSIONS.CATALOG_CREATE),
+  productSetupHandler,
 );
 
 router.post(
-	"/warehouses",
-	requirePermission(INVENTORY_PERMISSIONS.WAREHOUSE_CREATE),
-	warehouseSetupHandler,
+  "/warehouses",
+  requirePermission(INVENTORY_PERMISSIONS.WAREHOUSE_CREATE),
+  warehouseSetupHandler,
 );
 
 export default router;

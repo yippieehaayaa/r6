@@ -15,7 +15,11 @@ import { Route as R6AuthenticatedRouteImport } from './routes/r6/_authenticated'
 import { Route as R6AuthenticatedIndexRouteImport } from './routes/r6/_authenticated/index'
 import { Route as R6AuthenticatedForbiddenRouteImport } from './routes/r6/_authenticated/forbidden'
 import { Route as R6AuthenticatedAccountSecurityRouteImport } from './routes/r6/_authenticated/account-security'
+import { Route as R6AuthenticatedInventoryIndexRouteImport } from './routes/r6/_authenticated/inventory/index'
 import { Route as R6AuthenticatedIamIndexRouteImport } from './routes/r6/_authenticated/iam/index'
+import { Route as R6AuthenticatedInventoryStockRouteImport } from './routes/r6/_authenticated/inventory/stock'
+import { Route as R6AuthenticatedInventoryMovementsRouteImport } from './routes/r6/_authenticated/inventory/movements'
+import { Route as R6AuthenticatedInventoryAlertsRouteImport } from './routes/r6/_authenticated/inventory/alerts'
 import { Route as R6AuthenticatedIamTenantsRouteImport } from './routes/r6/_authenticated/iam/tenants'
 import { Route as R6AuthenticatedIamRolesRouteImport } from './routes/r6/_authenticated/iam/roles'
 import { Route as R6AuthenticatedIamPoliciesRouteImport } from './routes/r6/_authenticated/iam/policies'
@@ -54,11 +58,35 @@ const R6AuthenticatedAccountSecurityRoute =
     path: '/account-security',
     getParentRoute: () => R6AuthenticatedRoute,
   } as any)
+const R6AuthenticatedInventoryIndexRoute =
+  R6AuthenticatedInventoryIndexRouteImport.update({
+    id: '/inventory/',
+    path: '/inventory/',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
 const R6AuthenticatedIamIndexRoute = R6AuthenticatedIamIndexRouteImport.update({
   id: '/iam/',
   path: '/iam/',
   getParentRoute: () => R6AuthenticatedRoute,
 } as any)
+const R6AuthenticatedInventoryStockRoute =
+  R6AuthenticatedInventoryStockRouteImport.update({
+    id: '/inventory/stock',
+    path: '/inventory/stock',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedInventoryMovementsRoute =
+  R6AuthenticatedInventoryMovementsRouteImport.update({
+    id: '/inventory/movements',
+    path: '/inventory/movements',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedInventoryAlertsRoute =
+  R6AuthenticatedInventoryAlertsRouteImport.update({
+    id: '/inventory/alerts',
+    path: '/inventory/alerts',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
 const R6AuthenticatedIamTenantsRoute =
   R6AuthenticatedIamTenantsRouteImport.update({
     id: '/iam/tenants',
@@ -100,7 +128,11 @@ export interface FileRoutesByFullPath {
   '/r6/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
   '/r6/iam/roles': typeof R6AuthenticatedIamRolesRoute
   '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/inventory/alerts': typeof R6AuthenticatedInventoryAlertsRoute
+  '/r6/inventory/movements': typeof R6AuthenticatedInventoryMovementsRoute
+  '/r6/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
   '/r6/iam/': typeof R6AuthenticatedIamIndexRoute
+  '/r6/inventory/': typeof R6AuthenticatedInventoryIndexRoute
   '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRoutesByTo {
@@ -113,7 +145,11 @@ export interface FileRoutesByTo {
   '/r6/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
   '/r6/iam/roles': typeof R6AuthenticatedIamRolesRoute
   '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/inventory/alerts': typeof R6AuthenticatedInventoryAlertsRoute
+  '/r6/inventory/movements': typeof R6AuthenticatedInventoryMovementsRoute
+  '/r6/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
   '/r6/iam': typeof R6AuthenticatedIamIndexRoute
+  '/r6/inventory': typeof R6AuthenticatedInventoryIndexRoute
   '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRoutesById {
@@ -128,7 +164,11 @@ export interface FileRoutesById {
   '/r6/_authenticated/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
   '/r6/_authenticated/iam/roles': typeof R6AuthenticatedIamRolesRoute
   '/r6/_authenticated/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/_authenticated/inventory/alerts': typeof R6AuthenticatedInventoryAlertsRoute
+  '/r6/_authenticated/inventory/movements': typeof R6AuthenticatedInventoryMovementsRoute
+  '/r6/_authenticated/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
   '/r6/_authenticated/iam/': typeof R6AuthenticatedIamIndexRoute
+  '/r6/_authenticated/inventory/': typeof R6AuthenticatedInventoryIndexRoute
   '/r6/_authenticated/iam/tenants_/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 export interface FileRouteTypes {
@@ -144,7 +184,11 @@ export interface FileRouteTypes {
     | '/r6/iam/policies'
     | '/r6/iam/roles'
     | '/r6/iam/tenants'
+    | '/r6/inventory/alerts'
+    | '/r6/inventory/movements'
+    | '/r6/inventory/stock'
     | '/r6/iam/'
+    | '/r6/inventory/'
     | '/r6/iam/tenants/$tenantSlug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -157,7 +201,11 @@ export interface FileRouteTypes {
     | '/r6/iam/policies'
     | '/r6/iam/roles'
     | '/r6/iam/tenants'
+    | '/r6/inventory/alerts'
+    | '/r6/inventory/movements'
+    | '/r6/inventory/stock'
     | '/r6/iam'
+    | '/r6/inventory'
     | '/r6/iam/tenants/$tenantSlug'
   id:
     | '__root__'
@@ -171,7 +219,11 @@ export interface FileRouteTypes {
     | '/r6/_authenticated/iam/policies'
     | '/r6/_authenticated/iam/roles'
     | '/r6/_authenticated/iam/tenants'
+    | '/r6/_authenticated/inventory/alerts'
+    | '/r6/_authenticated/inventory/movements'
+    | '/r6/_authenticated/inventory/stock'
     | '/r6/_authenticated/iam/'
+    | '/r6/_authenticated/inventory/'
     | '/r6/_authenticated/iam/tenants_/$tenantSlug'
   fileRoutesById: FileRoutesById
 }
@@ -225,11 +277,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R6AuthenticatedAccountSecurityRouteImport
       parentRoute: typeof R6AuthenticatedRoute
     }
+    '/r6/_authenticated/inventory/': {
+      id: '/r6/_authenticated/inventory/'
+      path: '/inventory'
+      fullPath: '/r6/inventory/'
+      preLoaderRoute: typeof R6AuthenticatedInventoryIndexRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
     '/r6/_authenticated/iam/': {
       id: '/r6/_authenticated/iam/'
       path: '/iam'
       fullPath: '/r6/iam/'
       preLoaderRoute: typeof R6AuthenticatedIamIndexRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/inventory/stock': {
+      id: '/r6/_authenticated/inventory/stock'
+      path: '/inventory/stock'
+      fullPath: '/r6/inventory/stock'
+      preLoaderRoute: typeof R6AuthenticatedInventoryStockRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/inventory/movements': {
+      id: '/r6/_authenticated/inventory/movements'
+      path: '/inventory/movements'
+      fullPath: '/r6/inventory/movements'
+      preLoaderRoute: typeof R6AuthenticatedInventoryMovementsRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/inventory/alerts': {
+      id: '/r6/_authenticated/inventory/alerts'
+      path: '/inventory/alerts'
+      fullPath: '/r6/inventory/alerts'
+      preLoaderRoute: typeof R6AuthenticatedInventoryAlertsRouteImport
       parentRoute: typeof R6AuthenticatedRoute
     }
     '/r6/_authenticated/iam/tenants': {
@@ -278,7 +358,11 @@ interface R6AuthenticatedRouteChildren {
   R6AuthenticatedIamPoliciesRoute: typeof R6AuthenticatedIamPoliciesRoute
   R6AuthenticatedIamRolesRoute: typeof R6AuthenticatedIamRolesRoute
   R6AuthenticatedIamTenantsRoute: typeof R6AuthenticatedIamTenantsRoute
+  R6AuthenticatedInventoryAlertsRoute: typeof R6AuthenticatedInventoryAlertsRoute
+  R6AuthenticatedInventoryMovementsRoute: typeof R6AuthenticatedInventoryMovementsRoute
+  R6AuthenticatedInventoryStockRoute: typeof R6AuthenticatedInventoryStockRoute
   R6AuthenticatedIamIndexRoute: typeof R6AuthenticatedIamIndexRoute
+  R6AuthenticatedInventoryIndexRoute: typeof R6AuthenticatedInventoryIndexRoute
   R6AuthenticatedIamTenantsTenantSlugRoute: typeof R6AuthenticatedIamTenantsTenantSlugRoute
 }
 
@@ -290,7 +374,12 @@ const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
   R6AuthenticatedIamPoliciesRoute: R6AuthenticatedIamPoliciesRoute,
   R6AuthenticatedIamRolesRoute: R6AuthenticatedIamRolesRoute,
   R6AuthenticatedIamTenantsRoute: R6AuthenticatedIamTenantsRoute,
+  R6AuthenticatedInventoryAlertsRoute: R6AuthenticatedInventoryAlertsRoute,
+  R6AuthenticatedInventoryMovementsRoute:
+    R6AuthenticatedInventoryMovementsRoute,
+  R6AuthenticatedInventoryStockRoute: R6AuthenticatedInventoryStockRoute,
   R6AuthenticatedIamIndexRoute: R6AuthenticatedIamIndexRoute,
+  R6AuthenticatedInventoryIndexRoute: R6AuthenticatedInventoryIndexRoute,
   R6AuthenticatedIamTenantsTenantSlugRoute:
     R6AuthenticatedIamTenantsTenantSlugRoute,
 }

@@ -26,28 +26,24 @@ export const data = {
 	navMain: [
 		{
 			title: "Inventory",
-			url: "#",
+			url: "/r6/inventory",
 			icon: Package,
 			items: [
 				{
-					title: "Stock Overview",
-					url: "/r6/inventory-and-catalog/inventory",
-					// permission: "inventory:stock:read",
+					title: "Overview",
+					url: "/r6/inventory",
 				},
 				{
-					title: "Warehouses",
-					url: "/r6/inventory-and-catalog/warehouses",
-					// permission: "inventory:warehouse:read",
+					title: "Stock Operations",
+					url: "/r6/inventory/stock",
 				},
 				{
 					title: "Movements",
-					url: "/r6/inventory-and-catalog/movements",
-					// permission: "inventory:movement:read",
+					url: "/r6/inventory/movements",
 				},
 				{
-					title: "Damage & Losses",
-					url: "/r6/inventory-and-catalog/damage-losses",
-					// permission: "inventory:damage:read",
+					title: "Alerts",
+					url: "/r6/inventory/alerts",
 				},
 			],
 		},
@@ -184,8 +180,8 @@ export const data = {
 			permission: "procurement:receiving:create",
 		},
 		{
-			name: "Stock Overview",
-			url: "#",
+			name: "Stock Operations",
+			url: "/r6/inventory/stock",
 			icon: PackageSearch,
 			permission: "inventory:stock:read",
 		},
