@@ -2,6 +2,7 @@ import type {
   AuditLog,
   InventoryItem,
   InventoryLot,
+  SerializedUnit,
   StockAlert,
   StockMovement,
 } from "../../../generated/prisma/client.js";
@@ -10,6 +11,7 @@ export type {
   AuditLog,
   InventoryItem,
   InventoryLot,
+  SerializedUnit,
   StockAlert,
   StockMovement,
 };
@@ -32,6 +34,22 @@ export type LotAdjustment = {
 export type ManualAdjustmentResult = {
   lotAdjustments: LotAdjustment[];
   inventoryItem: InventoryItem;
+  auditLog: AuditLog;
+  alerts: StockAlert[];
+};
+
+export type WriteOffStockInput = {
+  tenantId: string;
+  performedBy: string;
+  lotId: string;
+  reason: string;
+};
+
+export type WriteOffStockResult = {
+  lot: InventoryLot;
+  movement: StockMovement;
+  inventoryItem: InventoryItem;
+  serializedUnits: SerializedUnit[];
   auditLog: AuditLog;
   alerts: StockAlert[];
 };

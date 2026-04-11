@@ -3,7 +3,10 @@ export type {
   LotAdjustment,
   ManualAdjustmentInput,
   ManualAdjustmentResult,
+  WriteOffStockInput,
+  WriteOffStockResult,
 } from "./use-cases/corrections/types.js";
+export { writeOffStock } from "./use-cases/corrections/write-off-stock.js";
 export { setupCatalog } from "./use-cases/setup/catalog-setup.js";
 export { setupCategoryAndBrand } from "./use-cases/setup/category-brand-setup.js";
 export { setupProduct } from "./use-cases/setup/product-setup.js";
