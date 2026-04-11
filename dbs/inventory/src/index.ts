@@ -58,3 +58,16 @@ export type {
   CheckAvailabilityInput,
   CheckAvailabilityResult,
 } from "./use-cases/stock-query/types.js";
+export { dispatchTransfer } from "./use-cases/transfer/dispatch-transfer.js";
+export { receiveTransfer } from "./use-cases/transfer/receive-transfer.js";
+export type {
+  DispatchTransferInput,
+  DispatchTransferLineInput,
+  DispatchTransferLineResult,
+  DispatchTransferResult,
+  LotShipment,
+  ReceiveTransferInput,
+  ReceiveTransferLineInput,
+  ReceiveTransferLineResult,
+  ReceiveTransferResult,
+} from "./use-cases/transfer/types.js";
