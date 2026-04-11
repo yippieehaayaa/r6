@@ -1,5 +1,6 @@
-import { prisma } from "../client.js";
-import { writeAuditLog, writeAuditLogs } from "./audit.js";
+import type { Prisma } from "../../../generated/prisma/client.js";
+import { prisma } from "../../client.js";
+import { writeAuditLog, writeAuditLogs } from "../_shared/audit.js";
 import type { ProductSetupInput, ProductSetupResult } from "./types.js";
 
 const setupProduct = async (
@@ -45,24 +46,22 @@ const setupProduct = async (
       brandId = brand.id;
     }
 
-    const product = await tx.product.create({
-      data: {
-        tenantId: input.tenantId,
-        sku: input.product.sku,
-        name: input.product.name,
-        slug: input.product.slug,
-        ...(input.product.description && {
-          description: input.product.description,
-        }),
-        ...(input.product.tags?.length && { tags: input.product.tags }),
-        ...(input.product.metadata && {
-          metadata: input.product.metadata,
-        }),
-        ...(categoryId && { categoryId }),
-        ...(brandId && { brandId }),
-        status: "DRAFT",
-      },
-    });
+    const productData: Prisma.ProductUncheckedCreateInput = {
+      tenantId: input.tenantId,
+      sku: input.product.sku,
+      name: input.product.name,
+      slug: input.product.slug,
+      status: "DRAFT",
+    };
+    if (input.product.description)
+      productData.description = input.product.description;
+    if (input.product.tags?.length) productData.tags = input.product.tags;
+    if (input.product.metadata)
+      productData.metadata = input.product.metadata as Prisma.InputJsonValue;
+    if (categoryId) productData.categoryId = categoryId;
+    if (brandId) productData.brandId = brandId;
+
+    const product = await tx.product.create({ data: productData });
 
     const uomAbbreviations = [
       ...new Set(input.variants.map((v) => v.baseUomAbbreviation)),
@@ -85,28 +84,26 @@ const setupProduct = async (
             `UOM "${v.baseUomAbbreviation}" not found or inactive`,
           );
         }
-        return tx.productVariant.create({
-          data: {
-            tenantId: input.tenantId,
-            productId: product.id,
-            sku: v.sku,
-            name: v.name,
-            options: v.options,
-            baseUomId: baseUom.id,
-            trackingType: v.trackingType ?? "NONE",
-            ...(v.barcode && { barcode: v.barcode }),
-            ...(v.weight && { weight: v.weight }),
-            ...(v.length && { length: v.length }),
-            ...(v.width && { width: v.width }),
-            ...(v.height && { height: v.height }),
-            ...(v.dimensionUnit && {
-              dimensionUnit: v.dimensionUnit,
-            }),
-            ...(v.weightUnit && { weightUnit: v.weightUnit }),
-            ...(v.imageUrl && { imageUrl: v.imageUrl }),
-            ...(v.metadata && { metadata: v.metadata }),
-          },
-        });
+        const variantData: Prisma.ProductVariantUncheckedCreateInput = {
+          tenantId: input.tenantId,
+          productId: product.id,
+          sku: v.sku,
+          name: v.name,
+          options: v.options as Prisma.InputJsonValue,
+          baseUomId: baseUom.id,
+          trackingType: v.trackingType ?? "NONE",
+        };
+        if (v.barcode) variantData.barcode = v.barcode;
+        if (v.weight) variantData.weight = v.weight;
+        if (v.length) variantData.length = v.length;
+        if (v.width) variantData.width = v.width;
+        if (v.height) variantData.height = v.height;
+        if (v.dimensionUnit) variantData.dimensionUnit = v.dimensionUnit;
+        if (v.weightUnit) variantData.weightUnit = v.weightUnit;
+        if (v.imageUrl) variantData.imageUrl = v.imageUrl;
+        if (v.metadata)
+          variantData.metadata = v.metadata as Prisma.InputJsonValue;
+        return tx.productVariant.create({ data: variantData });
       }),
     );
 

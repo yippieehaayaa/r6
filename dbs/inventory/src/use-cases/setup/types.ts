@@ -13,7 +13,7 @@ import type {
   Warehouse,
   WarehouseZone,
   WeightUnit,
-} from "../../generated/prisma/client.js";
+} from "../../../generated/prisma/client.js";
 
 export type {
   BinLocation,

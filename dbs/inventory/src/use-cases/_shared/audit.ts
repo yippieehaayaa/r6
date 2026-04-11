@@ -1,7 +1,7 @@
 import type {
   AuditAction,
   PrismaClient,
-} from "../../generated/prisma/client.js";
+} from "../../../generated/prisma/client.js";
 
 type TransactionClient = Parameters<
   Parameters<PrismaClient["$transaction"]>[0]

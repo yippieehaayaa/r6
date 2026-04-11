@@ -1,5 +1,5 @@
-import { prisma } from "../client.js";
-import { writeAuditLogs } from "./audit.js";
+import { prisma } from "../../client.js";
+import { writeAuditLogs } from "../_shared/audit.js";
 import type { TenantOnboardingInput, TenantOnboardingResult } from "./types.js";
 
 const onboardTenant = async (

@@ -1,6 +1,6 @@
-import { prisma } from "../client.js";
-import type { WriteAuditLogParams } from "./audit.js";
-import { writeAuditLogs } from "./audit.js";
+import { prisma } from "../../client.js";
+import type { WriteAuditLogParams } from "../_shared/audit.js";
+import { writeAuditLogs } from "../_shared/audit.js";
 import type { WarehouseSetupInput, WarehouseSetupResult } from "./types.js";
 
 const setupWarehouse = async (

@@ -1,5 +1,5 @@
-import { prisma } from "../client.js";
-import { writeAuditLog, writeAuditLogs } from "./audit.js";
+import { prisma } from "../../client.js";
+import { writeAuditLog, writeAuditLogs } from "../_shared/audit.js";
 import type {
   Category,
   CategoryBrandSetupInput,
