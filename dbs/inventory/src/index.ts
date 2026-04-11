@@ -26,6 +26,20 @@ export type {
   WarehouseSetupResult,
 } from "./use-cases/setup/types.js";
 export { setupWarehouse } from "./use-cases/setup/warehouse-setup.js";
+export { prepareStockCount } from "./use-cases/stock-count/prepare-stock-count.js";
+export { reconcileStockCount } from "./use-cases/stock-count/reconcile-stock-count.js";
+export { recordCount } from "./use-cases/stock-count/record-count.js";
+export type {
+  PrepareStockCountInput,
+  PrepareStockCountResult,
+  ReconcileLineResult,
+  ReconcileStockCountInput,
+  ReconcileStockCountResult,
+  RecordCountInput,
+  RecordCountLineInput,
+  RecordCountResult,
+  StockCountItemScope,
+} from "./use-cases/stock-count/types.js";
 export { receiveStock } from "./use-cases/stock-in/receive-stock.js";
 export type {
   ReceiveStockInput,
