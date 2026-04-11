@@ -94,6 +94,7 @@ model Category {
     slug        String
     description String?
     parentId    String? @db.Uuid
+    path        String  @default("/")
     sortOrder   Int     @default(0)
     isActive    Boolean @default(true)
 
@@ -111,6 +112,7 @@ model Category {
     @@index([tenantId])
     @@index([tenantId, parentId])
     @@index([tenantId, isActive])
+    @@index([tenantId, path])
     @@index([deletedAt])
     @@map("categories")
 }
