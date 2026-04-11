@@ -43,6 +43,18 @@ export type {
   WarehouseSetupResult,
 } from "./use-cases/setup/types.js";
 export { setupWarehouse } from "./use-cases/setup/warehouse-setup.js";
+export { acknowledgeAlert } from "./use-cases/stock-alert/acknowledge-alert.js";
+export { processLotExpiryAlerts } from "./use-cases/stock-alert/process-lot-expiry-alerts.js";
+export { resolveAlert } from "./use-cases/stock-alert/resolve-alert.js";
+export type {
+  AcknowledgeAlertInput,
+  AcknowledgeAlertResult,
+  LotExpiryAlertResult,
+  ProcessLotExpiryAlertsInput,
+  ProcessLotExpiryAlertsResult,
+  ResolveAlertInput,
+  ResolveAlertResult,
+} from "./use-cases/stock-alert/types.js";
 export { prepareStockCount } from "./use-cases/stock-count/prepare-stock-count.js";
 export { reconcileStockCount } from "./use-cases/stock-count/reconcile-stock-count.js";
 export { recordCount } from "./use-cases/stock-count/record-count.js";
