@@ -1,3 +1,4 @@
+export * from "./client.js";
 export { manualAdjustment } from "./use-cases/corrections/manual-adjustment.js";
 export type {
   LotAdjustment,

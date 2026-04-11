@@ -1,4 +1,3 @@
-import "express";
 import type { AuthJwtPayload } from "../../middleware/auth";
 
 declare global {
