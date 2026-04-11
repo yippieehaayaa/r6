@@ -7,6 +7,23 @@ export type {
   WriteOffStockResult,
 } from "./use-cases/corrections/types.js";
 export { writeOffStock } from "./use-cases/corrections/write-off-stock.js";
+export { approveReturn } from "./use-cases/return/approve-return.js";
+export { processReturnDisposition } from "./use-cases/return/process-return-disposition.js";
+export { receiveReturn } from "./use-cases/return/receive-return.js";
+export { requestReturn } from "./use-cases/return/request-return.js";
+export type {
+  ApproveReturnInput,
+  ApproveReturnResult,
+  DispositionLineResult,
+  ProcessReturnDispositionInput,
+  ProcessReturnDispositionResult,
+  ReceiveReturnInput,
+  ReceiveReturnLineInput,
+  ReceiveReturnResult,
+  RequestReturnInput,
+  RequestReturnLineInput,
+  RequestReturnResult,
+} from "./use-cases/return/types.js";
 export { setupCatalog } from "./use-cases/setup/catalog-setup.js";
 export { setupCategoryAndBrand } from "./use-cases/setup/category-brand-setup.js";
 export { setupProduct } from "./use-cases/setup/product-setup.js";
