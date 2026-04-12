@@ -45,3 +45,7 @@ export const ProcessReturnDispositionSchema = z.object({
 export type ProcessReturnDispositionInput = z.infer<
   typeof ProcessReturnDispositionSchema
 >;
+
+export const RejectReturnSchema = z.object({}).strict();
+
+export const CancelReturnRequestSchema = z.object({}).strict();

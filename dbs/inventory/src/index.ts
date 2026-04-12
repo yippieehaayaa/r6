@@ -67,18 +67,24 @@ export type {
   ListWarehousesInput,
 } from "./use-cases/inventory-query/types.js";
 export { approveReturn } from "./use-cases/return/approve-return.js";
+export { cancelReturn } from "./use-cases/return/cancel-return.js";
 export { processReturnDisposition } from "./use-cases/return/process-return-disposition.js";
 export { receiveReturn } from "./use-cases/return/receive-return.js";
+export { rejectReturn } from "./use-cases/return/reject-return.js";
 export { requestReturn } from "./use-cases/return/request-return.js";
 export type {
   ApproveReturnInput,
   ApproveReturnResult,
+  CancelReturnInput,
+  CancelReturnResult,
   DispositionLineResult,
   ProcessReturnDispositionInput,
   ProcessReturnDispositionResult,
   ReceiveReturnInput,
   ReceiveReturnLineInput,
   ReceiveReturnResult,
+  RejectReturnInput,
+  RejectReturnResult,
   RequestReturnInput,
   RequestReturnLineInput,
   RequestReturnResult,
@@ -160,9 +166,13 @@ export type {
   CheckAvailabilityInput,
   CheckAvailabilityResult,
 } from "./use-cases/stock-query/types.js";
+export { cancelTransfer } from "./use-cases/transfer/cancel-transfer.js";
 export { dispatchTransfer } from "./use-cases/transfer/dispatch-transfer.js";
 export { receiveTransfer } from "./use-cases/transfer/receive-transfer.js";
 export type {
+  CancelTransferInput,
+  CancelTransferLineResult,
+  CancelTransferResult,
   DispatchTransferInput,
   DispatchTransferLineInput,
   DispatchTransferLineResult,

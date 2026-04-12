@@ -2,12 +2,14 @@ import { INVENTORY_PERMISSIONS } from "@r6/schemas/inventory";
 import { Router } from "express";
 import { requirePermission } from "../../middleware/guard";
 import { approveReturnHandler } from "./controller/approve";
+import { cancelReturnHandler } from "./controller/cancel";
 import { dispositionHandler } from "./controller/disposition";
 import {
   getReturnRequestHandler,
   listReturnRequestsHandler,
 } from "./controller/read";
 import { receiveReturnHandler } from "./controller/receive";
+import { rejectReturnHandler } from "./controller/reject";
 import { requestReturnHandler } from "./controller/request";
 
 const router: Router = Router({ mergeParams: true });
@@ -28,6 +30,18 @@ router.post(
   "/:returnRequestId/approve",
   requirePermission(INVENTORY_PERMISSIONS.RETURN_UPDATE),
   approveReturnHandler,
+);
+
+router.post(
+  "/:returnRequestId/reject",
+  requirePermission(INVENTORY_PERMISSIONS.RETURN_UPDATE),
+  rejectReturnHandler,
+);
+
+router.post(
+  "/:returnRequestId/cancel",
+  requirePermission(INVENTORY_PERMISSIONS.RETURN_UPDATE),
+  cancelReturnHandler,
 );
 
 router.post(

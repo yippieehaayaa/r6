@@ -73,3 +73,21 @@ export type ReceiveTransferResult = {
   transfer: StockTransfer;
   lines: ReceiveTransferLineResult[];
 };
+
+export type CancelTransferInput = {
+  tenantId: string;
+  performedBy: string;
+  transferId: string;
+};
+
+export type CancelTransferLineResult = {
+  transferItem: StockTransferItem;
+  lot: InventoryLot;
+  movement: StockMovement;
+  inventoryItem: InventoryItem;
+};
+
+export type CancelTransferResult = {
+  transfer: StockTransfer;
+  lines: CancelTransferLineResult[];
+};

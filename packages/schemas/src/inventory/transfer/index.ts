@@ -30,3 +30,7 @@ export const ReceiveTransferSchema = z.object({
 });
 
 export type ReceiveTransferInput = z.infer<typeof ReceiveTransferSchema>;
+
+export const CancelTransferSchema = z.object({}).strict();
+
+export type CancelTransferBody = z.infer<typeof CancelTransferSchema>;

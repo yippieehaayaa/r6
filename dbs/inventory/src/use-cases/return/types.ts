@@ -51,6 +51,26 @@ export type ApproveReturnResult = {
   returnRequest: ReturnRequest;
 };
 
+export type RejectReturnInput = {
+  tenantId: string;
+  rejectedBy: string;
+  returnRequestId: string;
+};
+
+export type RejectReturnResult = {
+  returnRequest: ReturnRequest;
+};
+
+export type CancelReturnInput = {
+  tenantId: string;
+  cancelledBy: string;
+  returnRequestId: string;
+};
+
+export type CancelReturnResult = {
+  returnRequest: ReturnRequest;
+};
+
 export type ReceiveReturnLineInput = {
   returnRequestItemId: string;
   disposition?: "RESTOCK" | "DAMAGE" | "RETURN_TO_SUPPLIER";

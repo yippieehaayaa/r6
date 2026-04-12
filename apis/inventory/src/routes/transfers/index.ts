@@ -1,6 +1,7 @@
 import { INVENTORY_PERMISSIONS } from "@r6/schemas/inventory";
 import { Router } from "express";
 import { requirePermission } from "../../middleware/guard";
+import { cancelTransferHandler } from "./controller/cancel";
 import { dispatchTransferHandler } from "./controller/dispatch";
 import {
   getStockTransferHandler,
@@ -26,6 +27,12 @@ router.post(
   "/:transferId/receive",
   requirePermission(INVENTORY_PERMISSIONS.TRANSFER_UPDATE),
   receiveTransferHandler,
+);
+
+router.post(
+  "/:transferId/cancel",
+  requirePermission(INVENTORY_PERMISSIONS.TRANSFER_UPDATE),
+  cancelTransferHandler,
 );
 
 router.get(
