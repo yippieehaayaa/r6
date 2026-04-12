@@ -17,6 +17,21 @@ export type {
   ListVariantsInput,
   PaginatedResult,
 } from "./use-cases/catalog-query/types.js";
+export { softDeleteBrand } from "./use-cases/catalog-update/soft-delete-brand.js";
+export { softDeleteCategory } from "./use-cases/catalog-update/soft-delete-category.js";
+export { softDeleteProduct } from "./use-cases/catalog-update/soft-delete-product.js";
+export { softDeleteVariant } from "./use-cases/catalog-update/soft-delete-variant.js";
+export type {
+  SoftDeleteInput,
+  UpdateBrandInput as UpdateBrandDbInput,
+  UpdateCategoryInput as UpdateCategoryDbInput,
+  UpdateProductInput as UpdateProductDbInput,
+  UpdateVariantInput as UpdateVariantDbInput,
+} from "./use-cases/catalog-update/types.js";
+export { updateBrand } from "./use-cases/catalog-update/update-brand.js";
+export { updateCategory } from "./use-cases/catalog-update/update-category.js";
+export { updateProduct } from "./use-cases/catalog-update/update-product.js";
+export { updateVariant } from "./use-cases/catalog-update/update-variant.js";
 export { manualAdjustment } from "./use-cases/corrections/manual-adjustment.js";
 export type {
   LotAdjustment,
