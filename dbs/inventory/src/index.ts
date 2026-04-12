@@ -26,6 +26,31 @@ export type {
   WriteOffStockResult,
 } from "./use-cases/corrections/types.js";
 export { writeOffStock } from "./use-cases/corrections/write-off-stock.js";
+export { getReturnRequest } from "./use-cases/inventory-query/get-return-request.js";
+export { getStockAlert } from "./use-cases/inventory-query/get-stock-alert.js";
+export { getStockCount } from "./use-cases/inventory-query/get-stock-count.js";
+export { getStockTransfer } from "./use-cases/inventory-query/get-stock-transfer.js";
+export { getWarehouse } from "./use-cases/inventory-query/get-warehouse.js";
+export { listInventoryItems } from "./use-cases/inventory-query/list-inventory-items.js";
+export { listInventoryLots } from "./use-cases/inventory-query/list-inventory-lots.js";
+export { listReturnRequests } from "./use-cases/inventory-query/list-return-requests.js";
+export { listStockAlerts } from "./use-cases/inventory-query/list-stock-alerts.js";
+export { listStockCounts } from "./use-cases/inventory-query/list-stock-counts.js";
+export { listStockMovements } from "./use-cases/inventory-query/list-stock-movements.js";
+export { listStockReservations } from "./use-cases/inventory-query/list-stock-reservations.js";
+export { listStockTransfers } from "./use-cases/inventory-query/list-stock-transfers.js";
+export { listWarehouses } from "./use-cases/inventory-query/list-warehouses.js";
+export type {
+  ListInventoryItemsInput,
+  ListInventoryLotsInput,
+  ListReturnRequestsInput,
+  ListStockAlertsInput,
+  ListStockCountsInput,
+  ListStockMovementsInput,
+  ListStockReservationsInput,
+  ListStockTransfersInput,
+  ListWarehousesInput,
+} from "./use-cases/inventory-query/types.js";
 export { approveReturn } from "./use-cases/return/approve-return.js";
 export { processReturnDisposition } from "./use-cases/return/process-return-disposition.js";
 export { receiveReturn } from "./use-cases/return/receive-return.js";
