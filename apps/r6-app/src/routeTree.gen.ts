@@ -20,6 +20,10 @@ import { Route as R6AuthenticatedIamIndexRouteImport } from './routes/r6/_authen
 import { Route as R6AuthenticatedInventoryStockRouteImport } from './routes/r6/_authenticated/inventory/stock'
 import { Route as R6AuthenticatedInventoryMovementsRouteImport } from './routes/r6/_authenticated/inventory/movements'
 import { Route as R6AuthenticatedInventoryAlertsRouteImport } from './routes/r6/_authenticated/inventory/alerts'
+import { Route as R6AuthenticatedInventoryAndCatalogVariantsRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/variants'
+import { Route as R6AuthenticatedInventoryAndCatalogProductsRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/products'
+import { Route as R6AuthenticatedInventoryAndCatalogCategoriesRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/categories'
+import { Route as R6AuthenticatedInventoryAndCatalogBrandsRouteImport } from './routes/r6/_authenticated/inventory-and-catalog/brands'
 import { Route as R6AuthenticatedIamTenantsRouteImport } from './routes/r6/_authenticated/iam/tenants'
 import { Route as R6AuthenticatedIamRolesRouteImport } from './routes/r6/_authenticated/iam/roles'
 import { Route as R6AuthenticatedIamPoliciesRouteImport } from './routes/r6/_authenticated/iam/policies'
@@ -87,6 +91,30 @@ const R6AuthenticatedInventoryAlertsRoute =
     path: '/inventory/alerts',
     getParentRoute: () => R6AuthenticatedRoute,
   } as any)
+const R6AuthenticatedInventoryAndCatalogVariantsRoute =
+  R6AuthenticatedInventoryAndCatalogVariantsRouteImport.update({
+    id: '/inventory-and-catalog/variants',
+    path: '/inventory-and-catalog/variants',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedInventoryAndCatalogProductsRoute =
+  R6AuthenticatedInventoryAndCatalogProductsRouteImport.update({
+    id: '/inventory-and-catalog/products',
+    path: '/inventory-and-catalog/products',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedInventoryAndCatalogCategoriesRoute =
+  R6AuthenticatedInventoryAndCatalogCategoriesRouteImport.update({
+    id: '/inventory-and-catalog/categories',
+    path: '/inventory-and-catalog/categories',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
+const R6AuthenticatedInventoryAndCatalogBrandsRoute =
+  R6AuthenticatedInventoryAndCatalogBrandsRouteImport.update({
+    id: '/inventory-and-catalog/brands',
+    path: '/inventory-and-catalog/brands',
+    getParentRoute: () => R6AuthenticatedRoute,
+  } as any)
 const R6AuthenticatedIamTenantsRoute =
   R6AuthenticatedIamTenantsRouteImport.update({
     id: '/iam/tenants',
@@ -128,6 +156,10 @@ export interface FileRoutesByFullPath {
   '/r6/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
   '/r6/iam/roles': typeof R6AuthenticatedIamRolesRoute
   '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/inventory-and-catalog/brands': typeof R6AuthenticatedInventoryAndCatalogBrandsRoute
+  '/r6/inventory-and-catalog/categories': typeof R6AuthenticatedInventoryAndCatalogCategoriesRoute
+  '/r6/inventory-and-catalog/products': typeof R6AuthenticatedInventoryAndCatalogProductsRoute
+  '/r6/inventory-and-catalog/variants': typeof R6AuthenticatedInventoryAndCatalogVariantsRoute
   '/r6/inventory/alerts': typeof R6AuthenticatedInventoryAlertsRoute
   '/r6/inventory/movements': typeof R6AuthenticatedInventoryMovementsRoute
   '/r6/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
@@ -145,6 +177,10 @@ export interface FileRoutesByTo {
   '/r6/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
   '/r6/iam/roles': typeof R6AuthenticatedIamRolesRoute
   '/r6/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/inventory-and-catalog/brands': typeof R6AuthenticatedInventoryAndCatalogBrandsRoute
+  '/r6/inventory-and-catalog/categories': typeof R6AuthenticatedInventoryAndCatalogCategoriesRoute
+  '/r6/inventory-and-catalog/products': typeof R6AuthenticatedInventoryAndCatalogProductsRoute
+  '/r6/inventory-and-catalog/variants': typeof R6AuthenticatedInventoryAndCatalogVariantsRoute
   '/r6/inventory/alerts': typeof R6AuthenticatedInventoryAlertsRoute
   '/r6/inventory/movements': typeof R6AuthenticatedInventoryMovementsRoute
   '/r6/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
@@ -164,6 +200,10 @@ export interface FileRoutesById {
   '/r6/_authenticated/iam/policies': typeof R6AuthenticatedIamPoliciesRoute
   '/r6/_authenticated/iam/roles': typeof R6AuthenticatedIamRolesRoute
   '/r6/_authenticated/iam/tenants': typeof R6AuthenticatedIamTenantsRoute
+  '/r6/_authenticated/inventory-and-catalog/brands': typeof R6AuthenticatedInventoryAndCatalogBrandsRoute
+  '/r6/_authenticated/inventory-and-catalog/categories': typeof R6AuthenticatedInventoryAndCatalogCategoriesRoute
+  '/r6/_authenticated/inventory-and-catalog/products': typeof R6AuthenticatedInventoryAndCatalogProductsRoute
+  '/r6/_authenticated/inventory-and-catalog/variants': typeof R6AuthenticatedInventoryAndCatalogVariantsRoute
   '/r6/_authenticated/inventory/alerts': typeof R6AuthenticatedInventoryAlertsRoute
   '/r6/_authenticated/inventory/movements': typeof R6AuthenticatedInventoryMovementsRoute
   '/r6/_authenticated/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
@@ -184,6 +224,10 @@ export interface FileRouteTypes {
     | '/r6/iam/policies'
     | '/r6/iam/roles'
     | '/r6/iam/tenants'
+    | '/r6/inventory-and-catalog/brands'
+    | '/r6/inventory-and-catalog/categories'
+    | '/r6/inventory-and-catalog/products'
+    | '/r6/inventory-and-catalog/variants'
     | '/r6/inventory/alerts'
     | '/r6/inventory/movements'
     | '/r6/inventory/stock'
@@ -201,6 +245,10 @@ export interface FileRouteTypes {
     | '/r6/iam/policies'
     | '/r6/iam/roles'
     | '/r6/iam/tenants'
+    | '/r6/inventory-and-catalog/brands'
+    | '/r6/inventory-and-catalog/categories'
+    | '/r6/inventory-and-catalog/products'
+    | '/r6/inventory-and-catalog/variants'
     | '/r6/inventory/alerts'
     | '/r6/inventory/movements'
     | '/r6/inventory/stock'
@@ -219,6 +267,10 @@ export interface FileRouteTypes {
     | '/r6/_authenticated/iam/policies'
     | '/r6/_authenticated/iam/roles'
     | '/r6/_authenticated/iam/tenants'
+    | '/r6/_authenticated/inventory-and-catalog/brands'
+    | '/r6/_authenticated/inventory-and-catalog/categories'
+    | '/r6/_authenticated/inventory-and-catalog/products'
+    | '/r6/_authenticated/inventory-and-catalog/variants'
     | '/r6/_authenticated/inventory/alerts'
     | '/r6/_authenticated/inventory/movements'
     | '/r6/_authenticated/inventory/stock'
@@ -312,6 +364,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R6AuthenticatedInventoryAlertsRouteImport
       parentRoute: typeof R6AuthenticatedRoute
     }
+    '/r6/_authenticated/inventory-and-catalog/variants': {
+      id: '/r6/_authenticated/inventory-and-catalog/variants'
+      path: '/inventory-and-catalog/variants'
+      fullPath: '/r6/inventory-and-catalog/variants'
+      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogVariantsRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/inventory-and-catalog/products': {
+      id: '/r6/_authenticated/inventory-and-catalog/products'
+      path: '/inventory-and-catalog/products'
+      fullPath: '/r6/inventory-and-catalog/products'
+      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogProductsRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/inventory-and-catalog/categories': {
+      id: '/r6/_authenticated/inventory-and-catalog/categories'
+      path: '/inventory-and-catalog/categories'
+      fullPath: '/r6/inventory-and-catalog/categories'
+      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogCategoriesRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
+    '/r6/_authenticated/inventory-and-catalog/brands': {
+      id: '/r6/_authenticated/inventory-and-catalog/brands'
+      path: '/inventory-and-catalog/brands'
+      fullPath: '/r6/inventory-and-catalog/brands'
+      preLoaderRoute: typeof R6AuthenticatedInventoryAndCatalogBrandsRouteImport
+      parentRoute: typeof R6AuthenticatedRoute
+    }
     '/r6/_authenticated/iam/tenants': {
       id: '/r6/_authenticated/iam/tenants'
       path: '/iam/tenants'
@@ -358,6 +438,10 @@ interface R6AuthenticatedRouteChildren {
   R6AuthenticatedIamPoliciesRoute: typeof R6AuthenticatedIamPoliciesRoute
   R6AuthenticatedIamRolesRoute: typeof R6AuthenticatedIamRolesRoute
   R6AuthenticatedIamTenantsRoute: typeof R6AuthenticatedIamTenantsRoute
+  R6AuthenticatedInventoryAndCatalogBrandsRoute: typeof R6AuthenticatedInventoryAndCatalogBrandsRoute
+  R6AuthenticatedInventoryAndCatalogCategoriesRoute: typeof R6AuthenticatedInventoryAndCatalogCategoriesRoute
+  R6AuthenticatedInventoryAndCatalogProductsRoute: typeof R6AuthenticatedInventoryAndCatalogProductsRoute
+  R6AuthenticatedInventoryAndCatalogVariantsRoute: typeof R6AuthenticatedInventoryAndCatalogVariantsRoute
   R6AuthenticatedInventoryAlertsRoute: typeof R6AuthenticatedInventoryAlertsRoute
   R6AuthenticatedInventoryMovementsRoute: typeof R6AuthenticatedInventoryMovementsRoute
   R6AuthenticatedInventoryStockRoute: typeof R6AuthenticatedInventoryStockRoute
@@ -374,6 +458,14 @@ const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
   R6AuthenticatedIamPoliciesRoute: R6AuthenticatedIamPoliciesRoute,
   R6AuthenticatedIamRolesRoute: R6AuthenticatedIamRolesRoute,
   R6AuthenticatedIamTenantsRoute: R6AuthenticatedIamTenantsRoute,
+  R6AuthenticatedInventoryAndCatalogBrandsRoute:
+    R6AuthenticatedInventoryAndCatalogBrandsRoute,
+  R6AuthenticatedInventoryAndCatalogCategoriesRoute:
+    R6AuthenticatedInventoryAndCatalogCategoriesRoute,
+  R6AuthenticatedInventoryAndCatalogProductsRoute:
+    R6AuthenticatedInventoryAndCatalogProductsRoute,
+  R6AuthenticatedInventoryAndCatalogVariantsRoute:
+    R6AuthenticatedInventoryAndCatalogVariantsRoute,
   R6AuthenticatedInventoryAlertsRoute: R6AuthenticatedInventoryAlertsRoute,
   R6AuthenticatedInventoryMovementsRoute:
     R6AuthenticatedInventoryMovementsRoute,

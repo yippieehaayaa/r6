@@ -2,6 +2,7 @@ import { Router } from "express";
 import { authMiddleware } from "../../middleware/auth";
 import { requireTenantScope } from "../../middleware/guard";
 import availability from "../availability";
+import catalog from "../catalog";
 import corrections from "../corrections";
 import returns from "../returns";
 import setup from "../setup";
@@ -15,6 +16,7 @@ const router: Router = Router();
 
 router.use(authMiddleware());
 
+router.use("/:tenantSlug/catalog", requireTenantScope(), catalog);
 router.use("/:tenantSlug/setup", requireTenantScope(), setup);
 router.use("/:tenantSlug/stock-in", requireTenantScope(), stockIn);
 router.use("/:tenantSlug/stock-out", requireTenantScope(), stockOut);

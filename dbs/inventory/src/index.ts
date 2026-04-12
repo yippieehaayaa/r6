@@ -1,4 +1,22 @@
 export * from "./client.js";
+export { getBrand } from "./use-cases/catalog-query/get-brand.js";
+export { getCategory } from "./use-cases/catalog-query/get-category.js";
+export { getProduct } from "./use-cases/catalog-query/get-product.js";
+export { getVariant } from "./use-cases/catalog-query/get-variant.js";
+export { listBrands } from "./use-cases/catalog-query/list-brands.js";
+export { listCategories } from "./use-cases/catalog-query/list-categories.js";
+export { listProducts } from "./use-cases/catalog-query/list-products.js";
+export { listUoms } from "./use-cases/catalog-query/list-uoms.js";
+export { listVariants } from "./use-cases/catalog-query/list-variants.js";
+export type {
+  GetByIdInput,
+  ListBrandsInput,
+  ListCategoriesInput,
+  ListProductsInput,
+  ListUomsInput,
+  ListVariantsInput,
+  PaginatedResult,
+} from "./use-cases/catalog-query/types.js";
 export { manualAdjustment } from "./use-cases/corrections/manual-adjustment.js";
 export type {
   LotAdjustment,

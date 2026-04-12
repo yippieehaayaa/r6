@@ -1,3 +1,4 @@
+export * from "./catalog/index";
 export * from "./common";
 export * from "./corrections/index";
 export * from "./enums.schema";
