@@ -1,0 +1,19 @@
+meta {
+  name: Reject Return
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/returns/{{returnRequestId}}/reject
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {}
+}

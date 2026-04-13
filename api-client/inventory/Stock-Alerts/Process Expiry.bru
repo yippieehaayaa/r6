@@ -1,0 +1,15 @@
+meta {
+  name: Process Expiry
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/stock-alerts/process-expiry
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Expire Reservations
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/system/expire-reservations
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

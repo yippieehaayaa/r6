@@ -1,0 +1,15 @@
+meta {
+  name: Setup Status
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/setup/status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

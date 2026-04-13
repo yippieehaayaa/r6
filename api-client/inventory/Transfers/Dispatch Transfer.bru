@@ -1,0 +1,29 @@
+meta {
+  name: Dispatch Transfer
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/transfers/dispatch
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "fromWarehouseId": "{{warehouseId}}",
+    "toWarehouseId": "{{toWarehouseId}}",
+    "notes": "Transfer to secondary warehouse",
+    "lines": [
+      {
+        "variantId": "{{variantId}}",
+        "quantity": 20
+      }
+    ]
+  }
+}

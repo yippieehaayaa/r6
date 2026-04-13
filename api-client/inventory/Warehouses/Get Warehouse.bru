@@ -1,0 +1,15 @@
+meta {
+  name: Get Warehouse
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/warehouses/{{warehouseId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

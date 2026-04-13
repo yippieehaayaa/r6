@@ -1,0 +1,22 @@
+meta {
+  name: Update Variant
+  type: http
+  seq: 7
+}
+
+patch {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/catalog/variants/{{variantId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Variant Name",
+    "barcode": "1234567890123"
+  }
+}

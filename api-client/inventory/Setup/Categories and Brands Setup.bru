@@ -1,0 +1,34 @@
+meta {
+  name: Categories and Brands Setup
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/setup/categories-brands
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "categories": [
+      {
+        "name": "Electronics",
+        "slug": "electronics",
+        "description": "Electronic products"
+      }
+    ],
+    "brands": [
+      {
+        "name": "Acme Brand",
+        "slug": "acme-brand",
+        "description": "Acme brand products"
+      }
+    ]
+  }
+}

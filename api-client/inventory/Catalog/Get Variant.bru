@@ -1,0 +1,15 @@
+meta {
+  name: Get Variant
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/catalog/variants/{{variantId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

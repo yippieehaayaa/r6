@@ -1,0 +1,40 @@
+meta {
+  name: Warehouse Setup
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/setup/warehouses
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "warehouse": {
+      "name": "Secondary Warehouse",
+      "code": "WH-002",
+      "addressLine1": "456 Secondary St",
+      "addressCity": "Quezon City",
+      "addressState": "Metro Manila",
+      "addressCountry": "PH",
+      "addressPostal": "1100"
+    },
+    "zones": [
+      {
+        "name": "Zone A",
+        "code": "ZONE-A",
+        "description": "Main storage zone",
+        "bins": [
+          { "code": "A-01", "description": "Bin A-01" },
+          { "code": "A-02", "description": "Bin A-02" }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Get Transfer
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/transfers/{{transferId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

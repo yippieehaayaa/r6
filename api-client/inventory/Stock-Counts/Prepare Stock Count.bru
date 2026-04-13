@@ -1,0 +1,23 @@
+meta {
+  name: Prepare Stock Count
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/stock-counts/prepare
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "warehouseId": "{{warehouseId}}",
+    "countType": "CYCLE",
+    "notes": "Monthly cycle count"
+  }
+}

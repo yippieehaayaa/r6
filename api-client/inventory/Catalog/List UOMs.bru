@@ -1,0 +1,15 @@
+meta {
+  name: List UOMs
+  type: http
+  seq: 17
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/catalog/uoms
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

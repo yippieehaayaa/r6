@@ -1,0 +1,20 @@
+meta {
+  name: List Warehouses
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/warehouses
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+params:query {
+  page: 1
+  limit: 20
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Manual Adjustment
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/corrections/adjust
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "variantId": "{{variantId}}",
+    "warehouseId": "{{warehouseId}}",
+    "quantityDelta": -5,
+    "reason": "Damaged during storage"
+  }
+}

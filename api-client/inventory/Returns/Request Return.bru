@@ -1,0 +1,30 @@
+meta {
+  name: Request Return
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/returns/request
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "referenceId": "ORDER-2024-001",
+    "referenceType": "SALE_ORDER",
+    "returnReason": "Defective product",
+    "lines": [
+      {
+        "variantId": "{{variantId}}",
+        "quantityReturned": 2,
+        "disposition": "RESTOCK"
+      }
+    ]
+  }
+}
