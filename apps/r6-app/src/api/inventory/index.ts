@@ -2,3 +2,8 @@ export * from "./availability";
 export * from "./catalog";
 export * from "./corrections";
 export * from "./inventory-items";
+export * from "./lots";
+export * from "./movements";
+export * from "./reservations";
+export * from "./returns";
+export * from "./setup";
