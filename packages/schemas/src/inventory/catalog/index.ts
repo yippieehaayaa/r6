@@ -16,7 +16,7 @@ export const ListProductsQuerySchema = ListQuerySchema.extend({
   brandId: UuidSchema.optional(),
 });
 
-export type ListProductsQuery = z.infer<typeof ListProductsQuerySchema>;
+export type ListProductsQuery = z.input<typeof ListProductsQuerySchema>;
 
 export const GetProductParamsSchema = z.object({
   id: UuidSchema,
@@ -34,7 +34,7 @@ export const ListVariantsQuerySchema = ListQuerySchema.extend({
     .optional(),
 });
 
-export type ListVariantsQuery = z.infer<typeof ListVariantsQuerySchema>;
+export type ListVariantsQuery = z.input<typeof ListVariantsQuerySchema>;
 
 export const GetVariantParamsSchema = z.object({
   id: UuidSchema,
@@ -55,7 +55,7 @@ export const ListCategoriesQuerySchema = ListQuerySchema.extend({
     .optional(),
 });
 
-export type ListCategoriesQuery = z.infer<typeof ListCategoriesQuerySchema>;
+export type ListCategoriesQuery = z.input<typeof ListCategoriesQuerySchema>;
 
 export const GetCategoryParamsSchema = z.object({
   id: UuidSchema,
@@ -72,7 +72,7 @@ export const ListBrandsQuerySchema = ListQuerySchema.extend({
     .optional(),
 });
 
-export type ListBrandsQuery = z.infer<typeof ListBrandsQuerySchema>;
+export type ListBrandsQuery = z.input<typeof ListBrandsQuerySchema>;
 
 export const GetBrandParamsSchema = z.object({
   id: UuidSchema,
@@ -90,7 +90,7 @@ export const ListUomsQuerySchema = ListQuerySchema.extend({
     .optional(),
 });
 
-export type ListUomsQuery = z.infer<typeof ListUomsQuerySchema>;
+export type ListUomsQuery = z.input<typeof ListUomsQuerySchema>;
 
 // ── Product Update ──────────────────────────────────────────
 

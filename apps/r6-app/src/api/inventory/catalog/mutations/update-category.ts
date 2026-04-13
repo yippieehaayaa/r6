@@ -1,22 +1,12 @@
-import type { UpdateCategoryInput } from "@r6/schemas";
+import {
+	type UpdateCategoryInput,
+	type UpdatedCategory,
+	UpdatedCategorySchema,
+} from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const UpdatedCategorySchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	name: z.string(),
-	slug: z.string(),
-	description: z.string().nullable(),
-	parentId: z.string().nullable(),
-	path: z.string(),
-	sortOrder: z.number(),
-	isActive: z.boolean(),
-	updatedAt: z.string(),
-});
-
-export type UpdatedCategory = z.infer<typeof UpdatedCategorySchema>;
+export type { UpdatedCategory };
 
 export interface UpdateCategoryParams {
 	tenantSlug: string;

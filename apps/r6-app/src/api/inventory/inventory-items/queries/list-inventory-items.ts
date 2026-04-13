@@ -1,47 +1,13 @@
 import {
+	type InventoryItem,
+	InventoryItemSchema,
 	type ListInventoryItemsQuery,
 	PaginatedResponseSchema,
 } from "@r6/schemas";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const InventoryItemSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	variantId: z.string(),
-	warehouseId: z.string(),
-	quantityOnHand: z.number(),
-	quantityReserved: z.number(),
-	reorderPoint: z.number().nullable(),
-	reorderQuantity: z.number().nullable(),
-	overstockThreshold: z.number().nullable(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	variant: z.object({
-		id: z.string(),
-		sku: z.string(),
-		name: z.string(),
-		barcode: z.string().nullable(),
-		trackingType: z.string(),
-		isActive: z.boolean(),
-		productId: z.string(),
-		product: z.object({
-			id: z.string(),
-			sku: z.string(),
-			name: z.string(),
-			status: z.string(),
-		}),
-	}),
-	warehouse: z.object({
-		id: z.string(),
-		name: z.string(),
-		code: z.string(),
-		isActive: z.boolean(),
-	}),
-});
-
-export type InventoryItem = z.infer<typeof InventoryItemSchema>;
+export type { InventoryItem };
 
 const InventoryItemListResponseSchema =
 	PaginatedResponseSchema(InventoryItemSchema);

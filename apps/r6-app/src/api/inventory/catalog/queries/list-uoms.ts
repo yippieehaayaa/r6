@@ -1,21 +1,13 @@
-import { type ListUomsQuery, PaginatedResponseSchema } from "@r6/schemas";
+import {
+	type ListUomsQuery,
+	PaginatedResponseSchema,
+	type UomSummary,
+	UomSummarySchema,
+} from "@r6/schemas";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const UomSummarySchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	name: z.string(),
-	abbreviation: z.string(),
-	uomType: z.string(),
-	isActive: z.boolean(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	_count: z.object({ productVariants: z.number() }),
-});
-
-export type UomSummary = z.infer<typeof UomSummarySchema>;
+export type { UomSummary };
 
 const UomListResponseSchema = PaginatedResponseSchema(UomSummarySchema);
 

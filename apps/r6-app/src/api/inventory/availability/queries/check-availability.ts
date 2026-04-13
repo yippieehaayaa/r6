@@ -1,17 +1,12 @@
-import type { CheckAvailabilityQuery } from "@r6/schemas";
+import {
+	type AvailabilityResult,
+	AvailabilityResultSchema,
+	type CheckAvailabilityQuery,
+} from "@r6/schemas";
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const AvailabilityResultSchema = z.object({
-	variantId: z.string(),
-	warehouseId: z.string(),
-	quantityOnHand: z.number(),
-	quantityReserved: z.number(),
-	quantityAvailable: z.number(),
-});
-
-export type AvailabilityResult = z.infer<typeof AvailabilityResultSchema>;
+export type { AvailabilityResult };
 
 export async function checkAvailabilityFn(
 	tenantSlug: string,

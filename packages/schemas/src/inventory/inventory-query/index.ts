@@ -15,7 +15,7 @@ export const ListInventoryItemsQuerySchema = ListQuerySchema.extend({
   variantId: UuidSchema.optional(),
 });
 
-export type ListInventoryItemsQuery = z.infer<
+export type ListInventoryItemsQuery = z.input<
   typeof ListInventoryItemsQuerySchema
 >;
 
@@ -29,7 +29,7 @@ export const ListStockMovementsQuerySchema = ListQuerySchema.extend({
   referenceType: z.string().trim().max(64).optional(),
 });
 
-export type ListStockMovementsQuery = z.infer<
+export type ListStockMovementsQuery = z.input<
   typeof ListStockMovementsQuerySchema
 >;
 
@@ -40,7 +40,7 @@ export const ListStockAlertsQuerySchema = ListQuerySchema.extend({
   warehouseId: UuidSchema.optional(),
 });
 
-export type ListStockAlertsQuery = z.infer<typeof ListStockAlertsQuerySchema>;
+export type ListStockAlertsQuery = z.input<typeof ListStockAlertsQuerySchema>;
 
 export const ListWarehousesQuerySchema = ListQuerySchema.extend({
   isActive: z
@@ -49,7 +49,7 @@ export const ListWarehousesQuerySchema = ListQuerySchema.extend({
     .optional(),
 });
 
-export type ListWarehousesQuery = z.infer<typeof ListWarehousesQuerySchema>;
+export type ListWarehousesQuery = z.input<typeof ListWarehousesQuerySchema>;
 
 export const ListInventoryLotsQuerySchema = ListQuerySchema.extend({
   variantId: UuidSchema.optional(),
@@ -60,7 +60,7 @@ export const ListInventoryLotsQuerySchema = ListQuerySchema.extend({
     .optional(),
 });
 
-export type ListInventoryLotsQuery = z.infer<
+export type ListInventoryLotsQuery = z.input<
   typeof ListInventoryLotsQuerySchema
 >;
 
@@ -70,7 +70,7 @@ export const ListStockTransfersQuerySchema = ListQuerySchema.extend({
   toWarehouseId: UuidSchema.optional(),
 });
 
-export type ListStockTransfersQuery = z.infer<
+export type ListStockTransfersQuery = z.input<
   typeof ListStockTransfersQuerySchema
 >;
 
@@ -79,7 +79,7 @@ export const ListReturnRequestsQuerySchema = ListQuerySchema.extend({
   referenceId: z.string().trim().max(128).optional(),
 });
 
-export type ListReturnRequestsQuery = z.infer<
+export type ListReturnRequestsQuery = z.input<
   typeof ListReturnRequestsQuerySchema
 >;
 
@@ -91,7 +91,7 @@ export const ListStockReservationsQuerySchema = ListQuerySchema.extend({
   referenceType: z.string().trim().max(64).optional(),
 });
 
-export type ListStockReservationsQuery = z.infer<
+export type ListStockReservationsQuery = z.input<
   typeof ListStockReservationsQuerySchema
 >;
 
@@ -100,7 +100,7 @@ export const ListStockCountsQuerySchema = ListQuerySchema.extend({
   warehouseId: UuidSchema.optional(),
 });
 
-export type ListStockCountsQuery = z.infer<typeof ListStockCountsQuerySchema>;
+export type ListStockCountsQuery = z.input<typeof ListStockCountsQuerySchema>;
 
 export const GetByUuidParamsSchema = z.object({
   id: UuidSchema,

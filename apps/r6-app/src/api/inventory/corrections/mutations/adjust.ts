@@ -1,27 +1,12 @@
-import type { ManualAdjustmentInput } from "@r6/schemas";
+import {
+	type ManualAdjustmentInput,
+	type ManualAdjustmentResult,
+	ManualAdjustmentResultSchema,
+} from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const InventoryItemSnapshotSchema = z.object({
-	id: z.string(),
-	variantId: z.string(),
-	warehouseId: z.string(),
-	quantityOnHand: z.number(),
-	quantityReserved: z.number(),
-	updatedAt: z.string(),
-});
-
-const ManualAdjustmentResultSchema = z.object({
-	inventoryItem: InventoryItemSnapshotSchema,
-	lotAdjustments: z.array(z.unknown()),
-	auditLog: z.object({ id: z.string() }),
-	alerts: z.array(z.unknown()),
-});
-
-export type ManualAdjustmentResult = z.infer<
-	typeof ManualAdjustmentResultSchema
->;
+export type { ManualAdjustmentResult };
 
 export interface ManualAdjustmentParams {
 	tenantSlug: string;

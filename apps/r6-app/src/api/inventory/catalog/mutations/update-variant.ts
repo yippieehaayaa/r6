@@ -1,20 +1,12 @@
-import type { UpdateVariantInput } from "@r6/schemas";
+import {
+	type UpdatedVariant,
+	UpdatedVariantSchema,
+	type UpdateVariantInput,
+} from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const UpdatedVariantSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	productId: z.string(),
-	sku: z.string(),
-	name: z.string(),
-	barcode: z.string().nullable(),
-	isActive: z.boolean(),
-	updatedAt: z.string(),
-});
-
-export type UpdatedVariant = z.infer<typeof UpdatedVariantSchema>;
+export type { UpdatedVariant };
 
 export interface UpdateVariantParams {
 	tenantSlug: string;

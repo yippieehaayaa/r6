@@ -1,24 +1,15 @@
-import { type ListBrandsQuery, PaginatedResponseSchema } from "@r6/schemas";
+import {
+	type Brand,
+	BrandSchema,
+	type ListBrandsQuery,
+	PaginatedResponseSchema,
+} from "@r6/schemas";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const BrandSummarySchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	name: z.string(),
-	slug: z.string(),
-	description: z.string().nullable(),
-	logoUrl: z.string().nullable(),
-	isActive: z.boolean(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	_count: z.object({ products: z.number() }),
-});
+export type { Brand };
 
-export type BrandSummary = z.infer<typeof BrandSummarySchema>;
-
-const BrandListResponseSchema = PaginatedResponseSchema(BrandSummarySchema);
+const BrandListResponseSchema = PaginatedResponseSchema(BrandSchema);
 
 export async function listBrandsFn(
 	tenantSlug: string,

@@ -1,28 +1,12 @@
-import type { WriteOffStockInput } from "@r6/schemas";
+import {
+	type WriteOffResult,
+	WriteOffResultSchema,
+	type WriteOffStockInput,
+} from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const WriteOffResultSchema = z.object({
-	inventoryItem: z.object({
-		id: z.string(),
-		variantId: z.string(),
-		warehouseId: z.string(),
-		quantityOnHand: z.number(),
-		quantityReserved: z.number(),
-		updatedAt: z.string(),
-	}),
-	lot: z.object({
-		id: z.string(),
-		lotNumber: z.string().nullable(),
-		quantityRemaining: z.number(),
-	}),
-	movement: z.object({ id: z.string() }),
-	auditLog: z.object({ id: z.string() }),
-	alerts: z.array(z.unknown()),
-});
-
-export type WriteOffResult = z.infer<typeof WriteOffResultSchema>;
+export type { WriteOffResult };
 
 export interface WriteOffStockParams {
 	tenantSlug: string;

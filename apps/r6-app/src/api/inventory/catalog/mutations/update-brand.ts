@@ -1,20 +1,12 @@
-import type { UpdateBrandInput } from "@r6/schemas";
+import {
+	type UpdateBrandInput,
+	type UpdatedBrand,
+	UpdatedBrandSchema,
+} from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const UpdatedBrandSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	name: z.string(),
-	slug: z.string(),
-	description: z.string().nullable(),
-	logoUrl: z.string().nullable(),
-	isActive: z.boolean(),
-	updatedAt: z.string(),
-});
-
-export type UpdatedBrand = z.infer<typeof UpdatedBrandSchema>;
+export type { UpdatedBrand };
 
 export interface UpdateBrandParams {
 	tenantSlug: string;

@@ -1,25 +1,12 @@
-import type { UpdateProductInput } from "@r6/schemas";
+import {
+	type UpdatedProduct,
+	UpdatedProductSchema,
+	type UpdateProductInput,
+} from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const UpdatedProductSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	sku: z.string(),
-	name: z.string(),
-	slug: z.string(),
-	description: z.string().nullable(),
-	tags: z.array(z.string()),
-	metadata: z.record(z.string(), z.unknown()).nullable(),
-	status: z.string(),
-	categoryId: z.string().nullable(),
-	brandId: z.string().nullable(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-});
-
-export type UpdatedProduct = z.infer<typeof UpdatedProductSchema>;
+export type { UpdatedProduct };
 
 export interface UpdateProductParams {
 	tenantSlug: string;

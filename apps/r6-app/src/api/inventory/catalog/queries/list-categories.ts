@@ -1,44 +1,20 @@
-import { PaginatedResponseSchema } from "@r6/schemas";
+import {
+	type Category,
+	CategorySchema,
+	type ListCategoriesQuery,
+	PaginatedResponseSchema,
+} from "@r6/schemas";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-export interface ListCategoriesParams {
-	page?: number;
-	limit?: number;
-	search?: string;
-	/** Pass the string "null" to fetch only top-level (parentless) categories */
-	parentId?: string;
-	isActive?: boolean;
-}
+export type { Category };
 
-const CategorySummarySchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	name: z.string(),
-	slug: z.string(),
-	description: z.string().nullable(),
-	parentId: z.string().nullable(),
-	path: z.string(),
-	sortOrder: z.number(),
-	isActive: z.boolean(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	parent: z
-		.object({ id: z.string(), name: z.string(), slug: z.string() })
-		.nullable(),
-	_count: z.object({ children: z.number(), products: z.number() }),
-});
-
-export type CategorySummary = z.infer<typeof CategorySummarySchema>;
-
-const CategoryListResponseSchema = PaginatedResponseSchema(
-	CategorySummarySchema,
-);
+const CategoryListResponseSchema = PaginatedResponseSchema(CategorySchema);
 
 export async function listCategoriesFn(
 	tenantSlug: string,
-	params: ListCategoriesParams = {},
+	/** Pass parentId as the string "null" to fetch only top-level categories */
+	params: ListCategoriesQuery = {},
 ) {
 	const { data } = await inventoryApi.get<unknown>(
 		`/tenants/${tenantSlug}/catalog/categories`,
@@ -49,7 +25,7 @@ export async function listCategoriesFn(
 
 export function useListCategoriesQuery(
 	tenantSlug: string,
-	params: ListCategoriesParams = {},
+	params: ListCategoriesQuery = {},
 	options?: { staleTime?: number },
 ) {
 	return useQuery({

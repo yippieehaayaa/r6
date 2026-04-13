@@ -1,16 +1,8 @@
+import { type DeletedProduct, DeletedProductSchema } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const DeletedProductSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	sku: z.string(),
-	name: z.string(),
-	deletedAt: z.string().nullable(),
-});
-
-export type DeletedProduct = z.infer<typeof DeletedProductSchema>;
+export type { DeletedProduct };
 
 export interface DeleteProductParams {
 	tenantSlug: string;

@@ -1,23 +1,20 @@
-import { type PaginatedResponse, PaginatedResponseSchema } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
+import {
+	type InventoryLot,
+	InventoryLotSchema,
+	type ListInventoryLotsQuery,
+	PaginatedResponseSchema,
+} from "@r6/schemas";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
-export interface ListLotsParams {
-	page?: number;
-	limit?: number;
-	search?: string;
-	variantId?: string;
-	warehouseId?: string;
-	isQuarantined?: boolean;
-}
+export type { InventoryLot };
 
-const ListLotsResponseSchema = PaginatedResponseSchema(z.unknown());
+const ListLotsResponseSchema = PaginatedResponseSchema(InventoryLotSchema);
 
 export async function listLotsFn(
 	tenantSlug: string,
-	params: ListLotsParams = {},
-): Promise<PaginatedResponse<unknown>> {
+	params: ListInventoryLotsQuery = {},
+) {
 	const { data } = await inventoryApi.get<unknown>(
 		`/tenants/${tenantSlug}/lots`,
 		{ params },
@@ -27,13 +24,14 @@ export async function listLotsFn(
 
 export function useListLotsQuery(
 	tenantSlug: string,
-	params: ListLotsParams = {},
+	params: ListInventoryLotsQuery = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
 		queryKey: ["lots", tenantSlug, params],
 		queryFn: () => listLotsFn(tenantSlug, params),
 		enabled: !!tenantSlug,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }

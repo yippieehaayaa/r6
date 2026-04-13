@@ -1,40 +1,20 @@
 import {
 	type ListStockAlertsQuery,
-	type PaginatedResponse,
 	PaginatedResponseSchema,
+	type StockAlert,
+	StockAlertSchema,
 } from "@r6/schemas";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-export type ListStockAlertsParams = ListStockAlertsQuery;
-
-const StockAlertSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	alertType: z.string(),
-	status: z.string(),
-	variantId: z.string().nullable(),
-	warehouseId: z.string().nullable(),
-	threshold: z.number().nullable(),
-	currentValue: z.number().nullable(),
-	notes: z.string().nullable(),
-	acknowledgedBy: z.string().nullable(),
-	acknowledgedAt: z.string().nullable(),
-	resolvedBy: z.string().nullable(),
-	resolvedAt: z.string().nullable(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-});
-
-export type StockAlert = z.infer<typeof StockAlertSchema>;
+export type { StockAlert };
 
 const ListStockAlertsResponseSchema = PaginatedResponseSchema(StockAlertSchema);
 
 export async function listStockAlertsFn(
 	tenantSlug: string,
-	params: ListStockAlertsParams = {},
-): Promise<PaginatedResponse<StockAlert>> {
+	params: ListStockAlertsQuery = {},
+) {
 	const { data } = await inventoryApi.get<unknown>(
 		`/tenants/${tenantSlug}/stock-alerts`,
 		{ params },
@@ -44,7 +24,7 @@ export async function listStockAlertsFn(
 
 export function useListStockAlertsQuery(
 	tenantSlug: string,
-	params: ListStockAlertsParams = {},
+	params: ListStockAlertsQuery = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({

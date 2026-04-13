@@ -142,4 +142,4 @@ export const ListQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
 });
 
-export type ListQuery = z.infer<typeof ListQuerySchema>;
+export type ListQuery = z.input<typeof ListQuerySchema>;

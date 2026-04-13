@@ -1,23 +1,12 @@
-import type { CheckAvailabilityBatchInput } from "@r6/schemas";
+import {
+	type AvailabilityBatchResult,
+	AvailabilityBatchResultSchema,
+	type CheckAvailabilityBatchInput,
+} from "@r6/schemas";
 import { useMutation } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const AvailabilityResultSchema = z.object({
-	variantId: z.string(),
-	warehouseId: z.string(),
-	quantityOnHand: z.number(),
-	quantityReserved: z.number(),
-	quantityAvailable: z.number(),
-});
-
-const AvailabilityBatchResultSchema = z.object({
-	items: z.array(AvailabilityResultSchema),
-});
-
-export type AvailabilityBatchResult = z.infer<
-	typeof AvailabilityBatchResultSchema
->;
+export type { AvailabilityBatchResult };
 
 export interface CheckAvailabilityBatchParams {
 	tenantSlug: string;

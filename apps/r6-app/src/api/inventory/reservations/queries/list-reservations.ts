@@ -1,25 +1,22 @@
-import { type PaginatedResponse, PaginatedResponseSchema } from "@r6/schemas";
-import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
+import {
+	type ListStockReservationsQuery,
+	PaginatedResponseSchema,
+	type StockReservation,
+	StockReservationSchema,
+} from "@r6/schemas";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
-export interface ListReservationsParams {
-	page?: number;
-	limit?: number;
-	search?: string;
-	variantId?: string;
-	warehouseId?: string;
-	status?: "ACTIVE" | "FULFILLED" | "RELEASED" | "EXPIRED";
-	referenceId?: string;
-	referenceType?: string;
-}
+export type { StockReservation };
 
-const ListReservationsResponseSchema = PaginatedResponseSchema(z.unknown());
+const ListReservationsResponseSchema = PaginatedResponseSchema(
+	StockReservationSchema,
+);
 
 export async function listReservationsFn(
 	tenantSlug: string,
-	params: ListReservationsParams = {},
-): Promise<PaginatedResponse<unknown>> {
+	params: ListStockReservationsQuery = {},
+) {
 	const { data } = await inventoryApi.get<unknown>(
 		`/tenants/${tenantSlug}/reservations`,
 		{ params },
@@ -29,13 +26,14 @@ export async function listReservationsFn(
 
 export function useListReservationsQuery(
 	tenantSlug: string,
-	params: ListReservationsParams = {},
+	params: ListStockReservationsQuery = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
 		queryKey: ["stock-reservations", tenantSlug, params],
 		queryFn: () => listReservationsFn(tenantSlug, params),
 		enabled: !!tenantSlug,
+		placeholderData: keepPreviousData,
 		...options,
 	});
 }

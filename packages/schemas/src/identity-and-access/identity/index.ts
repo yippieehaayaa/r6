@@ -240,7 +240,7 @@ export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;
 
 export const ListIdentitiesQuerySchema = ListQuerySchema;
 
-export type ListIdentitiesQuery = z.infer<typeof ListIdentitiesQuerySchema>;
+export type ListIdentitiesQuery = z.input<typeof ListIdentitiesQuerySchema>;
 
 // ── TOTP setup / management ─────────────────────────────────
 

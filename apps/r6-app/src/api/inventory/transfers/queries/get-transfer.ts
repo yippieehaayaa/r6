@@ -1,32 +1,11 @@
+import {
+	type StockTransferDetail,
+	StockTransferDetailSchema,
+} from "@r6/schemas";
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { inventoryApi } from "@/api/_app";
 
-const TransferItemSchema = z.object({
-	id: z.string(),
-	transferId: z.string(),
-	variantId: z.string(),
-	quantityDispatched: z.number(),
-	quantityReceived: z.number().nullable(),
-	createdAt: z.string(),
-});
-
-const StockTransferDetailSchema = z.object({
-	id: z.string(),
-	tenantId: z.string(),
-	fromWarehouseId: z.string(),
-	toWarehouseId: z.string(),
-	status: z.string(),
-	dispatchedBy: z.string(),
-	dispatchedAt: z.string().nullable(),
-	expectedAt: z.string().nullable(),
-	notes: z.string().nullable(),
-	createdAt: z.string(),
-	updatedAt: z.string(),
-	items: z.array(TransferItemSchema),
-});
-
-export type StockTransferDetail = z.infer<typeof StockTransferDetailSchema>;
+export type { StockTransferDetail };
 
 export async function getTransferFn(
 	tenantSlug: string,
