@@ -180,4 +180,4 @@ export type UpdatePolicyInput = z.infer<typeof UpdatePolicySchema>;
 
 export const ListPoliciesQuerySchema = ListQuerySchema;
 
-export type ListPoliciesQuery = z.infer<typeof ListPoliciesQuerySchema>;
+export type ListPoliciesQuery = z.input<typeof ListPoliciesQuerySchema>;

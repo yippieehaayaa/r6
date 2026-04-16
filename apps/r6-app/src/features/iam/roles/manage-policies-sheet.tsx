@@ -3,11 +3,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { useListPoliciesQuery } from "@/api/policies";
+import { useListPoliciesQuery } from "@/api/identity-and-access/policies";
 import {
 	useGetRoleWithPoliciesQuery,
 	useSetPoliciesMutation,
-} from "@/api/roles";
+} from "@/api/identity-and-access/roles";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

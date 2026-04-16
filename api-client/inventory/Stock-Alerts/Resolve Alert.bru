@@ -1,0 +1,21 @@
+meta {
+  name: Resolve Alert
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/stock-alerts/{{alertId}}/resolve
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "notes": "Stock replenished"
+  }
+}

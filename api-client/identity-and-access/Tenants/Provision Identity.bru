@@ -1,0 +1,23 @@
+meta {
+  name: Provision Identity
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/provision
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "username": "tenant-admin",
+    "plainPassword": "Password1!",
+    "email": "admin@tenant.example.com"
+  }
+}

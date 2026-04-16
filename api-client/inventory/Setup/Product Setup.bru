@@ -1,0 +1,37 @@
+meta {
+  name: Product Setup
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/setup/products
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "product": {
+      "sku": "PROD-001",
+      "name": "Sample Product",
+      "slug": "sample-product",
+      "description": "A sample product",
+      "categorySlug": "electronics",
+      "brandSlug": "acme-brand"
+    },
+    "variants": [
+      {
+        "sku": "PROD-001-DEFAULT",
+        "name": "Sample Product - Default",
+        "options": {},
+        "baseUomAbbreviation": "PC",
+        "trackingType": "NONE"
+      }
+    ]
+  }
+}

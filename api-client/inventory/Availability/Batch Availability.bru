@@ -1,0 +1,27 @@
+meta {
+  name: Batch Availability
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/availability/batch
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "items": [
+      {
+        "variantId": "{{variantId}}",
+        "warehouseId": "{{warehouseId}}",
+        "quantity": 10
+      }
+    ]
+  }
+}

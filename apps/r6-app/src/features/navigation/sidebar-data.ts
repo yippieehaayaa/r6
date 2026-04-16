@@ -5,7 +5,6 @@ import {
 	Package,
 	PackagePlus,
 	PackageSearch,
-	Receipt,
 	Shield,
 	Tag,
 	Truck,
@@ -26,52 +25,25 @@ export const data = {
 	],
 	navMain: [
 		{
-			title: "Point of Sale",
-			url: "#",
-			icon: Receipt,
-			isActive: true,
-			items: [
-				{
-					title: "New Sale",
-					url: "#",
-					permission: "pos:sale:create",
-				},
-				{
-					title: "Transaction History",
-					url: "#",
-					permission: "pos:transaction:read",
-				},
-				{
-					title: "Receipts",
-					url: "#",
-					permission: "pos:receipt:read",
-				},
-			],
-		},
-		{
 			title: "Inventory",
-			url: "#",
+			url: "/r6/inventory",
 			icon: Package,
 			items: [
 				{
-					title: "Stock Overview",
-					url: "#",
-					permission: "inventory:stock:read",
+					title: "Overview",
+					url: "/r6/inventory",
 				},
 				{
-					title: "Warehouses",
-					url: "#",
-					permission: "inventory:warehouse:read",
+					title: "Stock Operations",
+					url: "/r6/inventory/stock",
 				},
 				{
 					title: "Movements",
-					url: "#",
-					permission: "inventory:movement:read",
+					url: "/r6/inventory/movements",
 				},
 				{
-					title: "Damage & Losses",
-					url: "#",
-					permission: "inventory:damage:read",
+					title: "Alerts",
+					url: "/r6/inventory/alerts",
 				},
 			],
 		},
@@ -82,23 +54,23 @@ export const data = {
 			items: [
 				{
 					title: "Products",
-					url: "#",
-					permission: "catalog:product:read",
+					url: "/r6/inventory-and-catalog/products",
+					// permission: "catalog:product:read",
 				},
 				{
 					title: "Variants",
-					url: "#",
-					permission: "catalog:variant:read",
+					url: "/r6/inventory-and-catalog/variants",
+					// permission: "catalog:variant:read",
 				},
 				{
 					title: "Categories",
-					url: "#",
-					permission: "catalog:category:read",
+					url: "/r6/inventory-and-catalog/categories",
+					// permission: "catalog:category:read",
 				},
 				{
 					title: "Brands",
-					url: "#",
-					permission: "catalog:brand:read",
+					url: "/r6/inventory-and-catalog/brands",
+					// permission: "catalog:brand:read",
 				},
 			],
 		},
@@ -110,17 +82,17 @@ export const data = {
 				{
 					title: "Purchase Orders",
 					url: "#",
-					permission: "procurement:order:read",
+					// permission: "procurement:order:read",
 				},
 				{
 					title: "Suppliers",
 					url: "#",
-					permission: "procurement:supplier:read",
+					// permission: "procurement:supplier:read",
 				},
 				{
 					title: "Receive Items",
 					url: "#",
-					permission: "procurement:receiving:create",
+					// permission: "procurement:receiving:create",
 				},
 			],
 		},
@@ -132,27 +104,27 @@ export const data = {
 				{
 					title: "Overview / GMV",
 					url: "#",
-					permission: "report:gmv:read",
+					// permission: "report:gmv:read",
 				},
 				{
 					title: "By Product",
 					url: "#",
-					permission: "report:product:read",
+					// permission: "report:product:read",
 				},
 				{
 					title: "By Brand",
 					url: "#",
-					permission: "report:brand:read",
+					// permission: "report:brand:read",
 				},
 				{
 					title: "By Warehouse",
 					url: "#",
-					permission: "report:warehouse:read",
+					// permission: "report:warehouse:read",
 				},
 				{
 					title: "Dead Stock",
 					url: "#",
-					permission: "report:deadstock:read",
+					// permission: "report:deadstock:read",
 				},
 				{
 					title: "Seasonal Demand",
@@ -196,12 +168,6 @@ export const data = {
 	],
 	projects: [
 		{
-			name: "New Sale",
-			url: "#",
-			icon: Receipt,
-			permission: "pos:sale:create",
-		},
-		{
 			name: "New Purchase Order",
 			url: "#",
 			icon: ClipboardList,
@@ -214,14 +180,14 @@ export const data = {
 			permission: "procurement:receiving:create",
 		},
 		{
-			name: "Stock Overview",
-			url: "#",
+			name: "Stock Operations",
+			url: "/r6/inventory/stock",
 			icon: PackageSearch,
 			permission: "inventory:stock:read",
 		},
 		{
 			name: "Add Product",
-			url: "#",
+			url: "/r6/inventory-and-catalog/products",
 			icon: Tag,
 			permission: "catalog:product:create",
 		},

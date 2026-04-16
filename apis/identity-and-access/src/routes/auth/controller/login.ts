@@ -95,6 +95,7 @@ export async function login(
         signAccessToken({
           sub: full.id,
           kind: full.kind,
+          tenantId: full.tenantId ?? null,
           tenantSlug: tenant?.slug ?? null,
           roles: claims.roles,
           permissions: claims.permissions,

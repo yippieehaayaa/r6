@@ -8,7 +8,7 @@ import {
 	useListPoliciesQuery,
 	useRemovePolicyMutation,
 	useRestorePolicyMutation,
-} from "@/api/policies";
+} from "@/api/identity-and-access/policies";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,

@@ -1,0 +1,33 @@
+meta {
+  name: Onboard Tenant
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/setup/onboard
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "warehouse": {
+      "name": "Main Warehouse",
+      "code": "WH-001",
+      "addressLine1": "123 Main St",
+      "addressCity": "Makati",
+      "addressState": "Metro Manila",
+      "addressCountry": "PH",
+      "addressPostal": "1200"
+    },
+    "config": {
+      "costingMethod": "FIFO",
+      "defaultCurrency": "PHP"
+    }
+  }
+}

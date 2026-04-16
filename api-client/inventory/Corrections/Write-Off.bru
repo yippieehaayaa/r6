@@ -1,0 +1,22 @@
+meta {
+  name: Write-Off
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/corrections/write-off
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "lotId": "{{lotId}}",
+    "reason": "Expired goods written off"
+  }
+}

@@ -1,0 +1,22 @@
+meta {
+  name: Update Category
+  type: http
+  seq: 11
+}
+
+patch {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/catalog/categories/{{categoryId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Category",
+    "description": "Updated category description"
+  }
+}

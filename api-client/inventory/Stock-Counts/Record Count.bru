@@ -1,0 +1,26 @@
+meta {
+  name: Record Count
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/stock-counts/{{stockCountId}}/record
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "lines": [
+      {
+        "stockCountItemId": "{{stockCountItemId}}",
+        "quantityActual": 95
+      }
+    ]
+  }
+}

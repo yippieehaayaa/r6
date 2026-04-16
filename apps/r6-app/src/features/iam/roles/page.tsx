@@ -9,8 +9,8 @@ import {
 	useListRolesQuery,
 	useRemoveRoleMutation,
 	useRestoreRoleMutation,
-} from "@/api/roles";
-import { useListTenantsQuery } from "@/api/tenants";
+} from "@/api/identity-and-access/roles";
+import { useListTenantsQuery } from "@/api/identity-and-access/tenants";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,

@@ -4,7 +4,7 @@ export default defineConfig({
   entry: [
     "src/index.ts",
     "src/identity-and-access/index.ts",
-    "src/inventory-and-catalog/index.ts",
+    "src/inventory/index.ts",
   ],
   format: ["esm", "cjs"],
   dts: true,

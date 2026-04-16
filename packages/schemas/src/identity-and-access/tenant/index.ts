@@ -104,4 +104,4 @@ export type CreateTenantResponse = z.infer<typeof CreateTenantResponseSchema>;
 
 export const ListTenantsQuerySchema = ListQuerySchema;
 
-export type ListTenantsQuery = z.infer<typeof ListTenantsQuerySchema>;
+export type ListTenantsQuery = z.input<typeof ListTenantsQuerySchema>;

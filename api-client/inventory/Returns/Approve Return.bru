@@ -1,0 +1,15 @@
+meta {
+  name: Approve Return
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/returns/{{returnRequestId}}/approve
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,4 +1,4 @@
-import { useGetIdentityWithRolesQuery } from "@/api/identities";
+import { useGetIdentityWithRolesQuery } from "@/api/identity-and-access/identities";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {

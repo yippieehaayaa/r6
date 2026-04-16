@@ -1,0 +1,29 @@
+// User-defined sales/demand seasons (e.g. Philippine Summer, Ber Season, Christmas)
+model Season {
+    id          String  @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug  String
+    name        String
+    slug        String
+    description String?
+    startDate   DateTime
+    endDate     DateTime
+    // Denormalized year extracted from startDate — enables O(1) equality index filter
+    // instead of a date-range scan to find "all seasons in year X"
+    year        Int
+    isActive    Boolean @default(true)
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Indexes — O(1) equality filters per access pattern
+    @@unique([tenantSlug, name])
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, year])              // "give me all 2026 seasons"
+    @@index([tenantSlug, year, isActive])    // most common analytics filter: active seasons for a year
+    @@index([tenantSlug, isActive])
+    @@index([deletedAt])
+    @@map("seasons")
+}

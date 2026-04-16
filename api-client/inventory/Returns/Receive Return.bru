@@ -1,0 +1,26 @@
+meta {
+  name: Receive Return
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/returns/{{returnRequestId}}/receive
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "lines": [
+      {
+        "returnRequestItemId": "{{returnRequestItemId}}",
+        "disposition": "RESTOCK"
+      }
+    ]
+  }
+}

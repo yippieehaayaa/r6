@@ -1,0 +1,40 @@
+{
+	"name": "@r6/inventory",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"build": "tsc",
+		"check": "biome check --write .",
+		"dev": "tsx watch src/index.ts",
+		"format": "biome format --write .",
+		"lint": "biome lint --write .",
+		"start": "node dist/index.js"
+	},
+	"dependencies": {
+		"@r6/redis": "*",
+		"cookie-parser": "^1.4.7",
+		"cors": "^2.8.6",
+		"dotenv": "^17.4.0",
+		"express": "5.2.1",
+		"express-rate-limit": "^8.3.2",
+		"helmet": "^8.1.0",
+		"jose": "^6.0.11",
+		"morgan": "^1.10.1",
+		"qrcode": "^1.5.4",
+		"tsx": "^4.21.0",
+		"zod": "4.3.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.4.4",
+		"@r6/db-inventory": "*",
+		"@r6/typescript-config": "*",
+		"@types/cookie-parser": "^1.4.7",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"@types/morgan": "^1.9.10",
+		"@types/qrcode": "^1.5.5",
+		"typescript": "6.0.2"
+	},
+	"author": "Joshua Dave E. Oropilla",
+	"license": "MIT"
+}

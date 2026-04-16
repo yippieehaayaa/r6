@@ -78,4 +78,4 @@ export type AssignPoliciesToRoleInput = z.infer<
 
 export const ListRolesQuerySchema = ListQuerySchema;
 
-export type ListRolesQuery = z.infer<typeof ListRolesQuerySchema>;
+export type ListRolesQuery = z.input<typeof ListRolesQuerySchema>;

@@ -1,0 +1,89 @@
+// Physical or logical storage location for stock
+model Warehouse {
+    id         String        @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug String
+    name       String
+    code       String
+    address    AddressEmbed?
+    isActive   Boolean       @default(true)
+
+    // Relations
+    inventoryItems InventoryItem[]
+    stockMovements StockMovement[]
+    purchaseOrders PurchaseOrder[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Indexes
+    @@unique([tenantSlug, name])
+    @@unique([tenantSlug, code])
+    @@index([tenantSlug])
+    @@index([tenantSlug, isActive])
+    @@index([deletedAt])
+    @@map("warehouses")
+}
+
+// Current stock level for a variant at a warehouse — O(1) via composite unique
+model InventoryItem {
+    id               String @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug       String
+    quantityOnHand   Int    @default(0)
+    quantityReserved Int    @default(0)
+    reorderPoint     Int    @default(0)
+    reorderQuantity  Int    @default(0)
+
+    // Relations
+    variantId String         @db.ObjectId
+    variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+    warehouseId String    @db.ObjectId
+    warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // Composite unique → O(1) "stock for variant X in warehouse Y" scoped to tenant
+    @@unique([tenantSlug, variantId, warehouseId])
+    @@index([tenantSlug])
+    @@index([tenantSlug, warehouseId])
+    @@map("inventory_items")
+}
+
+// Immutable audit log of every stock change — append-only, never updated
+model StockMovement {
+    id            String       @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug    String
+    type          MovementType
+    quantity      Int // positive = stock in, negative = stock out
+    referenceId   String? // e.g. PurchaseOrder ID or Sale Order ID
+    referenceType String? // e.g. "PURCHASE_ORDER" | "SALE_ORDER"
+    notes         String?
+    performedBy   String // IAM identity ID (no cross-DB FK)
+
+    // Relations
+    variantId String         @db.ObjectId
+    variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+    warehouseId String    @db.ObjectId
+    warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+
+    createdAt DateTime @default(now())
+
+    // Indexes
+    @@index([tenantSlug])
+    @@index([tenantSlug, type, createdAt])
+    @@index([tenantSlug, variantId, createdAt])
+    @@index([tenantSlug, warehouseId, type, createdAt])
+    @@index([variantId])
+    @@index([variantId, createdAt])
+    @@index([warehouseId])
+    @@index([type])
+    @@index([type, createdAt])
+    @@index([warehouseId, type, createdAt])
+    @@index([referenceId])
+    @@index([createdAt])
+    @@map("stock_movements")
+}

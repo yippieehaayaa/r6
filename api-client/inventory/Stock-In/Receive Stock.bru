@@ -1,0 +1,33 @@
+meta {
+  name: Receive Stock
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/stock-in/receive
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "referenceId": "PO-2024-001",
+    "referenceType": "PURCHASE_ORDER",
+    "receivedAt": "2024-01-15T08:00:00Z",
+    "lines": [
+      {
+        "variantId": "{{variantId}}",
+        "warehouseId": "{{warehouseId}}",
+        "quantityReceived": 100,
+        "unitCost": "250.00",
+        "unitCostCurrency": "PHP",
+        "lotNumber": "LOT-2024-001"
+      }
+    ]
+  }
+}

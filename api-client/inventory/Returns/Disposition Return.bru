@@ -1,0 +1,21 @@
+meta {
+  name: Disposition Return
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/returns/{{returnRequestId}}/disposition
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "warehouseId": "{{warehouseId}}"
+  }
+}

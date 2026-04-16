@@ -82,6 +82,7 @@ export async function verifyTotp(
         signAccessToken({
           sub: identity.id,
           kind: identity.kind,
+          tenantId: identity.tenantId ?? null,
           tenantSlug: tenant?.slug ?? null,
           roles: claims.roles,
           permissions: claims.permissions,

@@ -1,0 +1,15 @@
+meta {
+  name: Disable TOTP
+  type: http
+  seq: 6
+}
+
+delete {
+  url: {{baseURL}}/me/totp/disable
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

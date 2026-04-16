@@ -1,0 +1,697 @@
+// ============================================================
+//  INVENTORY
+//  Single source of truth for all stock data in the ERP.
+//
+//  Owns:
+//    TenantInventoryConfig — per-tenant inventory settings (costing method, currency, thresholds)
+//    InventoryItem     — aggregate available/reserved quantities per variant × warehouse
+//    InventoryLot      — costing layer; one lot per GRN line (FIFO / AVCO / FEFO)
+//    SerializedUnit    — individual unit tracking (SERIAL variants only)
+//    StockMovement     — immutable quantity ledger (append-only; never updated/deleted)
+//    StockReservation  — explicit active stock holds with optional expiry
+//    StockTransfer     — warehouse-to-warehouse transfer documents
+//    StockTransferItem — line items on a transfer
+//    StockCount        — physical inventory count sessions
+//    StockCountItem    — per-variant count lines with variance tracking
+//    StockAlert        — threshold breach notifications
+//    ReturnRequest     — RMA (Return Merchandise Authorization) documents
+//    ReturnRequestItem — RMA line items with disposition decisions
+//
+//  Does NOT own:
+//    Pricing              → Pricing Service (future)
+//    Suppliers            → Procurement Service
+//    Purchase Orders      → Procurement Service
+//    Goods Receipt Notes  → Procurement Service
+//    Sale records         → Transaction Service
+//    Financial ledger     → Financial Service
+//    Stock Requests       → Request Service
+//
+//  Cross-service integrity:
+//    All stock quantity mutations go through this service's API.
+//    Every write atomically updates InventoryItem AND appends a
+//    StockMovement in a single DB transaction.
+//
+//    referenceId + referenceType are the audit trail back to the
+//    originating document — no cross-DB foreign keys ever.
+//
+//    Canonical referenceType values:
+//      "GOODS_RECEIPT_NOTE"  — Procurement GRN
+//      "SALE_TRANSACTION"    — Transaction Service confirmed sale
+//      "STOCK_REQUEST"       — Request Service approved request
+//      "STOCK_TRANSFER"      — internal warehouse transfer
+//      "RETURN_REQUEST"      — RMA (customer or supplier return)
+//      "STOCK_COUNT"         — cycle count reconciliation
+//      "MANUAL_ADJUSTMENT"   — ad-hoc correction by authorized staff
+//
+//  Costing method (stored in TenantInventoryConfig — an inventory concern, not IAM):
+//    FIFO — oldest lot (receivedAt ASC) is depleted first
+//    AVCO — weighted average: SUM(qty × cost) / SUM(qty) across active lots
+//    FEFO — earliest-expiry lot (expiresAt ASC) first; used for perishables
+//
+//  Multi-tenancy:
+//    tenantId? on every model.
+//    null = platform ADMIN cross-tenant visibility.
+//    PostgreSQL RLS enforces row-level isolation per tenant.
+// ============================================================
+
+// ─── Tenant Inventory Config ─────────────────────────────────
+
+// Per-tenant inventory settings owned entirely by this service.
+// One row per tenant — upserted during tenant onboarding.
+//
+// Why this lives here and not in IAM:
+//   IAM owns identity, authentication, and access control.
+//   Costing methods, default currencies, alert windows, and
+//   reservation TTLs are operational inventory configuration —
+//   they have no bearing on who is allowed to do what.
+//   Keeping them here avoids a cross-service read on every
+//   stock depletion and makes the Inventory Service self-contained.
+//
+// tenantId?
+//   null row is the platform default config used during tenant
+//   onboarding before their specific config is created.
+//   Application layer: read tenant row; if absent, fall back to null row.
+model TenantInventoryConfig {
+    id     String @id @default(uuid()) @db.Uuid
+    // null = platform default config record
+    tenantId String? @db.Uuid @unique
+
+    // Costing method used for all FIFO/AVCO/FEFO lot depletion queries
+    costingMethod    CostingMethod @default(FIFO)
+
+    // Default currency for unitCost on new InventoryLots (ISO 4217)
+    defaultCurrency  String        @default("PHP")
+
+    // How many days before lot.expiresAt the LOT_EXPIRING alert fires
+    // e.g. 30 = alert fires 30 days before expiry
+    lotExpiryAlertDays Int @default(30)
+
+    // How long (in minutes) a CART reservation is held before the
+    // sweeper job auto-releases it and writes RESERVATION_RELEASE
+    cartReservationTtlMinutes Int @default(30)
+
+    // Percentage variance threshold above which COUNT_VARIANCE alert fires
+    // e.g. 5 = alert if abs(variance) / quantityExpected > 5%
+    countVarianceThresholdPct Decimal @default(5) @db.Decimal(5, 2)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("tenant_inventory_configs")
+}
+
+// ─── Inventory Item ───────────────────────────────────────────
+
+// Aggregated stock level for one variant at one warehouse.
+// Always updated atomically in the same DB transaction as StockMovement.
+//
+//   quantityAvailable = quantityOnHand - quantityReserved
+//
+// Use this for fast availability checks — never query StockMovement
+// to compute current quantities in a hot path.
+//
+// reorderPoint / reorderQuantity are per variant × warehouse thresholds.
+// The Inventory Service fires StockAlert(LOW_STOCK) when
+// quantityAvailable drops to or below reorderPoint.
+// The Procurement Service consumes that alert to suggest a PO.
+model InventoryItem {
+    id                 String  @id @default(uuid()) @db.Uuid
+    tenantId           String? @db.Uuid
+
+    // Quantities — always updated atomically with StockMovement
+    quantityOnHand     Int @default(0)  // Physical confirmed stock in warehouse
+    quantityReserved   Int @default(0)  // Soft-held by active reservations
+
+    // Reorder & overstock thresholds (configurable per variant × warehouse)
+    reorderPoint       Int @default(0)  // LOW_STOCK fires when (onHand - reserved) ≤ this
+    reorderQuantity    Int @default(0)  // Suggested PO quantity when reorder is triggered
+    overstockThreshold Int @default(0)  // OVERSTOCK fires when onHand ≥ this (0 = disabled)
+
+    // Relations
+    variantId   String         @db.Uuid
+    variant     ProductVariant @relation(fields: [variantId], references: [id])
+    warehouseId String         @db.Uuid
+    warehouse   Warehouse      @relation(fields: [warehouseId], references: [id])
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, variantId, warehouseId])
+    @@index([tenantId])
+    @@index([tenantId, warehouseId])
+    @@index([tenantId, variantId])
+    @@map("inventory_items")
+}
+
+// ─── Inventory Lot ───────────────────────────────────────────
+
+// A single received batch of a variant — the costing layer.
+// One lot is created per GRN line item (per variant per delivery).
+// unitCost is frozen at receipt time and never changes.
+//
+// FIFO depletion (application layer):
+//   SELECT * FROM inventory_lots
+//   WHERE variant_id = X AND warehouse_id = Y
+//     AND quantity_remaining > 0 AND is_quarantined = false
+//   ORDER BY received_at ASC
+//   → deduct from the oldest lot first; return unitCost to caller
+//
+// AVCO depletion (application layer):
+//   SELECT SUM(quantity_remaining * unit_cost) / SUM(quantity_remaining)
+//   FROM inventory_lots
+//   WHERE variant_id = X AND warehouse_id = Y AND quantity_remaining > 0
+//   → returns weighted average; caller uses this as unitCost snapshot
+//
+// FEFO depletion (application layer):
+//   Same query as FIFO but ORDER BY expires_at ASC.
+//   Applied when variant.trackingType = BATCH and expiresAt is populated.
+//
+// lotNumber: supplier or internal batch identifier.
+//   Populated from the GRN in Procurement (e.g. "LOT-2026-04-001").
+//   For non-batch variants this may be null or an auto-generated ref.
+//
+// isQuarantined: true = excluded from available stock immediately.
+//   Used for quality holds, regulatory holds, or damage investigation.
+//   Quarantined lots never appear in FIFO/AVCO/FEFO depletion queries.
+model InventoryLot {
+    id                String    @id @default(uuid()) @db.Uuid
+    tenantId          String?   @db.Uuid
+    lotNumber         String?                        // Supplier or internal batch/lot number
+    quantityReceived  Int                            // Total units on this lot at arrival
+    quantityRemaining Int                            // Units still available; decremented on outbound
+    unitCost          Decimal   @db.Decimal(12, 4)  // Cost per base UOM unit — frozen at receipt
+    unitCostCurrency  String    @default("PHP")      // ISO 4217
+    receivedAt        DateTime                       // Physical arrival date — FIFO ordering key
+    expiresAt         DateTime?                      // FEFO key — null = non-perishable
+    manufacturedAt    DateTime?                      // Regulatory traceability (pharma, food)
+    isQuarantined     Boolean   @default(false)      // true = excluded from available stock
+    quarantineReason  String?                        // Reason for quarantine hold
+    notes             String?
+
+    // Cross-service traceability — no cross-DB FK
+    referenceId   String?  // e.g. GRN.id from Procurement Service
+    referenceType String?  // e.g. "GOODS_RECEIPT_NOTE" | "STOCK_ADJUSTMENT" | "RETURN"
+
+    // Relations
+    variantId     String         @db.Uuid
+    variant       ProductVariant @relation(fields: [variantId], references: [id])
+    warehouseId   String         @db.Uuid
+    warehouse     Warehouse      @relation(fields: [warehouseId], references: [id])
+    binLocationId String?        @db.Uuid
+    binLocation   BinLocation?   @relation(fields: [binLocationId], references: [id])
+
+    serializedUnits    SerializedUnit[]
+    stockMovements     StockMovement[]
+    stockCountItems    StockCountItem[]
+    transferItems      StockTransferItem[]
+    returnRequestItems ReturnRequestItem[]
+    stockAlerts        StockAlert[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Primary FIFO depletion query
+    @@index([tenantId, variantId, warehouseId, receivedAt])
+    // Available stock query (excludes empty + quarantined lots)
+    @@index([tenantId, variantId, warehouseId, quantityRemaining])
+    // FEFO depletion query
+    @@index([tenantId, variantId, warehouseId, expiresAt])
+    // Expiry alert background job
+    @@index([tenantId, expiresAt])
+    // Cross-service traceability
+    @@index([referenceId])
+    @@index([tenantId, lotNumber])
+    @@map("inventory_lots")
+}
+
+// ─── Serialized Unit ─────────────────────────────────────────
+
+// Individual unit tracking for high-value or regulated items.
+// Created ONLY when ProductVariant.trackingType = SERIAL.
+//
+// One row per physical unit. The parent InventoryLot provides the cost
+// basis and batch context; the SerializedUnit provides the identity.
+//
+// saleReferenceId: SaleTransaction.id set when status transitions to SOLD.
+//   Enables post-sale warranty lookups, loss investigation, and
+//   regulatory chain-of-custody reporting.
+model SerializedUnit {
+    id           String               @id @default(uuid()) @db.Uuid
+    tenantId     String?              @db.Uuid
+    serialNumber String               // Manufacturer serial or internal serial number
+    status       SerializedUnitStatus @default(AVAILABLE)
+    notes        String?
+
+    // Cross-service reference — no cross-DB FK
+    saleReferenceId String?           // SaleTransaction.id when status = SOLD
+
+    // Relations
+    variantId String         @db.Uuid
+    variant   ProductVariant @relation(fields: [variantId], references: [id])
+    lotId     String         @db.Uuid
+    lot       InventoryLot   @relation(fields: [lotId], references: [id])
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, serialNumber])
+    @@index([tenantId])
+    @@index([tenantId, variantId, status])
+    @@index([tenantId, lotId])
+    @@index([saleReferenceId])
+    @@map("serialized_units")
+}
+
+// ─── Stock Movement Ledger ───────────────────────────────────
+
+// The immutable, append-only ledger of every stock quantity change.
+// Rows are NEVER updated or deleted after insertion.
+// Every unit entering or leaving inventory produces one row here,
+// atomically with the update to InventoryItem in the same transaction.
+//
+// Quantity sign convention:
+//   positive (+) = stock increases
+//     (RECEIPT, RETURN, TRANSFER_IN, RESERVATION_RELEASE, +ADJUSTMENT)
+//   negative (-) = stock decreases
+//     (SALE, DAMAGE, TRANSFER_OUT, RESERVATION, -ADJUSTMENT)
+//
+// lotId:
+//   Set on outbound movements (SALE, DAMAGE, TRANSFER_OUT, RETURN) to
+//   identify which lot was consumed. The Financial Service uses this to
+//   resolve the unitCost for every unit sold. Null on RECEIPT — the lot
+//   is being created and registered, not consumed from stock.
+//
+// unitCostSnapshot:
+//   Copied from InventoryLot.unitCost for outbound movements, or from
+//   the GRN line for RECEIPT movements. Stored here so the Financial
+//   Service has a self-contained cost record without needing to query
+//   the lot after the fact (the lot's cost never changes, but this
+//   avoids a join in financial reporting).
+model StockMovement {
+    id               String       @id @default(uuid()) @db.Uuid
+    tenantId         String?      @db.Uuid
+    type             MovementType
+    // Positive = in, negative = out. Always in the variant's base UOM.
+    quantity         Int
+    // Frozen cost per unit at movement time; used by Financial Service
+    unitCostSnapshot Decimal?     @db.Decimal(12, 4)
+    costCurrency     String?      @default("PHP")  // ISO 4217
+
+    // Cross-service traceability — no cross-DB FK
+    referenceId   String?  // Originating document ID in external service
+    referenceType String?  // e.g. "GOODS_RECEIPT_NOTE" | "SALE_TRANSACTION"
+    notes         String?
+
+    // Actor: IAM identity ID of who initiated this movement — no cross-DB FK
+    performedBy String
+
+    // Relations
+    variantId   String         @db.Uuid
+    variant     ProductVariant @relation(fields: [variantId], references: [id])
+    warehouseId String         @db.Uuid
+    warehouse   Warehouse      @relation(fields: [warehouseId], references: [id])
+    // Lot consumed on outbound; null on RECEIPT (lot is being created)
+    lotId       String?        @db.Uuid
+    lot         InventoryLot?  @relation(fields: [lotId], references: [id])
+
+    // Append-only: createdAt only — no updatedAt, no deletedAt
+    createdAt DateTime @default(now())
+
+    @@index([tenantId, variantId])
+    @@index([tenantId, variantId, createdAt])
+    @@index([tenantId, warehouseId])
+    @@index([tenantId, warehouseId, type, createdAt])
+    @@index([tenantId, lotId])
+    @@index([tenantId, type])
+    @@index([tenantId, type, createdAt])
+    @@index([tenantId, referenceId])
+    @@index([tenantId, referenceType])
+    @@index([tenantId, createdAt])
+    @@map("stock_movements")
+}
+
+// ─── Stock Reservation ────────────────────────────────────────
+
+// Explicit record of each active stock hold.
+// Complements RESERVATION stock movements by providing full visibility
+// into what is held, for whom, and until when.
+//
+// Created when:
+//   — Transaction Service places a POS cart hold
+//   — Request Service marks an approved stock request for fulfillment
+//
+// Status transitions:
+//   ACTIVE → FULFILLED  : cart checked out / request dispatched
+//                         (RESERVATION_RELEASE movement NOT written;
+//                          the SALE / TRANSFER_OUT movement subsumes it)
+//   ACTIVE → RELEASED   : cart abandoned / request cancelled by user
+//                         (StockMovement(RESERVATION_RELEASE) is written;
+//                          InventoryItem.quantityReserved is decremented)
+//   ACTIVE → EXPIRED    : expiresAt passed; sweeper job releases it
+//                         (StockMovement(RESERVATION_RELEASE) is written)
+model StockReservation {
+    id          String            @id @default(uuid()) @db.Uuid
+    tenantId    String?           @db.Uuid
+    quantity    Int               // Units held (in base UOM)
+    status      ReservationStatus @default(ACTIVE)
+    expiresAt   DateTime?         // null = no automatic expiry
+    fulfilledAt DateTime?         // set when status → FULFILLED
+    releasedAt  DateTime?         // set when status → RELEASED or EXPIRED
+
+    // Cross-service origin — no cross-DB FK
+    referenceId   String  // e.g. Cart.id, StockRequest.id, SalesOrder.id
+    referenceType String  // "CART" | "STOCK_REQUEST" | "SALES_ORDER"
+
+    // Actor: IAM identity ID who created this reservation
+    reservedBy String
+
+    // Relations
+    variantId   String         @db.Uuid
+    variant     ProductVariant @relation(fields: [variantId], references: [id])
+    warehouseId String         @db.Uuid
+    warehouse   Warehouse      @relation(fields: [warehouseId], references: [id])
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([tenantId])
+    @@index([tenantId, status])
+    @@index([tenantId, variantId, status])
+    @@index([tenantId, warehouseId, status])
+    @@index([tenantId, referenceId])
+    // Expiry sweeper job index
+    @@index([tenantId, expiresAt, status])
+    @@map("stock_reservations")
+}
+
+// ─── Stock Transfer ───────────────────────────────────────────
+
+// Document for tracking warehouse-to-warehouse stock movement.
+// Prevents the "ghost stock" problem: stock that has left the source
+// warehouse but not yet been confirmed at the destination.
+//
+// Workflow:
+//   DRAFT → IN_TRANSIT
+//     • StockMovement(TRANSFER_OUT, −qty) on fromWarehouse
+//     • InventoryItem.quantityOnHand decremented at source
+//     • dispatchedAt is set
+//
+//   IN_TRANSIT → COMPLETED | PARTIALLY_RECEIVED → COMPLETED
+//     • StockMovement(TRANSFER_IN, +qty) on toWarehouse
+//     • New InventoryLot created at toWarehouse with the same unitCost
+//       as the source lot — cost basis is preserved across warehouses
+//     • InventoryItem.quantityOnHand incremented at destination
+//     • completedAt is set
+//
+//   Any state → CANCELLED
+//     • If IN_TRANSIT: reversal StockMovement(TRANSFER_IN) written on
+//       fromWarehouse to restore source stock; cancelledAt is set
+model StockTransfer {
+    id           String         @id @default(uuid()) @db.Uuid
+    tenantId     String?        @db.Uuid
+    status       TransferStatus @default(DRAFT)
+    expectedAt   DateTime?      // Expected arrival date at destination
+    dispatchedAt DateTime?      // Set when status → IN_TRANSIT
+    completedAt  DateTime?      // Set when status → COMPLETED
+    cancelledAt  DateTime?      // Set when status → CANCELLED
+    notes        String?
+    performedBy  String         // IAM identity ID of initiator
+
+    // Relations
+    fromWarehouseId String              @db.Uuid
+    fromWarehouse   Warehouse           @relation("TransferFrom", fields: [fromWarehouseId], references: [id])
+    toWarehouseId   String              @db.Uuid
+    toWarehouse     Warehouse           @relation("TransferTo", fields: [toWarehouseId], references: [id])
+    items           StockTransferItem[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@index([tenantId])
+    @@index([tenantId, status])
+    @@index([tenantId, fromWarehouseId])
+    @@index([tenantId, toWarehouseId])
+    @@map("stock_transfers")
+}
+
+// One line per variant per lot on a stock transfer.
+// Lot-level granularity preserves cost basis during transit.
+// Receiving staff may confirm a different quantity than shipped (short shipment, damage).
+model StockTransferItem {
+    id                String @id @default(uuid()) @db.Uuid
+    tenantId          String? @db.Uuid
+    quantityRequested Int     // Quantity to be shipped
+    quantityShipped   Int     @default(0) // Confirmed when status → IN_TRANSIT
+    quantityReceived  Int     @default(0) // Confirmed at destination on receipt
+
+    // Relations
+    transferId String         @db.Uuid
+    transfer   StockTransfer  @relation(fields: [transferId], references: [id])
+    variantId  String         @db.Uuid
+    variant    ProductVariant @relation(fields: [variantId], references: [id])
+    // Source lot — cost basis travels with the shipment
+    lotId      String         @db.Uuid
+    lot        InventoryLot   @relation(fields: [lotId], references: [id])
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([tenantId, transferId, variantId, lotId])
+    @@index([tenantId])
+    @@index([tenantId, transferId])
+    @@index([tenantId, variantId])
+    @@map("stock_transfer_items")
+}
+
+// ─── Stock Count ──────────────────────────────────────────────
+
+// A physical inventory count session (cycle count or full stock take).
+//
+// countType values:
+//   CYCLE — routine rolling count of a subset of SKUs or a zone
+//   FULL  — full physical count of all SKUs across the warehouse
+//   SPOT  — ad-hoc count of one or a few SKUs triggered by discrepancy
+//
+// Workflow:
+//   DRAFT → IN_PROGRESS
+//     • Count sheet generated; expected quantities frozen per item
+//
+//   IN_PROGRESS → COMPLETED
+//     • All lines reconciled (quantityActual filled in)
+//     • For every line where variance ≠ 0:
+//         StockMovement(ADJUSTMENT, ±variance) written atomically
+//         InventoryItem.quantityOnHand updated
+//     • StockAlert(COUNT_VARIANCE) fired if abs(variance) > threshold
+//
+//   Any state → CANCELLED
+//     • No movements written; count sheet discarded
+model StockCount {
+    id           String           @id @default(uuid()) @db.Uuid
+    tenantId     String?          @db.Uuid
+    countType    String           @default("CYCLE") // "CYCLE" | "FULL" | "SPOT"
+    status       StockCountStatus @default(DRAFT)
+    startedAt    DateTime?        // When counting physically began
+    completedAt  DateTime?        // When session was closed and variances applied
+    notes        String?
+    performedBy  String           // IAM identity ID of count initiator
+    supervisedBy String?          // IAM identity ID of supervisor/approver
+
+    // Relations
+    warehouseId String           @db.Uuid
+    warehouse   Warehouse        @relation(fields: [warehouseId], references: [id])
+    items       StockCountItem[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@index([tenantId])
+    @@index([tenantId, warehouseId])
+    @@index([tenantId, status])
+    @@map("stock_counts")
+}
+
+// One counted line per variant (× lot × bin location).
+//
+// quantityExpected — system quantity at the moment the count session started.
+// quantityActual   — quantity physically counted by staff.
+// variance         — computed: quantityActual − quantityExpected
+//   Positive variance = found MORE than expected (surplus / unregistered stock)
+//   Negative variance = found LESS than expected (shortage / unrecorded movements)
+//
+// varianceReason is mandatory when variance ≠ 0 on session completion.
+// Common reasons: "Theft", "Counting Error", "Receiving Not Posted",
+//                 "Mislabelled Location", "Expired Disposed".
+model StockCountItem {
+    id               String  @id @default(uuid()) @db.Uuid
+    tenantId         String? @db.Uuid
+    quantityExpected Int
+    quantityActual   Int     @default(0)
+    variance         Int     @default(0)  // actual - expected
+    varianceReason   String?              // required when variance ≠ 0 on completion
+    isReconciled     Boolean @default(false)
+
+    // Relations
+    stockCountId  String         @db.Uuid
+    stockCount    StockCount     @relation(fields: [stockCountId], references: [id])
+    variantId     String         @db.Uuid
+    variant       ProductVariant @relation(fields: [variantId], references: [id])
+    // Optional lot-level counting for BATCH / SERIAL variants
+    lotId         String?        @db.Uuid
+    lot           InventoryLot?  @relation(fields: [lotId], references: [id])
+    // Optional bin-level counting for precise location tracking
+    binLocationId String?        @db.Uuid
+    binLocation   BinLocation?   @relation(fields: [binLocationId], references: [id])
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([tenantId, stockCountId, variantId, lotId])
+    @@index([tenantId])
+    @@index([tenantId, stockCountId])
+    @@map("stock_count_items")
+}
+
+// ─── Stock Alert ─────────────────────────────────────────────
+
+// Generated by the Inventory Service when a threshold is breached.
+//
+// Consumers by alert type:
+//   LOW_STOCK / OUT_OF_STOCK  → Procurement Service (auto-draft PO suggestion)
+//   OVERSTOCK                 → Procurement Service (suppresses reorder flags)
+//   LOT_EXPIRING / LOT_EXPIRED → Notification Service (email / push to manager)
+//   COUNT_VARIANCE            → Notification + Financial Service
+//
+// Deduplication: only one OPEN alert per
+//   (tenantId, variantId, warehouseId, alertType) should exist.
+// A new alert is created only after the previous one is RESOLVED.
+model StockAlert {
+    id         String      @id @default(uuid()) @db.Uuid
+    tenantId   String?     @db.Uuid
+    alertType  AlertType
+    status     AlertStatus @default(OPEN)
+    threshold  Int?        // The threshold value that was breached
+    currentQty Int?        // Quantity at the moment the alert fired
+    resolvedAt DateTime?
+    resolvedBy String?     // IAM identity ID of who resolved it
+    notes      String?
+
+    // Relations
+    variantId   String         @db.Uuid
+    variant     ProductVariant @relation(fields: [variantId], references: [id])
+    warehouseId String         @db.Uuid
+    warehouse   Warehouse      @relation(fields: [warehouseId], references: [id])
+    // For LOT_EXPIRING / LOT_EXPIRED alerts
+    lotId       String?        @db.Uuid
+    lot         InventoryLot?  @relation(fields: [lotId], references: [id])
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([tenantId])
+    @@index([tenantId, status])
+    @@index([tenantId, alertType, status])
+    @@index([tenantId, variantId, alertType])
+    @@index([tenantId, warehouseId])
+    @@map("stock_alerts")
+}
+
+// ─── Return Request ──────────────────────────────────────────
+
+// Structured RMA (Return Merchandise Authorization) document.
+//
+// Originates from:
+//   — Transaction Service  : customer returning a sold item
+//   — Procurement Service  : defective / incorrect supplier delivery
+//
+// Workflow:
+//   REQUESTED → APPROVED   : return authorized; customer ships item back
+//   APPROVED  → RECEIVED   : physical item accepted at warehouse
+//   RECEIVED  → COMPLETED  : disposition applied per line item:
+//
+//     RESTOCK
+//       → StockMovement(RETURN, +qty)
+//       → lot.quantityRemaining incremented (or new lot if original is closed)
+//
+//     DAMAGE
+//       → StockMovement(DAMAGE, −qty); item written off (no stock added back)
+//
+//     RETURN_TO_SUPPLIER
+//       → Passed to Procurement Service which creates a supplier return order
+//       → No inventory movement here until Procurement confirms supplier receipt
+//
+//   Any state → REJECTED / CANCELLED : no stock movements written
+model ReturnRequest {
+    id           String              @id @default(uuid()) @db.Uuid
+    tenantId     String?             @db.Uuid
+    returnReason String?             // Customer or internal reason for return
+    status       ReturnRequestStatus @default(REQUESTED)
+    approvedAt   DateTime?           // Set when status → APPROVED
+    receivedAt   DateTime?           // Set when physical item arrives at warehouse
+    completedAt  DateTime?           // Set when disposition is applied
+
+    // Actors — IAM identity IDs, no cross-DB FK
+    performedBy String              // Who initiated the return (store staff, warehouse)
+    approvedBy  String?             // Who authorized the return
+
+    // Cross-service origin — no cross-DB FK
+    referenceId   String            // SaleTransaction.id or GRN.id
+    referenceType String            // "SALE_TRANSACTION" | "GOODS_RECEIPT_NOTE"
+
+    // Relations
+    items ReturnRequestItem[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@index([tenantId])
+    @@index([tenantId, status])
+    @@index([tenantId, referenceId])
+    @@map("return_requests")
+}
+
+// One return line per variant per return request.
+// disposition is set during the RECEIVED → COMPLETED transition.
+model ReturnRequestItem {
+    id               String            @id @default(uuid()) @db.Uuid
+    tenantId         String?           @db.Uuid
+    quantityReturned Int
+    disposition      ReturnDisposition
+    dispositionNotes String?
+
+    // Relations
+    returnRequestId String         @db.Uuid
+    returnRequest   ReturnRequest  @relation(fields: [returnRequestId], references: [id])
+    variantId       String         @db.Uuid
+    variant         ProductVariant @relation(fields: [variantId], references: [id])
+    // Original lot for correct FIFO / costing reversal on RESTOCK
+    lotId           String?        @db.Uuid
+    lot             InventoryLot?  @relation(fields: [lotId], references: [id])
+    // For SERIAL-tracked variants — identifies the specific unit being returned
+    serialNumber    String?
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([tenantId])
+    @@index([tenantId, returnRequestId])
+    @@index([tenantId, variantId])
+    @@map("return_request_items")
+}

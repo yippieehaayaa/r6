@@ -1,0 +1,22 @@
+meta {
+  name: Update Brand
+  type: http
+  seq: 15
+}
+
+patch {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/catalog/brands/{{brandId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Updated Brand",
+    "description": "Updated brand description"
+  }
+}

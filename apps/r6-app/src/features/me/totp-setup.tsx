@@ -4,7 +4,7 @@ import {
 	getTotpSetupFn,
 	useDisableTotpMutation,
 	useEnableTotpMutation,
-} from "@/api/me";
+} from "@/api/identity-and-access/me";
 import { Button } from "@/components/ui/button";
 import {
 	InputOTP,

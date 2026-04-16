@@ -1,0 +1,135 @@
+// Hierarchical product taxonomy (self-referencing)
+model Category {
+    id          String   @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug  String
+    name        String
+    slug        String
+    description String?
+    parentId    String?  @db.ObjectId
+    isActive    Boolean  @default(true)
+    sortOrder   Int      @default(0)
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Relations
+    parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    children Category[] @relation("CategoryHierarchy")
+    products Product[]
+
+    // Indexes — O(1) equality filters per access pattern
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, parentId])
+    @@index([tenantSlug, isActive])
+    @@index([deletedAt])
+    @@map("categories")
+}
+
+// Product brand / manufacturer
+model Brand {
+    id          String  @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug  String
+    name        String
+    slug        String
+    description String?
+    logoUrl     String?
+    isActive    Boolean @default(true)
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Relations
+    products Product[]
+
+    // Indexes
+    @@unique([tenantSlug, name])
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, isActive])
+    @@index([deletedAt])
+    @@map("brands")
+}
+
+// Base product (contains shared attributes across all variants)
+model Product {
+    id          String        @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug  String
+    sku         String
+    name        String
+    slug        String
+    description String?
+    tags        String[]
+    status      ProductStatus @default(DRAFT)
+    metadata    Json?
+
+    // Relations
+    categoryId String   @db.ObjectId
+    category   Category @relation(fields: [categoryId], references: [id])
+
+    brandId String? @db.ObjectId
+    brand   Brand?  @relation(fields: [brandId], references: [id])
+
+    variants ProductVariant[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Indexes
+    @@unique([tenantSlug, sku])
+    @@unique([tenantSlug, slug])
+    @@index([tenantSlug])
+    @@index([tenantSlug, categoryId])
+    @@index([tenantSlug, brandId])
+    @@index([tenantSlug, status])
+    @@index([deletedAt])
+    @@map("products")
+}
+
+// Purchasable / stockable unit of a product (e.g. size + colour combination)
+model ProductVariant {
+    id             String       @id @default(auto()) @map("_id") @db.ObjectId
+    tenantSlug     String
+    sku            String
+    name           String
+    options        Json         // { "color": "red", "size": "M" }
+    price          Int
+    costPrice      Int?
+    compareAtPrice Int?
+    weight         Float?
+    length         Float?
+    width          Float?
+    height         Float?
+    dimensionUnit  DimensionUnit?
+    weightUnit     WeightUnit?
+    currency       String       @default("PHP")
+    images         ImageEmbed[]
+    isActive       Boolean      @default(true)
+
+    // Relations
+    productId String  @db.ObjectId
+    product   Product @relation(fields: [productId], references: [id])
+
+    inventoryItems    InventoryItem[]
+    stockMovements    StockMovement[]
+    purchaseOrderItems PurchaseOrderItem[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // Indexes
+    @@unique([tenantSlug, sku])
+    @@index([tenantSlug])
+    @@index([tenantSlug, productId])
+    @@index([tenantSlug, isActive])
+    @@index([deletedAt])
+    @@map("product_variants")
+}

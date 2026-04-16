@@ -1,0 +1,262 @@
+// ============================================================
+//  CATALOG
+//  Product master data owned by the Inventory Service.
+//
+//  No pricing — that belongs to a future Pricing Service.
+//  No supplier data — that belongs to the Procurement Service.
+//
+//  The atomic shared unit across ALL microservices:
+//    ProductVariant.id (variantId) + ProductVariant.sku
+//
+//  External services (Procurement, Transaction, Financial, Request)
+//  store variantId + a denormalized snapshot (sku, name) in their
+//  own databases. No hard cross-database foreign keys.
+//
+//  Multi-tenancy:
+//    tenantId? — null is reserved for platform ADMIN visibility.
+//    All tenant-created records carry a non-null tenantId.
+//    PostgreSQL RLS enforces row-level isolation per tenant.
+// ============================================================
+
+// ─── Unit of Measure ─────────────────────────────────────────
+
+// A named unit of measure (e.g. Piece, Case, Kilogram, Bottle).
+//
+// Stock is always tracked in the BASE UOM unit.
+// Purchase orders use PURCHASE UOMs (e.g. 1 CASE = 24 PCS).
+// Sales use SALE UOMs (e.g. 1 PACK = 6 PCS).
+// UomConversion defines the factor between any two UOMs.
+model UnitOfMeasure {
+    id           String  @id @default(uuid()) @db.Uuid
+    tenantId     String? @db.Uuid
+    name         String        // e.g. "Piece", "Case", "Kilogram"
+    abbreviation String        // e.g. "pcs", "cs", "kg"
+    uomType      UomType @default(BASE)
+    isActive     Boolean @default(true)
+
+    // Relations
+    productVariants ProductVariant[]
+    conversionFrom  UomConversion[]  @relation("ConversionFrom")
+    conversionTo    UomConversion[]  @relation("ConversionTo")
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, abbreviation])
+    @@index([tenantId])
+    @@index([tenantId, isActive])
+    @@map("units_of_measure")
+}
+
+// Conversion factor between two units of measure.
+//
+// Example: 1 CASE → 24 PIECES
+//   fromUomId = CASE, toUomId = PIECE, conversionFactor = 24
+//
+// Application layer converts on demand:
+//   quantityInTo = quantityInFrom × conversionFactor
+//   quantityInFrom = quantityInTo / conversionFactor (reverse)
+model UomConversion {
+    id               String  @id @default(uuid()) @db.Uuid
+    tenantId         String? @db.Uuid
+    fromUomId        String  @db.Uuid
+    toUomId          String  @db.Uuid
+    // High precision: handles weight/volume (e.g. 1 lb = 0.453592 kg)
+    conversionFactor Decimal @db.Decimal(18, 6)
+
+    // Relations
+    fromUom UnitOfMeasure @relation("ConversionFrom", fields: [fromUomId], references: [id])
+    toUom   UnitOfMeasure @relation("ConversionTo", fields: [toUomId], references: [id])
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, fromUomId, toUomId])
+    @@index([tenantId])
+    @@map("uom_conversions")
+}
+
+// ─── Taxonomy ────────────────────────────────────────────────
+
+// Hierarchical product taxonomy with unlimited depth via self-reference.
+// Example path: Electronics → Mobile Phones → Android → Samsung
+//
+// sortOrder controls display order among siblings.
+// slug is the URL-safe identifier used in catalog navigation.
+model Category {
+    id          String  @id @default(uuid()) @db.Uuid
+    tenantId    String? @db.Uuid
+    name        String
+    slug        String
+    description String?
+    parentId    String? @db.Uuid
+    path        String  @default("/")
+    sortOrder   Int     @default(0)
+    isActive    Boolean @default(true)
+
+    // Relations
+    parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    children Category[] @relation("CategoryHierarchy")
+    products Product[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, slug])
+    @@index([tenantId])
+    @@index([tenantId, parentId])
+    @@index([tenantId, isActive])
+    @@index([tenantId, path])
+    @@index([deletedAt])
+    @@map("categories")
+}
+
+// Product brand or manufacturer.
+model Brand {
+    id          String  @id @default(uuid()) @db.Uuid
+    tenantId    String? @db.Uuid
+    name        String
+    slug        String
+    description String?
+    logoUrl     String?
+    isActive    Boolean @default(true)
+
+    // Relations
+    products Product[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, slug])
+    @@unique([tenantId, name])
+    @@index([tenantId])
+    @@index([tenantId, isActive])
+    @@index([deletedAt])
+    @@map("brands")
+}
+
+// ─── Product ─────────────────────────────────────────────────
+
+// Base product — the grouping concept above variants.
+// NOTHING is bought, sold, or stocked at the Product level.
+// All transactions, stock movements, and procurement happen
+// at the ProductVariant level.
+//
+// tags: free-form searchable labels e.g. ["electronics", "mobile", "samsung"]
+//
+// metadata: open JSON bag for cross-service feature flags.
+//   Lets external services read lightweight flags without a schema migration.
+//   Examples:
+//     { "isPOSVisible": true, "isRequestable": true,
+//       "isSellable": true, "isConsumable": false }
+model Product {
+    id          String        @id @default(uuid()) @db.Uuid
+    tenantId    String?       @db.Uuid
+    sku         String        // Base SKU — variants append a suffix e.g. "ITEM-001-BLK-256"
+    name        String
+    slug        String
+    description String?
+    tags        String[]      // Full-text searchable labels
+    metadata    Json?         // Extensible feature flags (see comment above)
+    status      ProductStatus @default(DRAFT)
+
+    // Relations
+    categoryId String?   @db.Uuid
+    category   Category? @relation(fields: [categoryId], references: [id])
+    brandId    String?   @db.Uuid
+    brand      Brand?    @relation(fields: [brandId], references: [id])
+    variants   ProductVariant[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    @@unique([tenantId, sku])
+    @@unique([tenantId, slug])
+    @@index([tenantId])
+    @@index([tenantId, categoryId])
+    @@index([tenantId, brandId])
+    @@index([tenantId, status])
+    @@index([deletedAt])
+    @@map("products")
+}
+
+// ─── Product Variant ─────────────────────────────────────────
+
+// The atomic stockable and sellable unit.
+// This is the ID every other microservice (Procurement, Transaction,
+// Financial, Request) stores in its own database as variantId.
+// No cross-DB foreign keys — services cache a denormalized snapshot
+// (sku, name) at the time of the transaction.
+//
+// options: structured variant-defining attributes.
+//   { "color": "Titanium Black", "storage": "256GB", "size": "XL" }
+//   Stored as JSON for flexibility without a dedicated attribute table.
+//
+// baseUomId: the UOM all stock quantities are tracked in.
+//   All StockMovement quantities are in this unit.
+//   Conversions to purchase or sale UOMs happen at the service layer.
+//
+// barcode: EAN-13, UPC-A, or internal barcode — used by POS scanners.
+//
+// metadata: extensible cross-service flags.
+//   { "isSellable": true, "isConsumable": false,
+//     "warrantyMonths": 12, "isRequestable": true,
+//     "requiresApproval": false }
+model ProductVariant {
+    id            String         @id @default(uuid()) @db.Uuid
+    tenantId      String?        @db.Uuid
+    sku           String         // Globally unique per tenant — stamped on all documents
+    name          String         // e.g. "Samsung Galaxy S26 Ultra — 256GB Titanium Black"
+    barcode       String?        // EAN-13, UPC-A, or internal barcode
+    options       Json           // Variant-defining attributes { "color": "...", "size": "..." }
+    trackingType  TrackingType   @default(NONE)
+    weight        Decimal?       @db.Decimal(10, 3)
+    length        Decimal?       @db.Decimal(10, 3)
+    width         Decimal?       @db.Decimal(10, 3)
+    height        Decimal?       @db.Decimal(10, 3)
+    dimensionUnit DimensionUnit?
+    weightUnit    WeightUnit?
+    imageUrl      String?
+    metadata      Json?          // Extensible cross-service flags (see comment above)
+    isActive      Boolean        @default(true)
+
+    // Relations
+    productId String  @db.Uuid
+    product   Product @relation(fields: [productId], references: [id])
+    baseUomId String  @db.Uuid
+    baseUom   UnitOfMeasure @relation(fields: [baseUomId], references: [id])
+
+    inventoryItems     InventoryItem[]
+    inventoryLots      InventoryLot[]
+    stockMovements     StockMovement[]
+    serializedUnits    SerializedUnit[]
+    transferItems      StockTransferItem[]
+    stockCountItems    StockCountItem[]
+    stockReservations  StockReservation[]
+    returnRequestItems ReturnRequestItem[]
+    stockAlerts        StockAlert[]
+
+    // Timestamps
+    createdAt DateTime  @default(now())
+    updatedAt DateTime  @updatedAt
+    deletedAt DateTime?
+
+    // barcode unique per tenant (PostgreSQL allows multiple NULLs in a unique index)
+    @@unique([tenantId, sku])
+    @@unique([tenantId, barcode])
+    @@index([tenantId])
+    @@index([tenantId, productId])
+    @@index([tenantId, isActive])
+    @@index([deletedAt])
+    @@map("product_variants")
+}

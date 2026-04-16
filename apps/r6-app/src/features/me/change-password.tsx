@@ -3,7 +3,7 @@ import { type ChangePasswordInput, ChangePasswordSchema } from "@r6/schemas";
 import { useNavigate } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { useUpdatePasswordMutation } from "@/api/me";
+import { useUpdatePasswordMutation } from "@/api/identity-and-access/me";
 import { useAuth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import {

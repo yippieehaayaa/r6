@@ -1,0 +1,29 @@
+meta {
+  name: Fulfill Sale
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/stock-out/fulfill
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "referenceId": "ORDER-2024-001",
+    "referenceType": "SALE_ORDER",
+    "lines": [
+      {
+        "variantId": "{{variantId}}",
+        "warehouseId": "{{warehouseId}}",
+        "quantity": 5
+      }
+    ]
+  }
+}

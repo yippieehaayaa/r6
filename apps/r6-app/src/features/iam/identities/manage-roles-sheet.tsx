@@ -6,8 +6,8 @@ import { toast } from "sonner";
 import {
 	useGetIdentityWithRolesQuery,
 	useSetRolesMutation,
-} from "@/api/identities";
-import { useListRolesQuery } from "@/api/roles";
+} from "@/api/identity-and-access/identities";
+import { useListRolesQuery } from "@/api/identity-and-access/roles";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";

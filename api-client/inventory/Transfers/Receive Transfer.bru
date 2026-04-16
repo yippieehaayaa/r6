@@ -1,0 +1,26 @@
+meta {
+  name: Receive Transfer
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseURL}}/tenants/{{tenantSlug}}/transfers/{{transferId}}/receive
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "lines": [
+      {
+        "transferItemId": "{{transferItemId}}",
+        "quantityReceived": 20
+      }
+    ]
+  }
+}
