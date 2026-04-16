@@ -1,6 +1,4 @@
-import { INVENTORY_PERMISSIONS } from "@r6/schemas/inventory";
 import { Router } from "express";
-import { requirePermission } from "../../middleware/guard";
 import { getBrandHandler, listBrandsHandler } from "./controller/brands";
 import {
   getCategoryHandler,
@@ -32,25 +30,25 @@ const router: Router = Router({ mergeParams: true });
 
 router.get(
   "/products",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   listProductsHandler,
 );
 
 router.get(
   "/products/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   getProductHandler,
 );
 
 router.patch(
   "/products/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   updateProductHandler,
 );
 
 router.delete(
   "/products/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   deleteProductHandler,
 );
 
@@ -58,25 +56,25 @@ router.delete(
 
 router.get(
   "/variants",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   listVariantsHandler,
 );
 
 router.get(
   "/variants/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   getVariantHandler,
 );
 
 router.patch(
   "/variants/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   updateVariantHandler,
 );
 
 router.delete(
   "/variants/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   deleteVariantHandler,
 );
 
@@ -84,25 +82,25 @@ router.delete(
 
 router.get(
   "/categories",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   listCategoriesHandler,
 );
 
 router.get(
   "/categories/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   getCategoryHandler,
 );
 
 router.patch(
   "/categories/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   updateCategoryHandler,
 );
 
 router.delete(
   "/categories/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   deleteCategoryHandler,
 );
 
@@ -110,25 +108,25 @@ router.delete(
 
 router.get(
   "/brands",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   listBrandsHandler,
 );
 
 router.get(
   "/brands/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   getBrandHandler,
 );
 
 router.patch(
   "/brands/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   updateBrandHandler,
 );
 
 router.delete(
   "/brands/:id",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_UPDATE),
   deleteBrandHandler,
 );
 
@@ -136,7 +134,7 @@ router.delete(
 
 router.get(
   "/uoms",
-  requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
+  // requirePermission(INVENTORY_PERMISSIONS.CATALOG_READ),
   listUomsHandler,
 );
 

@@ -157,3 +157,16 @@ export const WarehouseSetupSchema = z.object({
 });
 
 export type WarehouseSetupInput = z.infer<typeof WarehouseSetupSchema>;
+
+// ── Setup Status ─────────────────────────────────────────────
+
+export const SetupStatusSchema = z.object({
+  isOnboarded: z.boolean(),
+  hasBaseUom: z.boolean(),
+  hasWarehouse: z.boolean(),
+  hasAdditionalUoms: z.boolean(),
+  hasCategories: z.boolean(),
+  hasBrands: z.boolean(),
+});
+
+export type SetupStatus = z.infer<typeof SetupStatusSchema>;

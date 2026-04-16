@@ -13,3 +13,8 @@ get {
 auth:bearer {
   token: {{accessToken}}
 }
+
+vars:pre-request {
+  baseURL: http://localhost:3000/inventory-and-catalog
+  tenantSlug: demo-corpo
+}

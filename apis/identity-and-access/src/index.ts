@@ -19,7 +19,7 @@ connectDenylist()
 
 const shutdown = () => {
   server.close(async () => {
-    await redis.disconnect();
+    await redis.quit();
     process.exit(0);
   });
 };

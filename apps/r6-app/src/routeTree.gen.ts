@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as R6SetupRouteImport } from './routes/r6/setup'
 import { Route as R6LoginRouteImport } from './routes/r6/login'
 import { Route as R6AuthenticatedRouteImport } from './routes/r6/_authenticated'
 import { Route as R6AuthenticatedIndexRouteImport } from './routes/r6/_authenticated/index'
@@ -33,6 +34,11 @@ import { Route as R6AuthenticatedIamTenantsTenantSlugRouteImport } from './route
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R6SetupRoute = R6SetupRouteImport.update({
+  id: '/r6/setup',
+  path: '/r6/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const R6LoginRoute = R6LoginRouteImport.update({
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/r6': typeof R6AuthenticatedRouteWithChildren
   '/r6/login': typeof R6LoginRoute
+  '/r6/setup': typeof R6SetupRoute
   '/r6/account-security': typeof R6AuthenticatedAccountSecurityRoute
   '/r6/forbidden': typeof R6AuthenticatedForbiddenRoute
   '/r6/': typeof R6AuthenticatedIndexRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/r6/login': typeof R6LoginRoute
+  '/r6/setup': typeof R6SetupRoute
   '/r6/account-security': typeof R6AuthenticatedAccountSecurityRoute
   '/r6/forbidden': typeof R6AuthenticatedForbiddenRoute
   '/r6': typeof R6AuthenticatedIndexRoute
@@ -193,6 +201,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/r6/_authenticated': typeof R6AuthenticatedRouteWithChildren
   '/r6/login': typeof R6LoginRoute
+  '/r6/setup': typeof R6SetupRoute
   '/r6/_authenticated/account-security': typeof R6AuthenticatedAccountSecurityRoute
   '/r6/_authenticated/forbidden': typeof R6AuthenticatedForbiddenRoute
   '/r6/_authenticated/': typeof R6AuthenticatedIndexRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/'
     | '/r6'
     | '/r6/login'
+    | '/r6/setup'
     | '/r6/account-security'
     | '/r6/forbidden'
     | '/r6/'
@@ -238,6 +248,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/r6/login'
+    | '/r6/setup'
     | '/r6/account-security'
     | '/r6/forbidden'
     | '/r6'
@@ -260,6 +271,7 @@ export interface FileRouteTypes {
     | '/'
     | '/r6/_authenticated'
     | '/r6/login'
+    | '/r6/setup'
     | '/r6/_authenticated/account-security'
     | '/r6/_authenticated/forbidden'
     | '/r6/_authenticated/'
@@ -283,6 +295,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R6AuthenticatedRoute: typeof R6AuthenticatedRouteWithChildren
   R6LoginRoute: typeof R6LoginRoute
+  R6SetupRoute: typeof R6SetupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r6/setup': {
+      id: '/r6/setup'
+      path: '/r6/setup'
+      fullPath: '/r6/setup'
+      preLoaderRoute: typeof R6SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/r6/login': {
@@ -484,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R6AuthenticatedRoute: R6AuthenticatedRouteWithChildren,
   R6LoginRoute: R6LoginRoute,
+  R6SetupRoute: R6SetupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
