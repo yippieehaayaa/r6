@@ -3,18 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { identityApi } from "@/api/_app";
 
-export async function getRoleFn(tenantSlug: string, id: string): Promise<Role> {
+export async function getRoleFn(tenantId: string, id: string): Promise<Role> {
 	const { data } = await identityApi.get<unknown>(
-		`/tenants/${tenantSlug}/roles/${id}`,
+		`/tenants/${tenantId}/roles/${id}`,
 	);
 	return RoleSchema.parse(data);
 }
 
-export function useGetRoleQuery(tenantSlug: string, id: string) {
+export function useGetRoleQuery(tenantId: string, id: string) {
 	return useQuery({
-		queryKey: ["roles", tenantSlug, id],
-		queryFn: () => getRoleFn(tenantSlug, id),
-		enabled: !!tenantSlug && !!id,
+		queryKey: ["roles", tenantId, id],
+		queryFn: () => getRoleFn(tenantId, id),
+		enabled: !!tenantId && !!id,
 	});
 }
 
@@ -25,23 +25,23 @@ const RoleWithPoliciesSchema = RoleSchema.extend({
 export type RoleWithPolicies = z.infer<typeof RoleWithPoliciesSchema>;
 
 export async function getRoleWithPoliciesFn(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 ): Promise<RoleWithPolicies> {
 	const { data } = await identityApi.get<unknown>(
-		`/tenants/${tenantSlug}/roles/${id}`,
+		`/tenants/${tenantId}/roles/${id}`,
 	);
 	return RoleWithPoliciesSchema.parse(data);
 }
 
 export function useGetRoleWithPoliciesQuery(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["roles", tenantSlug, id],
-		queryFn: () => getRoleWithPoliciesFn(tenantSlug, id),
-		enabled: options?.enabled ?? (!!tenantSlug && !!id),
+		queryKey: ["roles", tenantId, id],
+		queryFn: () => getRoleWithPoliciesFn(tenantId, id),
+		enabled: options?.enabled ?? (!!tenantId && !!id),
 	});
 }

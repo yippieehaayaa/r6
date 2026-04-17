@@ -43,12 +43,12 @@ export default function RolesPage() {
 	const canUpdate = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_UPDATE);
 	const canDelete = !isAdmin && hasPermission(IAM_PERMISSIONS.ROLE_DELETE);
 	const canRestore = isAdmin;
-	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
-		claims?.tenantSlug ?? "",
+	const [selectedTenantId, setSelectedTenantId] = useState<string>(
+		claims?.tenantId ?? "",
 	);
-	const activeTenantSlug = isAdmin
-		? selectedTenantSlug
-		: (claims?.tenantSlug ?? "");
+	const activeTenantId = isAdmin
+		? selectedTenantId
+		: (claims?.tenantId ?? "");
 	const queryClient = useQueryClient();
 
 	const { data: tenantsData } = useListTenantsQuery(
@@ -72,7 +72,7 @@ export default function RolesPage() {
 	}, [search]);
 
 	const { data, isLoading } = useListRolesQuery(
-		activeTenantSlug,
+		activeTenantId,
 		{
 			page: pagination.pageIndex + 1,
 			limit: pagination.pageSize,
@@ -102,11 +102,11 @@ export default function RolesPage() {
 	function confirmDelete() {
 		if (!deleteTarget || !canDelete) return;
 		removeMutation.mutate(
-			{ tenantSlug: activeTenantSlug, id: deleteTarget.id },
+			{ tenantId: activeTenantId, id: deleteTarget.id },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["roles", activeTenantSlug],
+						queryKey: ["roles", activeTenantId],
 					});
 					toast.success("Role deleted.");
 					setDeleteTarget(null);
@@ -119,11 +119,11 @@ export default function RolesPage() {
 	function handleRestore(role: Role) {
 		if (!canRestore) return;
 		restoreMutation.mutate(
-			{ tenantSlug: activeTenantSlug, id: role.id },
+			{ tenantId: activeTenantId, id: role.id },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["roles", activeTenantSlug],
+						queryKey: ["roles", activeTenantId],
 					});
 					toast.success("Role restored.");
 				},
@@ -150,7 +150,7 @@ export default function RolesPage() {
 			</div>
 
 			<div className="rounded-xl border bg-card p-4">
-				{isAdmin && !activeTenantSlug ? (
+				{isAdmin && !activeTenantId ? (
 					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
 						<Building2 className="h-10 w-10 text-muted-foreground/50" />
 						<div>
@@ -171,7 +171,7 @@ export default function RolesPage() {
 							</SelectTrigger>
 							<SelectContent>
 								{(tenantsData?.data ?? []).map((t) => (
-									<SelectItem key={t.slug} value={t.slug}>
+								<SelectItem key={t.id} value={t.id}>
 										{t.name}
 									</SelectItem>
 								))}
@@ -180,7 +180,7 @@ export default function RolesPage() {
 					</div>
 				) : (
 					<RolesTable
-						key={activeTenantSlug}
+					key={activeTenantId}
 						data={data?.data ?? []}
 						isLoading={isLoading}
 						onEdit={handleEdit}
@@ -204,7 +204,7 @@ export default function RolesPage() {
 			<RoleSheet
 				open={sheetOpen}
 				onOpenChange={handleSheetOpenChange}
-				tenantSlug={activeTenantSlug}
+				tenantId={activeTenantId}
 				role={editTarget}
 			/>
 

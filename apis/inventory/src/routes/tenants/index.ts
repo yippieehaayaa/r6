@@ -21,24 +21,20 @@ const router: Router = Router();
 
 router.use(authMiddleware());
 
-router.use("/:tenantSlug/catalog", requireTenantScope(), catalog);
-router.use("/:tenantSlug/setup", requireTenantScope(), setup);
-router.use("/:tenantSlug/stock-in", requireTenantScope(), stockIn);
-router.use("/:tenantSlug/stock-out", requireTenantScope(), stockOut);
-router.use("/:tenantSlug/corrections", requireTenantScope(), corrections);
-router.use("/:tenantSlug/transfers", requireTenantScope(), transfers);
-router.use("/:tenantSlug/returns", requireTenantScope(), returns);
-router.use("/:tenantSlug/stock-counts", requireTenantScope(), stockCounts);
-router.use("/:tenantSlug/stock-alerts", requireTenantScope(), stockAlerts);
-router.use("/:tenantSlug/availability", requireTenantScope(), availability);
-router.use("/:tenantSlug/warehouses", requireTenantScope(), warehouses);
-router.use(
-  "/:tenantSlug/inventory-items",
-  requireTenantScope(),
-  inventoryItems,
-);
-router.use("/:tenantSlug/movements", requireTenantScope(), movements);
-router.use("/:tenantSlug/lots", requireTenantScope(), lots);
-router.use("/:tenantSlug/reservations", requireTenantScope(), reservations);
+router.use("/:tenantId/catalog", requireTenantScope(), catalog);
+router.use("/:tenantId/setup", requireTenantScope(), setup);
+router.use("/:tenantId/stock-in", requireTenantScope(), stockIn);
+router.use("/:tenantId/stock-out", requireTenantScope(), stockOut);
+router.use("/:tenantId/corrections", requireTenantScope(), corrections);
+router.use("/:tenantId/transfers", requireTenantScope(), transfers);
+router.use("/:tenantId/returns", requireTenantScope(), returns);
+router.use("/:tenantId/stock-counts", requireTenantScope(), stockCounts);
+router.use("/:tenantId/stock-alerts", requireTenantScope(), stockAlerts);
+router.use("/:tenantId/availability", requireTenantScope(), availability);
+router.use("/:tenantId/warehouses", requireTenantScope(), warehouses);
+router.use("/:tenantId/inventory-items", requireTenantScope(), inventoryItems);
+router.use("/:tenantId/movements", requireTenantScope(), movements);
+router.use("/:tenantId/lots", requireTenantScope(), lots);
+router.use("/:tenantId/reservations", requireTenantScope(), reservations);
 
 export default router;

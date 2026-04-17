@@ -15,13 +15,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 interface Props {
-	tenantSlug: string;
+	tenantId: string;
 	identity: IdentitySafe;
 	open: boolean;
 	active: boolean;
 }
 
-export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
+export function RolesTabContent({ tenantId, identity, open, active }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useSetRolesMutation();
 
@@ -33,7 +33,7 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 
 	const { data: identityWithRoles, isLoading: isLoadingCurrent } =
-		useGetIdentityWithRolesQuery(tenantSlug, identity.id, {
+		useGetIdentityWithRolesQuery(tenantId, identity.id, {
 			enabled: open && active,
 		});
 
@@ -45,7 +45,7 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 
 	// Eagerly fetch all roles on open; filter client-side
 	const { data: rolesData, isLoading: isLoadingRoles } = useListRolesQuery(
-		tenantSlug,
+		tenantId,
 		{ limit: 100 },
 		{ staleTime: 30 * 1000, enabled: open && active },
 	);
@@ -109,14 +109,14 @@ export function RolesTabContent({ tenantSlug, identity, open, active }: Props) {
 
 	function handleSave() {
 		mutation.mutate(
-			{ tenantSlug, id: identity.id, roleIds: [...assignedRoles.keys()] },
+			{ tenantId, id: identity.id, roleIds: [...assignedRoles.keys()] },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug],
+						queryKey: ["identities", tenantId],
 					});
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug, identity.id],
+						queryKey: ["identities", tenantId, identity.id],
 					});
 					toast.success("Roles updated.");
 					setInitialIds(new Set(assignedRoles.keys()));

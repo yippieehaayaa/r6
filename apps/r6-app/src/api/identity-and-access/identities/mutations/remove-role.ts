@@ -3,18 +3,18 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface RemoveIdentityRoleParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 	roleId: string;
 }
 
 export async function removeIdentityRoleFn({
-	tenantSlug,
+	tenantId,
 	id,
 	roleId,
 }: RemoveIdentityRoleParams): Promise<IdentitySafe> {
 	const { data } = await identityApi.delete<unknown>(
-		`/tenants/${tenantSlug}/identities/${id}/roles/${roleId}`,
+		`/tenants/${tenantId}/identities/${id}/roles/${roleId}`,
 	);
 	return IdentitySafeSchema.parse(data);
 }

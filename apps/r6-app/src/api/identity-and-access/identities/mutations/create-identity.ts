@@ -7,16 +7,16 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface CreateIdentityParams {
-	tenantSlug: string;
+	tenantId: string;
 	body: CreateIdentityInput;
 }
 
 export async function createIdentityFn({
-	tenantSlug,
+	tenantId,
 	body,
 }: CreateIdentityParams): Promise<IdentitySafe> {
 	const { data } = await identityApi.post<unknown>(
-		`/tenants/${tenantSlug}/identities`,
+		`/tenants/${tenantId}/identities`,
 		body,
 	);
 	return IdentitySafeSchema.parse(data);

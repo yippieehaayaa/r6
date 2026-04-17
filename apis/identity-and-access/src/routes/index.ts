@@ -12,5 +12,4 @@ router.use("/.well-known", wellKnown);
 
 // Authenticated routes — authMiddleware applied here AND in each sub-router (defense-in-depth)
 
-
 export default router;

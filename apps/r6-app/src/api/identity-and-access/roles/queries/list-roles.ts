@@ -11,25 +11,25 @@ export interface ListRolesParams {
 const ListRolesResponseSchema = PaginatedResponseSchema(RoleSchema);
 
 export async function listRolesFn(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListRolesParams = {},
 ): Promise<{ data: Role[]; page: number; limit: number; total: number }> {
 	const { data } = await identityApi.get<unknown>(
-		`/tenants/${tenantSlug}/roles`,
+		`/tenants/${tenantId}/roles`,
 		{ params },
 	);
 	return ListRolesResponseSchema.parse(data);
 }
 
 export function useListRolesQuery(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListRolesParams = {},
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["roles", tenantSlug, params],
-		queryFn: () => listRolesFn(tenantSlug, params),
-		enabled: !!tenantSlug,
+		queryKey: ["roles", tenantId, params],
+		queryFn: () => listRolesFn(tenantId, params),
+		enabled: !!tenantId,
 		...options,
 	});
 }

@@ -2,15 +2,15 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface RemoveRoleParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 }
 
 export async function removeRoleFn({
-	tenantSlug,
+	tenantId,
 	id,
 }: RemoveRoleParams): Promise<void> {
-	await identityApi.delete(`/tenants/${tenantSlug}/roles/${id}`);
+	await identityApi.delete(`/tenants/${tenantId}/roles/${id}`);
 }
 
 export function useRemoveRoleMutation() {

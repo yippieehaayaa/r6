@@ -4,12 +4,12 @@ import { checkPermission } from "../../lib/jwt";
 import type { AuthJwtPayload } from "../auth";
 
 // Allows:
-//   - ADMIN (cross-tenant, no tenantSlug restriction)
+//   - ADMIN (cross-tenant, no tenantId restriction)
 //   - USER or SERVICE that holds the "tenant-owner" role AND whose JWT
-//     tenantSlug matches the target tenant slug, resolved from (in order):
-//       1. req.params.tenantSlug
+//     tenantId matches the target tenant id, resolved from (in order):
+//       1. req.params.tenantId
 //       2. req.params.id  (for routes like /tenants/:id)
-//       3. req.body.tenantSlug
+//       3. req.body.tenantId
 //
 // Used for tenant management routes and bulk identity operations.
 export const requireAdminOrTenantOwner =
@@ -22,10 +22,10 @@ export const requireAdminOrTenantOwner =
 
     if (payload.kind === "ADMIN") return next();
 
-    const targetTenantSlug: string | undefined =
-      req.params.tenantSlug ?? req.params.id ?? req.body?.tenantSlug;
+    const targetTenantId: string | undefined =
+      req.params.tenantId ?? req.params.id ?? req.body?.tenantId;
 
-    if (!targetTenantSlug) {
+    if (!targetTenantId) {
       return next(
         new AppError(400, "bad_request", "Unable to determine target tenant"),
       );
@@ -36,7 +36,7 @@ export const requireAdminOrTenantOwner =
       (payload.permissions as string[] | undefined) ?? [],
     );
 
-    if (!hasFullIamAccess || payload.tenantSlug !== targetTenantSlug) {
+    if (!hasFullIamAccess || payload.tenantId !== targetTenantId) {
       return next(
         new AppError(
           403,

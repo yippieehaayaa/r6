@@ -1,7 +1,6 @@
 import {
   createRefreshToken,
   getIdentityWithPermissions,
-  getTenantById,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../config";
@@ -67,9 +66,6 @@ export async function verifyTotp(
       );
     }
 
-    const tenant = identity.tenantId
-      ? await getTenantById(identity.tenantId)
-      : null;
     const claims = buildTokenClaims(identity);
 
     const fingerprint = generateDeviceFingerprint(
@@ -83,7 +79,6 @@ export async function verifyTotp(
           sub: identity.id,
           kind: identity.kind,
           tenantId: identity.tenantId ?? null,
-          tenantSlug: tenant?.slug ?? null,
           permissions: claims.permissions,
         }),
         signRefreshToken(identity.id),

@@ -6,7 +6,7 @@ import type { AuthJwtPayload } from "../auth";
 // Allows:
 //   - ADMIN (cross-tenant, no restriction)
 //   - USER or SERVICE that holds the "tenant-owner" role within the
-//     target tenant (tenantSlug match + role check)
+//     target tenant (tenantId match + role check)
 //   - The identity whose primary key matches :id (acting on themselves)
 //   - Optionally: any identity with a specific permission (orPermission)
 //
@@ -31,11 +31,11 @@ export const requireSelfOrAdminOrTenantOwner =
     const permissions: string[] = Array.isArray(payload.permissions)
       ? payload.permissions
       : [];
-    const tenantSlug = req.params.tenantSlug;
+    const tenantId = req.params.tenantId;
 
     if (
       checkPermission("iam:*:*", permissions) &&
-      payload.tenantSlug === tenantSlug
+      payload.tenantId === tenantId
     ) {
       return next();
     }

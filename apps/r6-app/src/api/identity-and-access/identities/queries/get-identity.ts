@@ -14,19 +14,19 @@ export async function getIdentityWithRolesFn(
 	id: string,
 ): Promise<IdentitySafeWithRoles> {
 	const { data } = await identityApi.get<unknown>(
-		`/tenants/${tenantSlug}/identities/${id}`,
+		`/tenants/${tenantId}/identities/${id}`,
 	);
 	return IdentitySafeWithRolesSchema.parse(data);
 }
 
 export function useGetIdentityWithRolesQuery(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["identities", tenantSlug, id],
-		queryFn: () => getIdentityWithRolesFn(tenantSlug, id),
-		enabled: (options?.enabled ?? true) && !!tenantSlug && !!id,
+		queryKey: ["identities", tenantId, id],
+		queryFn: () => getIdentityWithRolesFn(tenantId, id),
+		enabled: (options?.enabled ?? true) && !!tenantId && !!id,
 	});
 }

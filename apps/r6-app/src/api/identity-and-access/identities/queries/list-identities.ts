@@ -16,7 +16,7 @@ const ListIdentitiesResponseSchema =
 	PaginatedResponseSchema(IdentitySafeSchema);
 
 export async function listIdentitiesFn(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListIdentitiesParams = {},
 ): Promise<{
 	data: IdentitySafe[];
@@ -25,21 +25,21 @@ export async function listIdentitiesFn(
 	total: number;
 }> {
 	const { data } = await identityApi.get<unknown>(
-		`/tenants/${tenantSlug}/identities`,
+		`/tenants/${tenantId}/identities`,
 		{ params },
 	);
 	return ListIdentitiesResponseSchema.parse(data);
 }
 
 export function useListIdentitiesQuery(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListIdentitiesParams = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
-		queryKey: ["identities", tenantSlug, params],
-		queryFn: () => listIdentitiesFn(tenantSlug, params),
-		enabled: !!tenantSlug,
+		queryKey: ["identities", tenantId, params],
+		queryFn: () => listIdentitiesFn(tenantId, params),
+		enabled: !!tenantId,
 		...options,
 	});
 }

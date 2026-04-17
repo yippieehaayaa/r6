@@ -1,8 +1,4 @@
-import {
-  createRefreshToken,
-  getTenantById,
-  verifyIdentity,
-} from "@r6/db-identity-and-access";
+import { createRefreshToken, verifyIdentity } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../config";
 import { AppError } from "../../../lib/errors";
@@ -72,7 +68,6 @@ export async function login(
       );
     }
 
-    const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
     const claims = buildTokenClaims(full);
 
     // ── TOTP gate ────────────────────────────────────────────
@@ -96,7 +91,6 @@ export async function login(
           sub: full.id,
           kind: full.kind,
           tenantId: full.tenantId ?? null,
-          tenantSlug: tenant?.slug ?? null,
           permissions: claims.permissions,
         }),
         signRefreshToken(full.id),

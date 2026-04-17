@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { IdentityDetailSheet } from "./identity-detail-sheet";
 import { ProvisionIdentitySheet } from "./provision-identity-sheet";
 
-const routeApi = getRouteApi("/_authenticated/iam/tenants_/$tenantSlug");
+const routeApi = getRouteApi("/_authenticated/iam/tenants_/$tenantId");
 
 const PAGE_SIZE = 20;
 
@@ -96,7 +96,7 @@ const roleColumns: ColumnDef<Role>[] = [
 ];
 
 export default function TenantDetailPage() {
-	const { tenantSlug } = routeApi.useParams();
+	const { tenantId } = routeApi.useParams();
 	const { claims } = useAuth();
 	const isAdmin = claims?.kind === "ADMIN";
 
@@ -132,11 +132,11 @@ export default function TenantDetailPage() {
 	}, [roleSearch]);
 
 	const { data: tenant, isLoading: tenantLoading } =
-		useGetTenantQuery(tenantSlug);
+		useGetTenantQuery(tenantId);
 
 	const { data: identities, isLoading: identitiesLoading } =
 		useListIdentitiesQuery(
-			tenantSlug,
+			tenantId,
 			{
 				page: identityPagination.pageIndex + 1,
 				limit: identityPagination.pageSize,
@@ -146,7 +146,7 @@ export default function TenantDetailPage() {
 		);
 
 	const { data: roles, isLoading: rolesLoading } = useListRolesQuery(
-		tenantSlug,
+		tenantId,
 		{
 			page: rolePagination.pageIndex + 1,
 			limit: rolePagination.pageSize,
@@ -260,7 +260,7 @@ export default function TenantDetailPage() {
 			<IdentityDetailSheet
 				open={!!selectedIdentityId}
 				onOpenChange={(open) => !open && setSelectedIdentityId(null)}
-				tenantSlug={tenantSlug}
+			tenantId={tenantId}
 				identityId={selectedIdentityId}
 			/>
 
@@ -268,7 +268,7 @@ export default function TenantDetailPage() {
 			<ProvisionIdentitySheet
 				open={provisionOpen}
 				onOpenChange={setProvisionOpen}
-				tenantSlug={tenantSlug}
+				tenantId={tenantId}
 			/>
 		</div>
 	);

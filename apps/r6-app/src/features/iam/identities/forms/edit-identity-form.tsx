@@ -34,12 +34,12 @@ const STATUS_OPTIONS = [
 ] as const;
 
 interface Props {
-	tenantSlug: string;
+	tenantId: string;
 	identity: IdentitySafe;
 	onSuccess: () => void;
 }
 
-export function EditIdentityForm({ tenantSlug, identity, onSuccess }: Props) {
+export function EditIdentityForm({ tenantId, identity, onSuccess }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useUpdateIdentityMutation();
 
@@ -61,11 +61,11 @@ export function EditIdentityForm({ tenantSlug, identity, onSuccess }: Props) {
 
 	function onSubmit(values: UpdateIdentityInput) {
 		mutation.mutate(
-			{ tenantSlug, id: identity.id, body: values },
+			{ tenantId, id: identity.id, body: values },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug],
+						queryKey: ["identities", tenantId],
 					});
 					toast.success("Identity updated.");
 					onSuccess();

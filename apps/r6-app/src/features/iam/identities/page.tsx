@@ -41,13 +41,13 @@ export default function IdentitiesPage() {
 	const canCreate = !isAdmin && hasPermission("iam:identity:create");
 	const canUpdate = !isAdmin && hasPermission("iam:identity:update");
 	const canDelete = !isAdmin && hasPermission("iam:identity:delete");
-	// For tenant-owners the slug comes from the JWT; for admins they pick a tenant.
-	const [selectedTenantSlug, setSelectedTenantSlug] = useState<string>(
-		claims?.tenantSlug ?? "",
+	// For tenant-owners the id comes from the JWT; for admins they pick a tenant.
+	const [selectedTenantId, setSelectedTenantId] = useState<string>(
+		claims?.tenantId ?? "",
 	);
-	const activeTenantSlug = isAdmin
-		? selectedTenantSlug
-		: (claims?.tenantSlug ?? "");
+	const activeTenantId = isAdmin
+		? selectedTenantId
+		: (claims?.tenantId ?? "");
 	const queryClient = useQueryClient();
 
 	const { data: tenantsData } = useListTenantsQuery(
@@ -71,7 +71,7 @@ export default function IdentitiesPage() {
 	}, [search]);
 
 	const { data, isLoading } = useListIdentitiesQuery(
-		activeTenantSlug,
+		activeTenantId,
 		{
 			page: pagination.pageIndex + 1,
 			limit: pagination.pageSize,
@@ -149,7 +149,7 @@ export default function IdentitiesPage() {
 			</div>
 
 			<div className="rounded-xl border bg-card p-4">
-				{isAdmin && !activeTenantSlug ? (
+				{isAdmin && !activeTenantId ? (
 					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
 						<Building2 className="h-10 w-10 text-muted-foreground/50" />
 						<div>
@@ -170,7 +170,7 @@ export default function IdentitiesPage() {
 							</SelectTrigger>
 							<SelectContent>
 								{(tenantsData?.data ?? []).map((t) => (
-									<SelectItem key={t.slug} value={t.slug}>
+								<SelectItem key={t.id} value={t.id}>
 										{t.name}
 									</SelectItem>
 								))}
@@ -179,7 +179,7 @@ export default function IdentitiesPage() {
 					</div>
 				) : (
 					<IdentitiesTable
-						key={activeTenantSlug}
+					key={activeTenantId}
 						data={data?.data ?? []}
 						isLoading={isLoading}
 						onEdit={handleEdit}
@@ -202,7 +202,7 @@ export default function IdentitiesPage() {
 			<IdentitySheet
 				open={sheetOpen}
 				onOpenChange={handleSheetOpenChange}
-				tenantSlug={activeTenantSlug}
+				tenantId={activeTenantId}
 				identity={editTarget}
 			/>
 

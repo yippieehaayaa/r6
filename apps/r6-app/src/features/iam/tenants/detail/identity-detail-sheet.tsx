@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	tenantSlug: string;
+	tenantId: string;
 	identityId: string | null;
 }
 
@@ -36,11 +36,11 @@ function Field({
 export function IdentityDetailSheet({
 	open,
 	onOpenChange,
-	tenantSlug,
+	tenantId,
 	identityId,
 }: Props) {
 	const { data: identity, isLoading } = useGetIdentityWithRolesQuery(
-		tenantSlug,
+		tenantId,
 		identityId ?? "",
 		{ enabled: open && !!identityId },
 	);

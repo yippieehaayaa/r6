@@ -7,7 +7,6 @@ import { isAccessTokenRevoked } from "../../lib/token-denylist";
 export type AuthJwtPayload = JWTPayload & {
   kind?: string;
   tenantId?: string | null;
-  tenantSlug?: string | null;
   roles?: string[];
   permissions?: string[];
 };

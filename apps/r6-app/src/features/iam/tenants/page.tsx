@@ -74,7 +74,7 @@ export default function TenantsPage() {
 
 	function confirmDelete() {
 		if (!deleteTarget) return;
-		removeMutation.mutate(deleteTarget.slug, {
+		removeMutation.mutate(deleteTarget.id, {
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: ["tenants"] });
 				toast.success("Tenant deleted.");
@@ -85,7 +85,7 @@ export default function TenantsPage() {
 	}
 
 	function handleRestore(tenant: Tenant) {
-		restoreMutation.mutate(tenant.slug, {
+		restoreMutation.mutate(tenant.id, {
 			onSuccess: () => {
 				queryClient.invalidateQueries({ queryKey: ["tenants"] });
 				toast.success("Tenant restored.");
@@ -118,8 +118,8 @@ export default function TenantsPage() {
 					onRestore={handleRestore}
 					onRowClick={(t) =>
 						navigate({
-							to: "/r6/iam/tenants/$tenantSlug",
-							params: { tenantSlug: t.slug },
+							to: "/r6/iam/tenants/$tenantId",
+							params: { tenantId: t.id },
 						})
 					}
 					rowCount={data?.total}

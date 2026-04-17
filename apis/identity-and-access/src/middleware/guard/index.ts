@@ -11,13 +11,13 @@
 //    requireNotAdmin                 — blocks ADMIN from write operations
 //    requireAdminOrTenantOwner       — ADMIN, OR identity that holds the
 //                                      "tenant-owner" role within the target
-//                                      tenant (tenantSlug match + role check)
+//                                      tenant (tenantId match + role check)
 //    requireSelfOrAdminOrTenantOwner — ADMIN, OR tenant owner within the target
 //                                      tenant, OR the identity whose id matches
 //                                      :id (the caller acting on themselves)
 //    requireNotSelf                  — blocks identity from acting on their own /:id
-//    requireTenantScope              — ensures the acting identity's tenantSlug
-//                                      matches the :tenantSlug param
+//    requireTenantScope              — ensures the acting identity's tenantId
+//                                      matches the :tenantId param
 //    requirePermission               — fine-grained permission string check
 // ============================================================
 

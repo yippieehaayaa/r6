@@ -3,16 +3,16 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface RestoreRoleParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 }
 
 export async function restoreRoleFn({
-	tenantSlug,
+	tenantId,
 	id,
 }: RestoreRoleParams): Promise<Role> {
 	const { data } = await identityApi.post<unknown>(
-		`/tenants/${tenantSlug}/roles/${id}/restore`,
+		`/tenants/${tenantId}/roles/${id}/restore`,
 	);
 	return RoleSchema.parse(data);
 }

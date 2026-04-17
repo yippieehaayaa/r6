@@ -6,19 +6,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
 export interface DispositionReturnParams {
-	tenantSlug: string;
+	tenantId: string;
 	returnRequestId: string;
 	body: ProcessReturnDispositionInput;
 }
 
 export async function dispositionReturnFn({
-	tenantSlug,
+	tenantId,
 	returnRequestId,
 	body,
 }: DispositionReturnParams): Promise<unknown> {
 	const validated = ProcessReturnDispositionSchema.parse(body);
 	const { data } = await inventoryApi.post<unknown>(
-		`/tenants/${tenantSlug}/returns/${returnRequestId}/disposition`,
+		`/tenants/${tenantId}/returns/${returnRequestId}/disposition`,
 		validated,
 	);
 	return data;
@@ -28,10 +28,10 @@ export function useDispositionReturnMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: dispositionReturnFn,
-		onSuccess: (_data, { tenantSlug, returnRequestId }) => {
-			queryClient.invalidateQueries({ queryKey: ["returns", tenantSlug] });
+		onSuccess: (_data, { tenantId, returnRequestId }) => {
+			queryClient.invalidateQueries({ queryKey: ["returns", tenantId] });
 			queryClient.invalidateQueries({
-				queryKey: ["return", tenantSlug, returnRequestId],
+				queryKey: ["return", tenantId, returnRequestId],
 			});
 		},
 	});

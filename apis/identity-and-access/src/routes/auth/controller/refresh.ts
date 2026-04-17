@@ -2,7 +2,6 @@ import {
   createRefreshToken,
   getIdentityWithPermissions,
   getRefreshToken,
-  getTenantById,
   revokeRefreshToken,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
@@ -78,7 +77,6 @@ export async function refresh(
       throw new AppError(403, "account_inactive", "Account is not active");
     }
 
-    const tenant = full.tenantId ? await getTenantById(full.tenantId) : null;
     const claims = buildTokenClaims(full);
 
     const [accessToken, { token: newRefreshToken, jti: newJti }] =
@@ -87,7 +85,6 @@ export async function refresh(
           sub: full.id,
           kind: full.kind,
           tenantId: full.tenantId ?? null,
-          tenantSlug: tenant?.slug ?? null,
           permissions: claims.permissions,
         }),
         signRefreshToken(full.id),

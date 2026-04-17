@@ -14,25 +14,25 @@ const ListReturnsResponseSchema = PaginatedResponseSchema(
 );
 
 export async function listReturnsFn(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListReturnRequestsQuery = {},
 ) {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/returns`,
+		`/tenants/${tenantId}/returns`,
 		{ params },
 	);
 	return ListReturnsResponseSchema.parse(data);
 }
 
 export function useListReturnsQuery(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListReturnRequestsQuery = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
-		queryKey: ["returns", tenantSlug, params],
-		queryFn: () => listReturnsFn(tenantSlug, params),
-		enabled: !!tenantSlug,
+		queryKey: ["returns", tenantId, params],
+		queryFn: () => listReturnsFn(tenantId, params),
+		enabled: !!tenantId,
 		placeholderData: keepPreviousData,
 		...options,
 	});

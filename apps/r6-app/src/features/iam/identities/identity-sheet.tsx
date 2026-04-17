@@ -14,14 +14,14 @@ import { RolesTabContent } from "./manage-roles-sheet";
 interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	tenantSlug: string;
+	tenantId: string;
 	identity?: IdentitySafe | null;
 }
 
 export function IdentitySheet({
 	open,
 	onOpenChange,
-	tenantSlug,
+	tenantId,
 	identity,
 }: Props) {
 	const isEdit = !!identity;
@@ -54,7 +54,7 @@ export function IdentitySheet({
 							className="flex-1 overflow-y-auto data-[state=inactive]:hidden"
 						>
 							<EditIdentityForm
-								tenantSlug={tenantSlug}
+							tenantId={tenantId}
 								identity={identity}
 								onSuccess={() => onOpenChange(false)}
 							/>
@@ -65,7 +65,7 @@ export function IdentitySheet({
 							className="flex-1 flex flex-col overflow-hidden data-[state=inactive]:hidden"
 						>
 							<RolesTabContent
-								tenantSlug={tenantSlug}
+							tenantId={tenantId}
 								identity={identity}
 								open={open}
 								active={activeTab === "roles"}
@@ -84,7 +84,7 @@ export function IdentitySheet({
 					<SheetTitle>New Identity</SheetTitle>
 				</SheetHeader>
 				<CreateIdentityForm
-					tenantSlug={tenantSlug}
+					tenantId={tenantId}
 					onSuccess={() => onOpenChange(false)}
 				/>
 			</SheetContent>

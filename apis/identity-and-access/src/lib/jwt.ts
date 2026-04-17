@@ -24,11 +24,11 @@ const loadKeys = async (): Promise<void> => {
 
 // ─── Token payload ───────────────────────────────────────────
 //
-// kind, tenantId, and tenantSlug are signed into the token so
-// guards can authorize requests without a DB round-trip.
+// kind and tenantId are signed into the token so guards can
+// authorize requests without a DB round-trip.
 //
 // kind:
-//   "ADMIN"   — platform super-admin, tenantId/tenantSlug will be null
+//   "ADMIN"   — platform super-admin, tenantId will be null
 //   "USER"    — human user belonging to a tenant
 //   "SERVICE" — machine/service account belonging to a tenant
 //
@@ -37,11 +37,6 @@ const loadKeys = async (): Promise<void> => {
 //   UUID primary key of the Tenant record.
 //   Downstream microservices (Inventory, Procurement, etc.) use this
 //   directly — no slug-to-UUID resolution needed.
-//
-// tenantSlug:
-//   null for ADMIN identities.
-//   URL-safe slug string for USER and SERVICE identities.
-//   Used by requireTenantScope guard for URL routing checks.
 
 export type AccessTokenPayload = {
   /** Identity primary key (maps to JWT `sub`) */
@@ -50,8 +45,6 @@ export type AccessTokenPayload = {
   kind: string;
   /** null for ADMIN identities; Tenant UUID for USER / SERVICE */
   tenantId: string | null;
-  /** null for ADMIN identities; slug string for USER / SERVICE */
-  tenantSlug: string | null;
   /** Flattened permission strings from all attached policies */
   permissions: string[];
 };
@@ -69,7 +62,6 @@ export const signAccessToken = async (
   return new SignJWT({
     kind: payload.kind,
     tenantId: payload.tenantId,
-    tenantSlug: payload.tenantSlug,
     permissions: payload.permissions,
   })
     .setProtectedHeader({ alg: "RS256" })

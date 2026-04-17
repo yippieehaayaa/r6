@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../lib/errors";
 import type { AuthJwtPayload } from "../auth";
 
-// Ensures the acting identity's tenantSlug matches the :tenantSlug
+// Ensures the acting identity's tenantId matches the :tenantId
 // route param. Used for tenant-scoped resource routes
 // (identities, roles, policies) where even an identity within
 // one tenant must not access another tenant's resources.
@@ -18,19 +18,15 @@ export const requireTenantScope =
 
     if (payload.kind === "ADMIN") return next();
 
-    const routeTenantSlug = req.params.tenantSlug;
+    const routeTenantId = req.params.tenantId;
 
-    if (!routeTenantSlug) {
+    if (!routeTenantId) {
       return next(
-        new AppError(
-          400,
-          "bad_request",
-          "Route is missing tenantSlug parameter",
-        ),
+        new AppError(400, "bad_request", "Route is missing tenantId parameter"),
       );
     }
 
-    if (payload.tenantSlug !== routeTenantSlug) {
+    if (payload.tenantId !== routeTenantId) {
       return next(
         new AppError(
           403,

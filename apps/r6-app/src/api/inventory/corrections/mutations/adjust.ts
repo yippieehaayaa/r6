@@ -9,16 +9,16 @@ import { inventoryApi } from "@/api/_app";
 export type { ManualAdjustmentResult };
 
 export interface ManualAdjustmentParams {
-	tenantSlug: string;
+	tenantId: string;
 	body: ManualAdjustmentInput;
 }
 
 export async function manualAdjustmentFn({
-	tenantSlug,
+	tenantId,
 	body,
 }: ManualAdjustmentParams): Promise<ManualAdjustmentResult> {
 	const { data } = await inventoryApi.post<unknown>(
-		`/tenants/${tenantSlug}/corrections/adjust`,
+		`/tenants/${tenantId}/corrections/adjust`,
 		body,
 	);
 	return ManualAdjustmentResultSchema.parse(data);
@@ -28,12 +28,12 @@ export function useManualAdjustmentMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: manualAdjustmentFn,
-		onSuccess: (_data, { tenantSlug }) => {
+		onSuccess: (_data, { tenantId }) => {
 			queryClient.invalidateQueries({
-				queryKey: ["inventory-items", tenantSlug],
+				queryKey: ["inventory-items", tenantId],
 			});
 			queryClient.invalidateQueries({
-				queryKey: ["availability", tenantSlug],
+				queryKey: ["availability", tenantId],
 			});
 		},
 	});

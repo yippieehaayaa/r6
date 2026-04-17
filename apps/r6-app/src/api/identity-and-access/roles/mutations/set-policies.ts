@@ -7,18 +7,18 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface SetPoliciesParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 	body: AssignPoliciesToRoleInput;
 }
 
 export async function setPoliciesFn({
-	tenantSlug,
+	tenantId,
 	id,
 	body,
 }: SetPoliciesParams): Promise<Role> {
 	const { data } = await identityApi.put<unknown>(
-		`/tenants/${tenantSlug}/roles/${id}/policies`,
+		`/tenants/${tenantId}/roles/${id}/policies`,
 		body,
 	);
 	return RoleSchema.parse(data);

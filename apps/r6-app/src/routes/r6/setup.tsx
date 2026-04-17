@@ -25,15 +25,15 @@ export const Route = createFileRoute("/r6/setup")({
 		if (!context.auth.isAuthenticated) {
 			throw redirect({ to: "/r6/login" });
 		}
-		const slug = context.auth.claims?.tenantSlug;
-		if (!slug) {
+		const tenantId = context.auth.claims?.tenantId;
+		if (!tenantId) {
 			// ADMIN identities (no tenant) bypass the wizard
 			throw redirect({ to: "/r6" });
 		}
 		try {
 			const status = await context.queryClient.fetchQuery({
-				queryKey: ["setup-status", slug],
-				queryFn: () => getSetupStatusFn(slug),
+				queryKey: ["setup-status", tenantId],
+				queryFn: () => getSetupStatusFn(tenantId),
 				staleTime: 0,
 			});
 			if (isSetupComplete(status)) {

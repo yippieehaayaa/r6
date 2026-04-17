@@ -12,19 +12,15 @@ export const requireTenantScope =
 
     if (payload.kind === "ADMIN") return next();
 
-    const routeTenantSlug = req.params.tenantSlug;
+    const routeTenantId = req.params.tenantId;
 
-    if (!routeTenantSlug) {
+    if (!routeTenantId) {
       return next(
-        new AppError(
-          400,
-          "bad_request",
-          "Route is missing tenantSlug parameter",
-        ),
+        new AppError(400, "bad_request", "Route is missing tenantId parameter"),
       );
     }
 
-    if (payload.tenantSlug !== routeTenantSlug) {
+    if (payload.tenantId !== routeTenantId) {
       return next(
         new AppError(
           403,

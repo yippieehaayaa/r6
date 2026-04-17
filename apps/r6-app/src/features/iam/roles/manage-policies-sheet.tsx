@@ -16,13 +16,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 interface Props {
-	tenantSlug: string;
+	tenantId: string;
 	role: Role;
 	open: boolean;
 	active: boolean;
 }
 
-export function PoliciesTabContent({ tenantSlug, role, open, active }: Props) {
+export function PoliciesTabContent({ tenantId, role, open, active }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useSetPoliciesMutation();
 
@@ -34,7 +34,7 @@ export function PoliciesTabContent({ tenantSlug, role, open, active }: Props) {
 	const [debouncedQuery, setDebouncedQuery] = useState("");
 
 	const { data: roleWithPolicies, isLoading: isLoadingCurrent } =
-		useGetRoleWithPoliciesQuery(tenantSlug, role.id, {
+		useGetRoleWithPoliciesQuery(tenantId, role.id, {
 			enabled: open && active,
 		});
 
@@ -114,17 +114,17 @@ export function PoliciesTabContent({ tenantSlug, role, open, active }: Props) {
 		if (isEmpty) return;
 		mutation.mutate(
 			{
-				tenantSlug,
+				tenantId,
 				id: role.id,
 				body: { policyIds: [...assignedPolicies.keys()] },
 			},
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["roles", tenantSlug],
+						queryKey: ["roles", tenantId],
 					});
 					queryClient.invalidateQueries({
-						queryKey: ["roles", tenantSlug, role.id],
+						queryKey: ["roles", tenantId, role.id],
 					});
 					toast.success("Policies updated.");
 					setInitialIds(new Set(assignedPolicies.keys()));

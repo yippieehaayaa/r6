@@ -17,12 +17,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/lib/api-error";
 
 interface Props {
-	tenantSlug: string;
-	tenantId: string | null;
+	tenantId: string;
 	onSuccess: () => void;
 }
 
-export function CreateRoleForm({ tenantSlug, tenantId, onSuccess }: Props) {
+export function CreateRoleForm({ tenantId, onSuccess }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useCreateRoleMutation();
 
@@ -42,10 +41,10 @@ export function CreateRoleForm({ tenantSlug, tenantId, onSuccess }: Props) {
 
 	function onSubmit(values: CreateRoleInput) {
 		mutation.mutate(
-			{ tenantSlug, body: values },
+			{ tenantId, body: values },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["roles", tenantSlug] });
+					queryClient.invalidateQueries({ queryKey: ["roles", tenantId] });
 					toast.success("Role created.");
 					onSuccess();
 				},

@@ -4,7 +4,6 @@ import { authMiddleware } from "../../middleware/auth";
 import { login } from "./controller/login";
 import { logout } from "./controller/logout";
 import { refresh } from "./controller/refresh";
-import { register } from "./controller/register";
 import { verifyTotp } from "./controller/verify-totp";
 
 const router: Router = Router();
@@ -16,7 +15,6 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-router.post("/register", authLimiter, register);
 router.post("/login", authLimiter, login);
 router.post("/refresh", authLimiter, refresh);
 router.post("/logout", authMiddleware(), logout);
