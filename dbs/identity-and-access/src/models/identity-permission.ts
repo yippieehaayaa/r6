@@ -56,14 +56,15 @@ const upsertIdentityPermission = async (
 
 // ─── Read ────────────────────────────────────────────────────
 
-// Finds a single override by identity + exact permission string.
-// Uses @@unique([identityId, permission]) index.
+// Finds a single override by identity + exact permission string, scoped to tenant.
+// Uses @@index([identityId]) and tenantId for safe cross-verification.
 const getIdentityPermission = async (
   identityId: string,
+  tenantId: string,
   permission: string,
 ): Promise<IdentityPermission | null> => {
-  return prisma.identityPermission.findUnique({
-    where: { identityId_permission: { identityId, permission } },
+  return prisma.identityPermission.findFirst({
+    where: { identityId, tenantId, permission },
   });
 };
 
@@ -93,12 +94,20 @@ const listIdentityPermissions = async (
 // ─── Update ──────────────────────────────────────────────────
 
 // Updates the effect of an existing override.
-// Throws P2025 if no override row exists for [identityId, permission].
+// Verifies the override belongs to tenantId before writing.
+// Throws if no override row exists for [identityId, tenantId, permission].
 const updateIdentityPermission = async (
   identityId: string,
+  tenantId: string,
   permission: string,
   input: UpdateIdentityPermissionInput,
 ): Promise<IdentityPermission> => {
+  const existing = await getIdentityPermission(
+    identityId,
+    tenantId,
+    permission,
+  );
+  if (!existing) throw new Error("not_found");
   return prisma.identityPermission.update({
     where: { identityId_permission: { identityId, permission } },
     data: { effect: input.effect },
@@ -109,21 +118,25 @@ const updateIdentityPermission = async (
 
 // Removes a specific permission override, returning the identity to
 // their role-derived baseline for that permission.
-// Throws P2025 if the override does not exist.
+// Uses deleteMany with tenantId to prevent cross-tenant deletion.
 const deleteIdentityPermission = async (
   identityId: string,
+  tenantId: string,
   permission: string,
 ): Promise<void> => {
-  await prisma.identityPermission.delete({
-    where: { identityId_permission: { identityId, permission } },
+  await prisma.identityPermission.deleteMany({
+    where: { identityId, tenantId, permission },
   });
 };
 
 // Removes all overrides for an identity (e.g. on role reassignment).
 const deleteAllIdentityPermissions = async (
   identityId: string,
+  tenantId: string,
 ): Promise<void> => {
-  await prisma.identityPermission.deleteMany({ where: { identityId } });
+  await prisma.identityPermission.deleteMany({
+    where: { identityId, tenantId },
+  });
 };
 
 export {

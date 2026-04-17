@@ -176,6 +176,7 @@ export type UpdatePolicyInput = {
 // Many-to-many: Identity ↔ Role
 // Both IDs must exist and not be soft-deleted.
 export type AssignRoleInput = {
+  tenantId: string; // required — verifies identity belongs to tenant before join insert
   identityId: string;
   roleId: string;
 };
@@ -183,6 +184,7 @@ export type AssignRoleInput = {
 // Many-to-many: Role ↔ Policy
 // Both IDs must exist and not be soft-deleted.
 export type AttachPolicyInput = {
+  tenantId: string; // required — verifies role belongs to tenant before join insert
   roleId: string;
   policyId: string;
 };

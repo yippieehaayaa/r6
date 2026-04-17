@@ -190,12 +190,15 @@ const listIdentities = async (
 // ─── Update ──────────────────────────────────────────────────
 
 // Updates mutable fields on an existing identity.
+// Verifies the identity belongs to tenantId before writing — prevents cross-tenant mutation.
 // Throws P2002 if updated email collides within the same tenant.
-// Throws P2025 if identity does not exist.
 const updateIdentity = async (
   id: string,
+  tenantId: string,
   input: UpdateIdentityInput,
 ): Promise<Identity> => {
+  const existing = await getIdentityById(id, tenantId);
+  if (!existing) throw new Error("not_found");
   return prisma.identity.update({
     where: { id },
     data: {
@@ -278,14 +281,14 @@ const verifyIdentity = async (
   if (!valid) {
     const newAttempts = identity.failedLoginAttempts + 1;
     const lock = newAttempts >= LOGIN_MAX_ATTEMPTS;
-    await updateIdentity(identity.id, {
+    await updateIdentity(identity.id, tenantId, {
       failedLoginAttempts: newAttempts,
       lockedUntil: lock ? new Date(Date.now() + LOGIN_LOCK_MS) : undefined,
     });
     throw new Error("invalid_credentials");
   }
 
-  await updateIdentity(identity.id, {
+  await updateIdentity(identity.id, tenantId, {
     failedLoginAttempts: 0,
     lockedUntil: null,
   });
@@ -298,21 +301,27 @@ const verifyIdentity = async (
 // ─── Role assignment (many-to-many) ──────────────────────────
 
 // Inserts a row into the explicit _identity_roles join table.
+// Verifies the identity belongs to tenantId before inserting.
 // Throws P2002 if the same [identityId, roleId] already exists.
-// Throws P2025 if either the identity or role does not exist.
+// Throws P2025 if the role does not exist.
 const assignRoleToIdentity = async (
   input: AssignRoleInput,
 ): Promise<IdentityRole> => {
+  const identity = await getIdentityById(input.identityId, input.tenantId);
+  if (!identity) throw new Error("not_found");
   return prisma.identityRole.create({
     data: { identityId: input.identityId, roleId: input.roleId },
   });
 };
 
 // Removes a row from the explicit _identity_roles join table.
+// Verifies the identity belongs to tenantId before deleting.
 // Throws P2025 if the [identityId, roleId] row does not exist.
 const removeRoleFromIdentity = async (
   input: AssignRoleInput,
 ): Promise<IdentityRole> => {
+  const identity = await getIdentityById(input.identityId, input.tenantId);
+  if (!identity) throw new Error("not_found");
   return prisma.identityRole.delete({
     where: {
       identityId_roleId: {
@@ -324,10 +333,14 @@ const removeRoleFromIdentity = async (
 };
 
 // Replaces all assigned roles for an identity atomically.
+// Verifies the identity belongs to tenantId before the transaction.
 const setRolesForIdentity = async (
   identityId: string,
+  tenantId: string,
   roleIds: string[],
 ): Promise<void> => {
+  const identity = await getIdentityById(identityId, tenantId);
+  if (!identity) throw new Error("not_found");
   await prisma.$transaction([
     prisma.identityRole.deleteMany({ where: { identityId } }),
     prisma.identityRole.createMany({
@@ -343,10 +356,11 @@ const setRolesForIdentity = async (
 // until the user confirms the first code via activateTotp.
 const saveTotpSecret = async (
   id: string,
+  tenantId: string,
   encryptedSecret: string,
 ): Promise<void> => {
-  await prisma.identity.update({
-    where: { id },
+  await prisma.identity.updateMany({
+    where: { id, tenantId, deletedAt: null },
     data: {
       totpSecret: encryptedSecret,
       totpEnabled: false,
@@ -356,17 +370,17 @@ const saveTotpSecret = async (
 };
 
 // Marks TOTP as enabled after the identity verifies their first code.
-const activateTotp = async (id: string): Promise<void> => {
-  await prisma.identity.update({
-    where: { id },
+const activateTotp = async (id: string, tenantId: string): Promise<void> => {
+  await prisma.identity.updateMany({
+    where: { id, tenantId, deletedAt: null },
     data: { totpEnabled: true, totpVerifiedAt: new Date() },
   });
 };
 
 // Clears all TOTP data, returning the identity to single-factor auth.
-const disableTotp = async (id: string): Promise<void> => {
-  await prisma.identity.update({
-    where: { id },
+const disableTotp = async (id: string, tenantId: string): Promise<void> => {
+  await prisma.identity.updateMany({
+    where: { id, tenantId, deletedAt: null },
     data: { totpSecret: null, totpEnabled: false, totpVerifiedAt: null },
   });
 };
@@ -374,7 +388,13 @@ const disableTotp = async (id: string): Promise<void> => {
 // ─── Soft delete ─────────────────────────────────────────────
 
 // Soft-deletes an identity. IdentityRole join rows are left intact.
-const softDeleteIdentity = async (id: string): Promise<Identity> => {
+// Verifies the identity belongs to tenantId before writing.
+const softDeleteIdentity = async (
+  id: string,
+  tenantId: string,
+): Promise<Identity> => {
+  const existing = await getIdentityById(id, tenantId);
+  if (!existing) throw new Error("not_found");
   return prisma.identity.update({
     where: { id },
     data: { deletedAt: new Date(), status: "INACTIVE" },

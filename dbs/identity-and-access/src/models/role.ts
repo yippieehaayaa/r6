@@ -62,10 +62,13 @@ const createRole = async (input: CreateRoleInput): Promise<Role> => {
 
 // ─── Read ────────────────────────────────────────────────────
 
-// Finds a non-deleted role by primary key.
-const getRoleById = async (id: string): Promise<Role | null> => {
+// Finds a non-deleted role by primary key within a tenant.
+const getRoleById = async (
+  id: string,
+  tenantId: string,
+): Promise<Role | null> => {
   return prisma.role.findFirst({
-    where: { id, deletedAt: null },
+    where: { id, tenantId, deletedAt: null },
   });
 };
 
@@ -80,18 +83,20 @@ const getRoleByName = async (
 
 const getRoleWithPolicies = async (
   id: string,
+  tenantId: string,
 ): Promise<RoleWithPolicies | null> => {
   return prisma.role.findFirst({
-    where: { id, deletedAt: null },
+    where: { id, tenantId, deletedAt: null },
     include: { rolePolicies: { include: { policy: true } } },
   });
 };
 
 const getRoleWithIdentities = async (
   id: string,
+  tenantId: string,
 ): Promise<RoleWithIdentities | null> => {
   return prisma.role.findFirst({
-    where: { id, deletedAt: null },
+    where: { id, tenantId, deletedAt: null },
     include: { identityRoles: { include: { identity: true } } },
   });
 };
@@ -136,12 +141,15 @@ const listRoles = async (
 // ─── Update ──────────────────────────────────────────────────
 
 // Updates mutable fields on an existing role.
+// Verifies the role belongs to tenantId before writing — prevents cross-tenant mutation.
 // Throws P2002 if updated name collides within the same tenant.
-// Throws P2025 if the role does not exist.
 const updateRole = async (
   id: string,
+  tenantId: string,
   input: UpdateRoleInput,
 ): Promise<Role> => {
+  const existing = await getRoleById(id, tenantId);
+  if (!existing) throw new Error("not_found");
   return prisma.role.update({
     where: { id },
     data: {
@@ -160,11 +168,14 @@ const updateRole = async (
 // ─── Policy assignment (many-to-many) ────────────────────────
 
 // Inserts a row into the explicit _role_policies join table.
+// Verifies the role belongs to tenantId before inserting.
 // Throws P2002 if the same [roleId, policyId] already exists.
-// Throws P2025 if either the role or policy does not exist.
+// Throws P2025 if the policy does not exist.
 const attachPolicyToRole = async (
   input: AttachPolicyInput,
 ): Promise<RolePolicy> => {
+  const role = await getRoleById(input.roleId, input.tenantId);
+  if (!role) throw new Error("not_found");
   return prisma.rolePolicy.create({
     data: { roleId: input.roleId, policyId: input.policyId },
   });
@@ -173,6 +184,8 @@ const attachPolicyToRole = async (
 const detachPolicyFromRole = async (
   input: AttachPolicyInput,
 ): Promise<RolePolicy> => {
+  const role = await getRoleById(input.roleId, input.tenantId);
+  if (!role) throw new Error("not_found");
   return prisma.rolePolicy.delete({
     where: {
       roleId_policyId: { roleId: input.roleId, policyId: input.policyId },
@@ -182,8 +195,11 @@ const detachPolicyFromRole = async (
 
 const setPoliciesForRole = async (
   roleId: string,
+  tenantId: string,
   policyIds: string[],
 ): Promise<void> => {
+  const role = await getRoleById(roleId, tenantId);
+  if (!role) throw new Error("not_found");
   await prisma.$transaction([
     prisma.rolePolicy.deleteMany({ where: { roleId } }),
     prisma.rolePolicy.createMany({
@@ -196,9 +212,12 @@ const setPoliciesForRole = async (
 // ─── Soft delete ─────────────────────────────────────────────
 
 // Soft-deletes a role.
+// Verifies the role belongs to tenantId before writing.
 // RolePolicy and IdentityRole join rows are left intact — they are
 // removed by CASCADE only on hard-delete.
-const softDeleteRole = async (id: string): Promise<Role> => {
+const softDeleteRole = async (id: string, tenantId: string): Promise<Role> => {
+  const existing = await getRoleById(id, tenantId);
+  if (!existing) throw new Error("not_found");
   return prisma.role.update({
     where: { id },
     data: { deletedAt: new Date(), isActive: false },
