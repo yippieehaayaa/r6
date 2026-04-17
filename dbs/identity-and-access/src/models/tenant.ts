@@ -15,12 +15,8 @@
 //  live here — that belongs to the Financial Service.
 // ============================================================
 
-import type { Tenant } from "../../generated/prisma/client.js";
+import type { Identity, Tenant } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
-import {
-  TENANT_ADMIN_DEFAULT_POLICIES,
-  TENANT_OWNER_DEFAULT_POLICIES,
-} from "./constants.js";
 import type { PaginatedResult } from "./shared.js";
 import { buildPaginationQuery } from "./shared.js";
 import type {
@@ -74,16 +70,14 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 
 // ─── Create with defaults ─────────────────────────────────────────────────────
 
-// Platform-level policies automatically connected to the tenant-owner role
-// on every new tenant. Names must match the platform tenant's seeded policies.
-// (Imported from ./constants.ts)
-
 // Atomically creates a Tenant, its two standard protected roles
 // (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
 // identity using the pre-computed password hash/salt.
 //
-// platformTenantId must be the ID of the platform tenant — used to look up
-// the default platform policies to attach to the new tenant roles.
+// ownerPolicyNames / adminPolicyNames — names of platform-level policies
+// (tenantId = null) to attach to the owner and admin roles respectively.
+// These are business-rule decisions owned by the API layer — pass them in
+// rather than hard-coding here.
 //
 // The owner's username is derived from the slug: "${slug.slice(0,58)}-owner"
 // (capped so the total stays within the 64-char username limit).
@@ -91,13 +85,15 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 // Caller is responsible for pre-computing hash + salt (bcrypt is async and
 // cannot run safely inside a Prisma interactive transaction callback).
 //
-// Returns: { tenant, ownerUsername }
+// Returns: { tenant, ownerIdentity }
 const createTenantWithDefaults = async (
   input: CreateTenantInput,
   ownerHash: string,
   ownerSalt: string,
-  platformTenantId: string,
-): Promise<{ tenant: Tenant; ownerUsername: string }> => {
+  ownerEmail: string | null,
+  ownerPolicyNames: readonly string[],
+  adminPolicyNames: readonly string[],
+): Promise<{ tenant: Tenant; ownerIdentity: Identity }> => {
   return prisma.$transaction(async (tx) => {
     const tenant = await tx.tenant.create({
       data: {
@@ -108,6 +104,12 @@ const createTenantWithDefaults = async (
     });
 
     // Roles + default policy lookups are independent — run in parallel.
+    // Resolve the platform tenant first so we can scope the policy lookup.
+    const platformTenant = await tx.tenant.findFirstOrThrow({
+      where: { isPlatform: true },
+      select: { id: true },
+    });
+
     const [ownerRole, adminRole, ownerPolicies, adminPolicies] =
       await Promise.all([
         tx.role.create({
@@ -127,15 +129,15 @@ const createTenantWithDefaults = async (
         }),
         tx.policy.findMany({
           where: {
-            tenantId: platformTenantId,
-            name: { in: [...TENANT_OWNER_DEFAULT_POLICIES] },
+            tenantId: platformTenant.id,
+            name: { in: [...ownerPolicyNames] },
           },
           select: { id: true },
         }),
         tx.policy.findMany({
           where: {
-            tenantId: platformTenantId,
-            name: { in: [...TENANT_ADMIN_DEFAULT_POLICIES] },
+            tenantId: platformTenant.id,
+            name: { in: [...adminPolicyNames] },
           },
           select: { id: true },
         }),
@@ -148,12 +150,12 @@ const createTenantWithDefaults = async (
       data: {
         tenantId: tenant.id,
         username: ownerUsername,
-        email: null,
+        email: ownerEmail,
         hash: ownerHash,
         salt: ownerSalt,
         kind: "USER",
         status: "ACTIVE",
-        mustChangePassword: true,
+        mustChangePassword: false,
       },
     });
 
@@ -191,7 +193,7 @@ const createTenantWithDefaults = async (
       data: { ownerId: ownerIdentity.id },
     });
 
-    return { tenant: updatedTenant, ownerUsername };
+    return { tenant: updatedTenant, ownerIdentity };
   });
 };
 

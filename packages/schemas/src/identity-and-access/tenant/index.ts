@@ -17,15 +17,16 @@ import {
  * Recognised microservice / module names.
  * Values mirror the Prisma TenantModule enum — lowercase to match
  * the audience string convention used in Policy records.
+ * IAM access is always implicit and is NOT listed here.
  */
 export const TenantModuleEnum = [
+  "hris",
   "inventory",
   "procurement",
   "pos",
   "financial",
   "request",
   "rma",
-  "iam",
 ] as const;
 
 export type TenantModule = (typeof TenantModuleEnum)[number];
@@ -69,12 +70,11 @@ export const TenantSchema = BaseRecordSchema.extend({
   ownerId: NullableUuidSchema,
 
   /**
-   * List of enabled microservice module names.
-   * e.g. ["inventory", "procurement", "pos", "financial"]
+   * List of enabled paid microservice module names.
+   * Empty array is valid — new tenants start with no paid modules.
+   * IAM access is always implicit and is never listed here.
    */
-  moduleAccess: z
-    .array(TenantModuleSchema)
-    .min(1, "At least one module must be enabled"),
+  moduleAccess: z.array(TenantModuleSchema),
 });
 
 export type Tenant = z.infer<typeof TenantSchema>;

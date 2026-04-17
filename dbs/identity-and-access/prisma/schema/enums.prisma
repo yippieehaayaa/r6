@@ -34,6 +34,7 @@ enum PolicyEffect {
 // Recognised microservice / module names.
 // Lowercase to match the audience string convention used in Policy.
 // e.g. policy.audience = ["inventory", "pos"]
+// IAM access is always implicit — it is not gated by moduleAccess.
 enum TenantModule {
     hris
     inventory
@@ -42,5 +43,4 @@ enum TenantModule {
     financial
     request
     rma
-    iam
 }
