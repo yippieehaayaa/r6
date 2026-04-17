@@ -6,8 +6,9 @@
 //    @@unique([name])
 //    @@unique([slug])
 //    @@index([isActive])
+//    @@index([isPlatform])
 //    @@index([deletedAt])
-//    moduleAccess String[] — Prisma requires explicit set: []
+//    moduleAccess TenantModule[] — Prisma requires explicit set: []
 //    deletedAt soft-delete — records are never hard-deleted
 //
 //  Financial config (costingMethod, currency, VAT) does not
@@ -39,6 +40,18 @@ const buildWhere = (
     }),
 });
 
+// ─── Platform tenant ─────────────────────────────────────────
+
+// Returns the single platform tenant (isPlatform = true).
+// Throws if the platform tenant has not been bootstrapped yet.
+// Used by login (ADMIN path) and any caller that needs to resolve
+// the platform tenantId without knowing it in advance.
+const getPlatformTenantOrFail = async (): Promise<Tenant> => {
+  return prisma.tenant.findFirstOrThrow({
+    where: { isPlatform: true, deletedAt: null },
+  });
+};
+
 // ─── Create ──────────────────────────────────────────────────
 
 // Inserts a new Tenant row.
@@ -48,7 +61,7 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
     data: {
       name: input.name,
       slug: input.slug,
-      // moduleAccess is a Postgres text[] — Prisma requires set: []
+      // moduleAccess is a Postgres enum[] — Prisma requires set: []
       moduleAccess: { set: input.moduleAccess },
     },
   });
@@ -57,7 +70,7 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 // ─── Create with defaults ─────────────────────────────────────────────────────
 
 // Platform-level policies automatically connected to the tenant-owner role
-// on every new tenant. Names must match the seed (tenantId = null).
+// on every new tenant. Names must match the platform tenant's seeded policies.
 const TENANT_OWNER_DEFAULT_POLICIES = [
   "iam:identity:full-access",
   "iam:role:full-access",
@@ -65,7 +78,7 @@ const TENANT_OWNER_DEFAULT_POLICIES = [
 ] as const;
 
 // Platform-level policies automatically connected to the tenant-admin role
-// on every new tenant. Names must match the seed (tenantId = null).
+// on every new tenant. Names must match the platform tenant's seeded policies.
 const TENANT_ADMIN_DEFAULT_POLICIES = [
   "iam:identity:full-access",
   "iam:role:full-access",
@@ -75,6 +88,9 @@ const TENANT_ADMIN_DEFAULT_POLICIES = [
 // Atomically creates a Tenant, its two standard protected roles
 // (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
 // identity using the pre-computed password hash/salt.
+//
+// platformTenantId must be the ID of the platform tenant — used to look up
+// the default platform policies to attach to the new tenant roles.
 //
 // The owner's username is derived from the slug: "${slug.slice(0,58)}-owner"
 // (capped so the total stays within the 64-char username limit).
@@ -87,6 +103,7 @@ const createTenantWithDefaults = async (
   input: CreateTenantInput,
   ownerHash: string,
   ownerSalt: string,
+  platformTenantId: string,
 ): Promise<{ tenant: Tenant; ownerUsername: string }> => {
   return prisma.$transaction(async (tx) => {
     const tenant = await tx.tenant.create({
@@ -117,14 +134,14 @@ const createTenantWithDefaults = async (
         }),
         tx.policy.findMany({
           where: {
-            tenantId: null,
+            tenantId: platformTenantId,
             name: { in: [...TENANT_OWNER_DEFAULT_POLICIES] },
           },
           select: { id: true },
         }),
         tx.policy.findMany({
           where: {
-            tenantId: null,
+            tenantId: platformTenantId,
             name: { in: [...TENANT_ADMIN_DEFAULT_POLICIES] },
           },
           select: { id: true },
@@ -133,36 +150,55 @@ const createTenantWithDefaults = async (
 
     const ownerUsername = `${tenant.slug.slice(0, 58)}-owner`;
 
-    // Owner identity creation and role policy assignments are independent.
+    // Create the owner identity first so we can back-patch ownerId on tenant.
+    const ownerIdentity = await tx.identity.create({
+      data: {
+        tenantId: tenant.id,
+        username: ownerUsername,
+        email: null,
+        hash: ownerHash,
+        salt: ownerSalt,
+        kind: "USER",
+        status: "ACTIVE",
+        mustChangePassword: true,
+      },
+    });
+
+    // Role-policy assignments and owner identity-role assignment are independent.
     await Promise.all([
-      tx.identity.create({
-        data: {
-          tenantId: tenant.id,
-          username: ownerUsername,
-          email: null,
-          hash: ownerHash,
-          salt: ownerSalt,
-          kind: "USER",
-          status: "ACTIVE",
-          mustChangePassword: true,
-          roles: { connect: { id: ownerRole.id } },
-        },
+      // Assign owner role to the owner identity (explicit join table).
+      tx.identityRole.create({
+        data: { identityId: ownerIdentity.id, roleId: ownerRole.id },
       }),
+      // Attach platform policies to the owner role.
       ownerPolicies.length > 0
-        ? tx.role.update({
-            where: { id: ownerRole.id },
-            data: { policies: { connect: ownerPolicies } },
+        ? tx.rolePolicy.createMany({
+            data: ownerPolicies.map((p) => ({
+              roleId: ownerRole.id,
+              policyId: p.id,
+            })),
+            skipDuplicates: true,
           })
         : Promise.resolve(),
+      // Attach platform policies to the admin role.
       adminPolicies.length > 0
-        ? tx.role.update({
-            where: { id: adminRole.id },
-            data: { policies: { connect: adminPolicies } },
+        ? tx.rolePolicy.createMany({
+            data: adminPolicies.map((p) => ({
+              roleId: adminRole.id,
+              policyId: p.id,
+            })),
+            skipDuplicates: true,
           })
         : Promise.resolve(),
     ]);
 
-    return { tenant, ownerUsername };
+    // Back-patch ownerId now that the owner identity exists.
+    const updatedTenant = await tx.tenant.update({
+      where: { id: tenant.id },
+      data: { ownerId: ownerIdentity.id },
+    });
+
+    return { tenant: updatedTenant, ownerUsername };
   });
 };
 
@@ -258,6 +294,7 @@ const restoreTenant = async (id: string): Promise<Tenant> => {
 };
 
 export {
+  getPlatformTenantOrFail,
   createTenant,
   createTenantWithDefaults,
   getTenantById,

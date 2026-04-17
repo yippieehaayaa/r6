@@ -1,0 +1,23 @@
+// ============================================================
+//  ROLE ↔ POLICY   (explicit many-to-many join table)
+//
+//  Replaces Prisma's implicit _PolicyToRole join table.
+//  Explicit model gives us:
+//    • assignedAt — when the policy was attached to the role
+//    • onDelete: Cascade on both sides — join row removed
+//      automatically when either the role or the policy
+//      is hard-deleted.
+// ============================================================
+
+model RolePolicy {
+    id         String   @id @default(uuid()) @db.Uuid
+    roleId     String   @db.Uuid
+    role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+    policyId   String   @db.Uuid
+    policy     Policy   @relation(fields: [policyId], references: [id], onDelete: Cascade)
+    assignedAt DateTime @default(now())
+
+    @@unique([roleId, policyId])
+    @@index([policyId])
+    @@map("_role_policies")
+}

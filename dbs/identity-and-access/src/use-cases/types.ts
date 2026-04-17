@@ -15,12 +15,13 @@ import type {
   PolicyEffect,
   Role,
   Tenant,
+  TenantModule,
 } from "../../generated/prisma/client.js";
 
-// ─── Re-exports for consumers ────────────────────────────────
+// ─── Re-exports for consumers ───────────────────────────────
 
 export type { Tenant, Identity, Role, Policy };
-export type { IdentityKind, IdentityStatus, PolicyEffect };
+export type { IdentityKind, IdentityStatus, PolicyEffect, TenantModule };
 
 // ─── Tenant ───────────────────────────────────────────────────
 
@@ -31,7 +32,7 @@ export type { IdentityKind, IdentityStatus, PolicyEffect };
 export type CreateTenantInput = {
   name: string; // @@unique
   slug: string; // @@unique — url-safe e.g. "acme-corp"
-  moduleAccess: string[]; // required — enabled microservice names
+  moduleAccess: TenantModule[]; // required — enabled microservice modules
 };
 
 // Only mutable fields. name/slug uniqueness still enforced on write.
@@ -39,7 +40,7 @@ export type UpdateTenantInput = {
   name?: string;
   slug?: string;
   isActive?: boolean;
-  moduleAccess?: string[];
+  moduleAccess?: TenantModule[];
 };
 
 // ─── Pagination ───────────────────────────────────────────────
@@ -110,10 +111,11 @@ export type ListPoliciesInput = PaginationInput & {
 // ─── Identity ─────────────────────────────────────────────────
 
 // @@unique([tenantId, username]), @@unique([tenantId, email])
-// tenantId is null only when kind = ADMIN.
+// All identities belong to a tenant.
+// ADMIN identities belong to the platform tenant (isPlatform = true).
 // hash + salt are required — caller is responsible for hashing.
 export type CreateIdentityInput = {
-  tenantId: string | null;
+  tenantId: string; // required — use platform tenant ID for ADMIN kind
   username: string;
   email?: string | null;
   password: string;
@@ -122,7 +124,7 @@ export type CreateIdentityInput = {
 };
 
 export type VerifyIdentityInput = {
-  tenantId?: string | null;
+  tenantId?: string;
   tenantSlug?: string | null;
   username?: string;
   password: string;
@@ -146,11 +148,12 @@ export type UpdateIdentityInput = {
 // ─── Role ─────────────────────────────────────────────────────
 
 // @@unique([tenantId, name])
-// tenantId null = platform role for ADMIN identities.
+// All roles belong to a tenant.
+// Platform-level roles belong to the platform tenant (isPlatform = true).
 export type CreateRoleInput = {
-  tenantId: string | null; // unique scope key
+  tenantId: string; // required — use platform tenant ID for platform roles
   name: string; // unique per tenantId
-  description?: string | null; // was: description?: string
+  description?: string | null;
 };
 
 export type UpdateRoleInput = {
@@ -162,11 +165,12 @@ export type UpdateRoleInput = {
 // ─── Policy ───────────────────────────────────────────────────
 
 // @@unique([tenantId, name])
-// permissions and audience are required arrays — must be non-empty.
+// All policies belong to a tenant.
+// Platform-level policies belong to the platform tenant (isPlatform = true).
 export type CreatePolicyInput = {
-  tenantId: string | null; // unique scope key
+  tenantId: string; // required — use platform tenant ID for platform policies
   name: string; // unique per tenantId
-  description?: string | null; // was: description?: string
+  description?: string | null;
   effect: PolicyEffect; // required — no default
   permissions: string[]; // required — convention: "service:resource:action"
   audience: string[]; // required — which services enforce this policy

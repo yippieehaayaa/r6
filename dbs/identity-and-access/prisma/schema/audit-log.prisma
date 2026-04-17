@@ -1,0 +1,40 @@
+// ============================================================
+//  AUDIT LOG
+//  Immutable append-only record of significant IAM actions.
+//
+//  tenantId / actorId are bare UUID strings — intentionally no
+//  FK constraints so audit records survive deletion of the
+//  tenant or identity they reference. Cross-service actor
+//  support: actorId can reference an identity in another
+//  microservice's DB.
+//
+//  action:   verb describing what happened, e.g. "identity.created"
+//  resource: entity type affected, e.g. "identity", "role", "policy"
+//  resourceId: PK of the affected entity (UUID string)
+//  changes:  JSON diff — { before: {...}, after: {...} }
+//  ipAddress: originating client IP (best-effort; may be null for
+//             system-initiated actions)
+//
+//  No updatedAt / deletedAt — audit rows are never modified or
+//  soft-deleted.
+// ============================================================
+
+model AuditLog {
+    id         String  @id @default(uuid()) @db.Uuid
+    tenantId   String? @db.Uuid // bare UUID — no FK; null for cross-tenant system actions
+    actorId    String? @db.Uuid // bare UUID — no FK; survives identity deletion
+    action     String // e.g. "identity.created", "role.assigned"
+    resource   String // e.g. "identity", "role", "policy", "tenant"
+    resourceId String? @db.Uuid // PK of the affected entity
+    changes    Json? // { before: {...}, after: {...} }
+    ipAddress  String?
+
+    // Timestamps
+    createdAt DateTime @default(now())
+
+    @@index([tenantId])
+    @@index([tenantId, resource, resourceId])
+    @@index([tenantId, actorId])
+    @@index([createdAt])
+    @@map("audit_logs")
+}

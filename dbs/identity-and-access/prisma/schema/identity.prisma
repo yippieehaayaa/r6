@@ -23,8 +23,10 @@
 
 model Identity {
     id                  String         @id @default(uuid()) @db.Uuid
-    // tenantId: null = platform ADMIN, required for USER and SERVICE
-    tenantId            String?        @db.Uuid
+    // Every identity belongs to a tenant.
+    // ADMIN identities belong to the platform tenant (isPlatform = true).
+    // USER and SERVICE identities belong to a regular tenant.
+    tenantId            String         @db.Uuid
     username            String
     email               String?
     hash                String // bcrypt hash of password
@@ -41,8 +43,11 @@ model Identity {
     totpVerifiedAt     DateTime? // when the secret was first confirmed by the identity
 
     // Relations
-    roles          Role[]         // many-to-many via implicit join table
-    refreshTokens  RefreshToken[]
+    tenant              Tenant         @relation("TenantIdentities", fields: [tenantId], references: [id], onDelete: Cascade)
+    ownedTenants        Tenant[]       @relation("TenantOwner")
+    identityRoles       IdentityRole[] // explicit join table (replaces implicit Role[])
+    issuedInvitations   Invitation[]   @relation("IssuedInvitations")
+    refreshTokens       RefreshToken[]
 
     // Timestamps
     createdAt DateTime  @default(now())

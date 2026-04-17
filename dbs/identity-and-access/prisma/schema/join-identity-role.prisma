@@ -1,0 +1,23 @@
+// ============================================================
+//  IDENTITY ↔ ROLE   (explicit many-to-many join table)
+//
+//  Replaces Prisma's implicit _IdentityToRole join table.
+//  Explicit model gives us:
+//    • assignedAt — when the role was granted
+//    • onDelete: Cascade on both sides — join row removed
+//      automatically when either the identity or the role
+//      is hard-deleted.
+// ============================================================
+
+model IdentityRole {
+    id         String   @id @default(uuid()) @db.Uuid
+    identityId String   @db.Uuid
+    identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+    roleId     String   @db.Uuid
+    role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+    assignedAt DateTime @default(now())
+
+    @@unique([identityId, roleId])
+    @@index([roleId])
+    @@map("_identity_roles")
+}

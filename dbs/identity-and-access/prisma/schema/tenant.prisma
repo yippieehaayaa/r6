@@ -19,11 +19,24 @@
 // ============================================================
 
 model Tenant {
-    id           String   @id @default(uuid()) @db.Uuid
-    name         String   @unique // company name
-    slug         String   @unique // url-safe identifier e.g. "acme-corp"
-    isActive     Boolean  @default(true)
-    moduleAccess String[] // enabled microservice names
+    id           String         @id @default(uuid()) @db.Uuid
+    name         String         @unique // company name
+    slug         String         @unique // url-safe identifier e.g. "acme-corp"
+    isActive     Boolean        @default(true)
+    isPlatform   Boolean        @default(false) // true for the single platform tenant that owns ADMIN identities
+    moduleAccess TenantModule[] // enabled microservice names (enum-typed)
+
+    // Primary owner identity for this tenant.
+    // Nullable because the owner identity is created after the tenant row
+    // inside createTenantWithDefaults, then back-patched via tenant.update.
+    ownerId String?   @db.Uuid
+    owner   Identity? @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+    // Back-relations
+    identities   Identity[]   @relation("TenantIdentities")
+    roles        Role[]       @relation("TenantRoles")
+    policies     Policy[]     @relation("TenantPolicies")
+    invitations  Invitation[]
 
     // Timestamps
     createdAt DateTime  @default(now())
@@ -31,6 +44,8 @@ model Tenant {
     deletedAt DateTime?
 
     @@index([isActive])
+    @@index([isPlatform])
+    @@index([ownerId])
     @@index([deletedAt])
     @@map("tenants")
 }

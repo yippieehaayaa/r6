@@ -6,16 +6,21 @@
 //    @@unique([tenantId, name])   — policy names unique per tenant
 //    @@index([tenantId])
 //    @@index([deletedAt])
-//    tenantId nullable            — null for platform-level policies
+//    tenantId non-nullable        — all policies belong to a tenant
+//                                   (ADMIN policies belong to the platform tenant)
 //    effect PolicyEffect          — required, no default
 //    permissions String[]         — required array, stored as Postgres text[]
 //    audience    String[]         — required array, stored as Postgres text[]
 //    conditions  Json?            — optional, nullable
-//    roles Role[]                 — many-to-many implicit join
+//    rolePolicies RolePolicy[]    — explicit join table _role_policies
 //    deletedAt soft-delete
 // ============================================================
 
-import type { Policy, Role } from "../../generated/prisma/client.js";
+import type {
+  Policy,
+  Role,
+  RolePolicy,
+} from "../../generated/prisma/client.js";
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
 import type {
@@ -24,6 +29,12 @@ import type {
   PaginatedResult,
   UpdatePolicyInput,
 } from "./types.js";
+
+// ─── Composite types ─────────────────────────────────────────
+
+export type PolicyWithRoles = Policy & {
+  rolePolicies: (RolePolicy & { role: Role })[];
+};
 
 // Converts a caller-supplied conditions value to what Prisma's
 // NullableJsonNullValueInput actually accepts.
@@ -72,7 +83,7 @@ const getPolicyById = async (id: string): Promise<Policy | null> => {
 // Finds a non-deleted policy by [tenantId, name].
 // Uses @@unique([tenantId, name]).
 const getPolicyByName = async (
-  tenantId: string | null,
+  tenantId: string,
   name: string,
 ): Promise<Policy | null> => {
   return prisma.policy.findFirst({
@@ -80,13 +91,13 @@ const getPolicyByName = async (
   });
 };
 
-// Returns a policy with its attached roles included.
+// Returns a policy with its attached roles included (via explicit join table).
 const getPolicyWithRoles = async (
   id: string,
-): Promise<(Policy & { roles: Role[] }) | null> => {
+): Promise<PolicyWithRoles | null> => {
   return prisma.policy.findFirst({
     where: { id, deletedAt: null },
-    include: { roles: true },
+    include: { rolePolicies: { include: { role: true } } },
   });
 };
 
@@ -131,13 +142,16 @@ const listPolicies = async (
   return { data, total, page: input.page, limit: input.limit };
 };
 
-// Lists platform-level policies (tenantId = null) — paginated.
+// Lists platform-level policies (policies belonging to the platform tenant) — paginated.
 // Used only by ADMIN identities.
-const listPlatformPolicies = async (input: {
-  page: number;
-  limit: number;
-}): Promise<PaginatedResult<Policy>> => {
-  const where: Prisma.PolicyWhereInput = { tenantId: null, deletedAt: null };
+const listPlatformPolicies = async (
+  platformTenantId: string,
+  input: { page: number; limit: number },
+): Promise<PaginatedResult<Policy>> => {
+  const where: Prisma.PolicyWhereInput = {
+    tenantId: platformTenantId,
+    deletedAt: null,
+  };
   const skip = (input.page - 1) * input.limit;
 
   const [data, total] = await Promise.all([
@@ -243,10 +257,9 @@ const updatePolicy = async (
 // ─── Soft delete ─────────────────────────────────────────────
 
 // Soft-deletes a policy.
-// Implicit join rows (policy ↔ role) are NOT removed —
-// Prisma's implicit many-to-many does not cascade soft-deletes.
-// Roles that reference this policy will stop seeing it in queries
-// filtered by deletedAt: null.
+// Explicit join rows (RolePolicy) are NOT removed — callers that
+// query via rolePolicies include will naturally skip soft-deleted
+// policies when they filter by deletedAt: null on the policy side.
 const softDeletePolicy = async (id: string): Promise<Policy> => {
   return prisma.policy.update({
     where: { id },

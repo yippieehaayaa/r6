@@ -100,10 +100,10 @@ export type BaseRecord = z.infer<typeof BaseRecordSchema>;
 export const TenantScopedSchema = BaseRecordSchema.extend({
   /**
    * FK → Tenant.id.
-   * null  = platform-level (ADMIN identities, platform roles/policies).
-   * uuid  = tenant-owned record.
+   * Every record belongs to a tenant — ADMIN identities and platform
+   * roles/policies belong to the platform tenant (isPlatform = true).
    */
-  tenantId: NullableUuidSchema,
+  tenantId: UuidSchema,
 });
 
 export type TenantScoped = z.infer<typeof TenantScopedSchema>;

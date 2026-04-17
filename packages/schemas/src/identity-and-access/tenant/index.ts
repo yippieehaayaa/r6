@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   BaseRecordSchema,
   ListQuerySchema,
-  serviceNameRegex,
+  NullableUuidSchema,
   slugRegex,
 } from "../base.schema";
 
@@ -15,15 +15,22 @@ import {
 
 /**
  * Recognised microservice / module names.
- * Validated individually inside moduleAccess arrays.
+ * Values mirror the Prisma TenantModule enum — lowercase to match
+ * the audience string convention used in Policy records.
  */
-export const ModuleNameSchema = z
-  .string()
-  .regex(
-    serviceNameRegex,
-    "Module name must be lowercase alphanumeric with hyphens",
-  )
-  .min(1, "Module name cannot be empty");
+export const TenantModuleEnum = [
+  "inventory",
+  "procurement",
+  "pos",
+  "financial",
+  "request",
+  "rma",
+  "iam",
+] as const;
+
+export type TenantModule = (typeof TenantModuleEnum)[number];
+
+export const TenantModuleSchema = z.enum(TenantModuleEnum);
 
 // ── Full read model (as returned from the DB) ───────────────
 
@@ -52,11 +59,21 @@ export const TenantSchema = BaseRecordSchema.extend({
   isActive: z.boolean(),
 
   /**
-   * List of enabled microservice names.
+   * True for the single platform tenant that owns all ADMIN identities
+   * and platform-level roles/policies. There is exactly one platform
+   * tenant per deployment; it cannot be created via the public API.
+   */
+  isPlatform: z.boolean(),
+
+  /** Primary owner identity ID — null until set after tenant creation */
+  ownerId: NullableUuidSchema,
+
+  /**
+   * List of enabled microservice module names.
    * e.g. ["inventory", "procurement", "pos", "financial"]
    */
   moduleAccess: z
-    .array(ModuleNameSchema)
+    .array(TenantModuleSchema)
     .min(1, "At least one module must be enabled"),
 });
 
@@ -70,6 +87,8 @@ export const CreateTenantSchema = TenantSchema.omit({
   updatedAt: true,
   deletedAt: true,
   isActive: true, // defaulted to true on creation
+  isPlatform: true, // server-managed — cannot be set via API
+  ownerId: true, // set internally after owner identity is created
 });
 
 export type CreateTenantInput = z.infer<typeof CreateTenantSchema>;
@@ -81,6 +100,8 @@ export const UpdateTenantSchema = TenantSchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  isPlatform: true, // server-managed — cannot be changed via API
+  ownerId: true, // set internally
 }).partial();
 
 export type UpdateTenantInput = z.infer<typeof UpdateTenantSchema>;

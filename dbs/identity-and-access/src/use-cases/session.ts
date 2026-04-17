@@ -97,3 +97,16 @@ export const revokeAllRefreshTokensForIdentity = async (
     data: { revokedAt: new Date() },
   });
 };
+
+// ─── Revoke (all for tenant) ─────────────────────────────────
+
+// Used when a tenant is suspended or deleted — invalidates every
+// active session for all identities belonging to that tenant.
+export const revokeAllRefreshTokensForTenant = async (
+  tenantId: string,
+): Promise<void> => {
+  await prisma.refreshToken.updateMany({
+    where: { revokedAt: null, identity: { tenantId } },
+    data: { revokedAt: new Date() },
+  });
+};

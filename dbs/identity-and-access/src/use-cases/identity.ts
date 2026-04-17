@@ -9,8 +9,9 @@
 //    @@index([tenantId, status])
 //    @@index([tenantId, kind])
 //    @@index([deletedAt])
-//    tenantId nullable               — null only for ADMIN kind
-//    roles Role[]                    — many-to-many implicit join
+//    tenantId non-nullable           — all identities belong to a tenant
+//                                      ADMIN identities use the platform tenant
+//    identityRoles IdentityRole[]    — explicit M2M join table
 //    mustChangePassword default true
 //    failedLoginAttempts default 0
 //    status default PENDING_VERIFICATION
@@ -22,12 +23,14 @@ import { encryptPassword, verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
 import type {
   Identity,
+  IdentityRole,
   Policy,
   Prisma,
   Role,
+  RolePolicy,
 } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
-import { getTenantBySlug } from "./tenant.js";
+import { getPlatformTenantOrFail, getTenantBySlug } from "./tenant.js";
 import type {
   AssignRoleInput,
   ChangePasswordInput,
@@ -38,11 +41,23 @@ import type {
   VerifyIdentityInput,
 } from "./types.js";
 
+// ─── Shared return types ─────────────────────────────────────
+
+export type IdentityWithRoles = Identity & {
+  identityRoles: (IdentityRole & { role: Role })[];
+};
+
+export type IdentityWithRolesAndPolicies = Identity & {
+  identityRoles: (IdentityRole & {
+    role: Role & { rolePolicies: (RolePolicy & { policy: Policy })[] };
+  })[];
+};
+
 // ─── Create ──────────────────────────────────────────────────
 
 // Inserts a new Identity row.
 // Throws P2002 if [tenantId, username] or [tenantId, email] already exists.
-// hash and salt must be pre-computed by the caller.
+// tenantId is required — use the platform tenant ID for ADMIN identities.
 const createIdentity = async (
   input: CreateIdentityInput,
 ): Promise<Identity> => {
@@ -67,7 +82,7 @@ const createIdentity = async (
 // Optional tenantId adds DB-level tenant scope enforcement.
 const getIdentityById = async (
   id: string,
-  tenantId?: string | null,
+  tenantId?: string,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
     where: { id, deletedAt: null, ...(tenantId !== undefined && { tenantId }) },
@@ -77,7 +92,7 @@ const getIdentityById = async (
 // Finds a non-deleted identity by [tenantId, username].
 // Uses @@unique([tenantId, username]) index.
 const getIdentityByUsername = async (
-  tenantId: string | null,
+  tenantId: string,
   username: string,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
@@ -88,7 +103,7 @@ const getIdentityByUsername = async (
 // Finds a non-deleted identity by [tenantId, email].
 // Uses @@unique([tenantId, email]) index.
 const getIdentityByEmail = async (
-  tenantId: string | null,
+  tenantId: string,
   email: string,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
@@ -97,13 +112,13 @@ const getIdentityByEmail = async (
 };
 
 // Returns a non-deleted identity with its assigned roles included.
-// Roles relation is many-to-many via implicit join table.
+// Uses explicit join table identityRoles → role.
 const getIdentityWithRoles = async (
   id: string,
-): Promise<(Identity & { roles: Role[] }) | null> => {
+): Promise<IdentityWithRoles | null> => {
   return prisma.identity.findFirst({
     where: { id, deletedAt: null },
-    include: { roles: true },
+    include: { identityRoles: { include: { role: true } } },
   });
 };
 
@@ -112,13 +127,19 @@ const getIdentityWithRoles = async (
 // Optional tenantId adds DB-level tenant scope enforcement.
 const getIdentityWithRolesAndPolicies = async (
   id: string,
-  tenantId?: string | null,
-): Promise<
-  (Identity & { roles: (Role & { policies: Policy[] })[] }) | null
-> => {
+  tenantId?: string,
+): Promise<IdentityWithRolesAndPolicies | null> => {
   return prisma.identity.findFirst({
     where: { id, deletedAt: null, ...(tenantId !== undefined && { tenantId }) },
-    include: { roles: { include: { policies: true } } },
+    include: {
+      identityRoles: {
+        include: {
+          role: {
+            include: { rolePolicies: { include: { policy: true } } },
+          },
+        },
+      },
+    },
   });
 };
 
@@ -191,19 +212,35 @@ const changePassword = async (
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_LOCK_MS = 15 * 60 * 1000;
 
-// Looks up an identity by username or email, verifies the HMAC-prefixed
-// bcrypt hash, manages failed attempt counting and account locking,
-// and returns the full identity with roles+policies on success.
+// Looks up an identity by username, verifies the HMAC-prefixed bcrypt hash,
+// manages failed attempt counting and account locking, and returns the full
+// identity with roles+policies on success.
+//
+// Tenant resolution priority:
+//   1. input.tenantId provided  → use directly
+//   2. input.tenantSlug provided → resolve slug → tenantId; checks tenant active
+//   3. Neither provided          → ADMIN login path; resolves platform tenant
 const verifyIdentity = async (
   input: VerifyIdentityInput,
-): Promise<Identity & { roles: (Role & { policies: Policy[] })[] }> => {
-  // Resolve tenantSlug → tenantId. Unknown slug is reported as invalid_credentials
-  // to avoid leaking whether a tenant exists.
-  let tenantId = input.tenantId ?? null;
-  if (tenantId === null && input.tenantSlug) {
+): Promise<IdentityWithRolesAndPolicies> => {
+  let tenantId: string;
+
+  if (input.tenantId) {
+    tenantId = input.tenantId;
+  } else if (input.tenantSlug) {
+    // Resolve slug → tenantId. Unknown slug is reported as invalid_credentials
+    // to avoid leaking whether a tenant exists.
     const tenant = await getTenantBySlug(input.tenantSlug);
     if (!tenant) throw new Error("invalid_credentials");
+    // Block login if the tenant is suspended or soft-deleted.
+    if (!tenant.isActive || tenant.deletedAt)
+      throw new Error("account_inactive:tenant_suspended");
     tenantId = tenant.id;
+  } else {
+    // ADMIN login path: no tenant context in the request.
+    // All ADMIN identities live under the platform tenant.
+    const platform = await getPlatformTenantOrFail();
+    tenantId = platform.id;
   }
 
   const identity = await getIdentityByUsername(
@@ -270,51 +307,45 @@ const updateIdentity = async (
 
 // ─── Role assignment (many-to-many) ──────────────────────────
 
-// Connects an existing Role to an existing Identity.
-// Prisma manages the implicit join table.
-// Throws P2025 if either identity or role does not exist.
-// Connecting the same role twice is a no-op (Prisma deduplicates).
+// Inserts a row into the explicit _identity_roles join table.
+// Throws P2002 if the same [identityId, roleId] already exists (duplicate assign).
+// Throws P2025 if either the identity or role does not exist (FK violation).
 const assignRoleToIdentity = async (
   input: AssignRoleInput,
-): Promise<Identity & { roles: Role[] }> => {
-  return prisma.identity.update({
-    where: { id: input.identityId },
-    data: {
-      roles: { connect: { id: input.roleId } },
-    },
-    include: { roles: true },
+): Promise<IdentityRole> => {
+  return prisma.identityRole.create({
+    data: { identityId: input.identityId, roleId: input.roleId },
   });
 };
 
-// Disconnects a Role from an Identity.
-// No-op if the role was not assigned.
-// Throws P2025 if the identity does not exist.
+// Removes a row from the explicit _identity_roles join table.
+// Throws P2025 if the [identityId, roleId] row does not exist.
 const removeRoleFromIdentity = async (
   input: AssignRoleInput,
-): Promise<Identity & { roles: Role[] }> => {
-  return prisma.identity.update({
-    where: { id: input.identityId },
-    data: {
-      roles: { disconnect: { id: input.roleId } },
+): Promise<IdentityRole> => {
+  return prisma.identityRole.delete({
+    where: {
+      identityId_roleId: {
+        identityId: input.identityId,
+        roleId: input.roleId,
+      },
     },
-    include: { roles: true },
   });
 };
 
-// Replaces all assigned roles for an identity in one atomic write.
-// Uses Prisma's set: [] which disconnects all current roles first,
-// then connects the new set. Roles not in the new array are removed.
+// Replaces all assigned roles for an identity atomically.
+// Deletes all existing join rows then inserts the new set in one transaction.
 const setRolesForIdentity = async (
   identityId: string,
   roleIds: string[],
-): Promise<Identity & { roles: Role[] }> => {
-  return prisma.identity.update({
-    where: { id: identityId },
-    data: {
-      roles: { set: roleIds.map((id) => ({ id })) },
-    },
-    include: { roles: true },
-  });
+): Promise<void> => {
+  await prisma.$transaction([
+    prisma.identityRole.deleteMany({ where: { identityId } }),
+    prisma.identityRole.createMany({
+      data: roleIds.map((roleId) => ({ identityId, roleId })),
+      skipDuplicates: true,
+    }),
+  ]);
 };
 
 // ─── TOTP ────────────────────────────────────────────────────
@@ -357,8 +388,8 @@ const disableTotp = async (id: string): Promise<void> => {
 
 // Soft-deletes an identity.
 // @@index([deletedAt]) supports filtering deleted records out.
-// Does NOT remove the implicit join table rows for roles —
-// Prisma's implicit many-to-many does not cascade soft deletes.
+// IdentityRole join rows are left intact — they are removed by CASCADE
+// only on hard-delete (not applicable here since we soft-delete).
 const softDeleteIdentity = async (id: string): Promise<Identity> => {
   return prisma.identity.update({
     where: { id },

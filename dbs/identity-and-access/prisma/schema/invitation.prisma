@@ -1,0 +1,43 @@
+// ============================================================
+//  INVITATION
+//  Represents a pending email invitation sent to a user to join
+//  a tenant. The invitation is single-use and time-limited.
+//
+//  tokenHash:
+//    SHA-256 hash of the raw invitation token (sent in the email
+//    link). Never store the raw token — only the hash.
+//
+//  roleId (optional):
+//    When set, the invited identity is automatically assigned
+//    this role on acceptance. Role is tenant-scoped.
+//
+//  invitedById:
+//    The ADMIN or tenant-owner identity that issued the invite.
+//    Named relation "IssuedInvitations" to avoid ambiguity with
+//    the single primary FK (no other Identity relationship here).
+//
+//  No soft-delete: invitations are hard-deleted on acceptance
+//  or expiry cleanup.
+// ============================================================
+
+model Invitation {
+    id          String    @id @default(uuid()) @db.Uuid
+    tenantId    String    @db.Uuid
+    tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    email       String
+    tokenHash   String    @unique // SHA-256 hash of the raw email token
+    roleId      String?   @db.Uuid
+    role        Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+    invitedById String    @db.Uuid
+    invitedBy   Identity  @relation("IssuedInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+    expiresAt   DateTime
+    acceptedAt  DateTime?
+
+    // Timestamps
+    createdAt DateTime @default(now())
+
+    @@index([tenantId])
+    @@index([tenantId, email])
+    @@index([expiresAt])
+    @@map("invitations")
+}
