@@ -4,19 +4,15 @@ import { authMiddleware } from "../../middleware/auth";
 import {
   requireNotAdmin,
   requireNotSelf,
-  requireNotTargetingElevatedIdentity,
   requirePermission,
   requireSelfOrAdminOrTenantOwner,
   requireTenantScope,
 } from "../../middleware/guard";
-import { assignRole } from "./controller/assign-role";
 import { createIdentityHandler } from "./controller/create";
 import { getIdentity } from "./controller/get";
 import { list } from "./controller/list";
 import { remove } from "./controller/remove";
-import { removeRole } from "./controller/remove-role";
 import { restore } from "./controller/restore";
-import { setRoles } from "./controller/set-roles";
 import { updateIdentityHandler } from "./controller/update";
 
 const router: Router = Router({ mergeParams: true });
@@ -56,7 +52,6 @@ router.patch(
   requireNotSelf(),
   requireTenantScope(),
   requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
-  requireNotTargetingElevatedIdentity(),
   updateIdentityHandler,
 );
 router.delete(
@@ -74,35 +69,6 @@ router.post(
   requireTenantScope(),
   requirePermission(IAM_PERMISSIONS.IDENTITY_DELETE),
   restore,
-);
-
-// ── Role assignments (writes — admin blocked) ─────────────────────────────────
-router.post(
-  "/:id/roles",
-  requireNotAdmin(),
-  requireNotSelf(),
-  requireTenantScope(),
-  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
-  requireNotTargetingElevatedIdentity(),
-  assignRole,
-);
-router.delete(
-  "/:id/roles/:roleId",
-  requireNotAdmin(),
-  requireNotSelf(),
-  requireTenantScope(),
-  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
-  requireNotTargetingElevatedIdentity(),
-  removeRole,
-);
-router.put(
-  "/:id/roles",
-  requireNotAdmin(),
-  requireNotSelf(),
-  requireTenantScope(),
-  requirePermission(IAM_PERMISSIONS.IDENTITY_UPDATE),
-  requireNotTargetingElevatedIdentity(),
-  setRoles,
 );
 
 export default router;

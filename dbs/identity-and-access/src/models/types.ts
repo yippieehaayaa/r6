@@ -15,14 +15,13 @@ import type {
   Invitation,
   Policy,
   PolicyEffect,
-  Role,
   Tenant,
   TenantModule,
 } from "../../generated/prisma/client.js";
 
-// ─── Re-exports for consumers ───────────────────────────────
+// ─── Re-exports for consumers ───────────────────────────────────────────
 
-export type { Tenant, Identity, IdentityPermission, Invitation, Role, Policy };
+export type { Tenant, Identity, IdentityPermission, Invitation, Policy };
 export type { IdentityKind, IdentityStatus, PolicyEffect, TenantModule };
 
 // Pagination primitives live in shared.ts — re-exported here for consumers.
@@ -72,17 +71,6 @@ export type ListIdentitiesInput = PaginationInput & {
   search?: string; // case-insensitive OR filter on username + email
 };
 
-// ─── Role list ────────────────────────────────────────────────
-
-// Filters for listRoles. tenantId required.
-// @@index([tenantId, isActive]) backs the isActive filter.
-// search performs a case-insensitive OR match on name, displayName, and description.
-export type ListRolesInput = PaginationInput & {
-  tenantId: string;
-  isActive?: boolean;
-  search?: string; // case-insensitive OR filter on name + displayName + description
-};
-
 // ─── Policy list ──────────────────────────────────────────────
 
 // Filters for listPolicies. tenantId is required — policies are tenant-scoped.
@@ -130,26 +118,7 @@ export type UpdateIdentityInput = {
   status?: IdentityStatus;
 };
 
-// ─── Role ─────────────────────────────────────────────────────
-
-// @@unique([tenantId, name])
-// All roles belong to a tenant.
-export type CreateRoleInput = {
-  tenantId: string; // required — always tenant-scoped
-  name: string; // unique per tenantId
-  displayName?: string | null; // human-readable label shown in the UI
-  description?: string | null;
-  isManaged?: boolean; // true = platform-seeded, tenants cannot edit/delete
-};
-
-export type UpdateRoleInput = {
-  name?: string;
-  displayName?: string | null;
-  description?: string | null;
-  isActive?: boolean;
-};
-
-// ─── Policy ───────────────────────────────────────────────────
+// ─── Policy ───────────────────────────────────────────────────────
 
 // @@unique([tenantId, name])
 // All policies belong to a tenant.
@@ -170,25 +139,14 @@ export type UpdatePolicyInput = {
   description?: string | null;
   permissions?: string[];
 };
+// ─── Relation inputs ──────────────────────────────────────────────────
 
-// ─── Relation inputs ─────────────────────────────────────────
-
-// Many-to-many: Identity ↔ Role
-// Both IDs must exist and not be soft-deleted.
-export type AssignRoleInput = {
-  tenantId: string; // required — verifies identity belongs to tenant before join insert
-  identityId: string;
-  roleId: string;
-};
-
-// Many-to-many: Role ↔ Policy
-// Both IDs must exist and not be soft-deleted.
-export type AttachPolicyInput = {
-  tenantId: string; // required — verifies role belongs to tenant before join insert
-  roleId: string;
+// Many-to-many: Policy ↔ Invitation
+// policyId must exist and not be soft-deleted. invitationId must be pending.
+export type AttachPolicyToInvitationInput = {
+  invitationId: string;
   policyId: string;
 };
-
 // ─── Identity Permission ──────────────────────────────────────
 
 // Per-user permission override — grants or explicitly denies a single
@@ -220,7 +178,8 @@ export type CreateInvitationInput = {
   /** Raw invitation token (server-generated); stored only as SHA-256 hash */
   tokenHash: string;
   expiresAt: Date;
-  roleId?: string | null;
+  /** Policy IDs to stamp as IdentityPermission ALLOW rows on accept */
+  policyIds?: string[];
 };
 
 // Accept a pending invitation. Verified by looking up the token hash.

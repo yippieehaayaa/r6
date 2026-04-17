@@ -10,8 +10,7 @@
 //    @@index([tenantId, kind])
 //    @@index([deletedAt])
 //    tenantId non-nullable           — all identities belong to a tenant
-//    identityRoles IdentityRole[]    — explicit M2M join table
-//    identityPermissions []          — per-user permission overrides
+//    identityPermissions []          — per-user permission overrides (stamped from policies)
 //    mustChangePassword default true
 //    failedLoginAttempts default 0
 //    status default PENDING_VERIFICATION
@@ -23,11 +22,8 @@ import { encryptPassword, verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
 import type {
   Identity,
-  IdentityRole,
-  Policy,
+  IdentityPermission,
   Prisma,
-  Role,
-  RolePolicy,
 } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
 import { LOGIN_LOCK_MS, LOGIN_MAX_ATTEMPTS } from "./constants.js";
@@ -35,7 +31,6 @@ import type { PaginatedResult } from "./shared.js";
 import { buildPaginationQuery } from "./shared.js";
 import { getTenantBySlug } from "./tenant.js";
 import type {
-  AssignRoleInput,
   ChangePasswordInput,
   CreateIdentityInput,
   ListIdentitiesInput,
@@ -45,18 +40,9 @@ import type {
 
 // ─── Shared return types ─────────────────────────────────────
 
-export type IdentityWithRoles = Identity & {
-  identityRoles: (IdentityRole & { role: Role })[];
-};
-
-// Used during auth to build JWT claims.
-// identityPermissions provides the per-user ALLOW/DENY overrides.
-// NOTE: identityPermissions relation requires `prisma migrate dev` first.
-export type IdentityWithRolesAndPolicies = Identity & {
-  identityRoles: (IdentityRole & {
-    role: Role & { rolePolicies: (RolePolicy & { policy: Policy })[] };
-  })[];
-  // identityPermissions: IdentityPermission[]; // uncomment after migration
+// Used during auth to build JWT claims from direct permission overrides.
+export type IdentityWithPermissions = Identity & {
+  identityPermissions: IdentityPermission[];
 };
 
 // ─── Create ──────────────────────────────────────────────────
@@ -115,35 +101,15 @@ const getIdentityByEmail = async (
   });
 };
 
-// Returns a non-deleted identity with its assigned roles included.
-const getIdentityWithRoles = async (
+// Returns a non-deleted identity with its direct permission overrides.
+// Used during auth flows to build token claims (permission strings).
+// No tenantId required — used in refresh flow where only identity id is known.
+const getIdentityWithPermissions = async (
   id: string,
-  tenantId: string,
-): Promise<IdentityWithRoles | null> => {
+): Promise<IdentityWithPermissions | null> => {
   return prisma.identity.findFirst({
-    where: { id, tenantId, deletedAt: null },
-    include: { identityRoles: { include: { role: true } } },
-  });
-};
-
-// Returns a non-deleted identity with roles and their attached policies.
-// Used during auth flows to build token claims (role names + permission strings).
-// TODO: add identityPermissions include after `prisma migrate dev`.
-const getIdentityWithRolesAndPolicies = async (
-  id: string,
-  tenantId: string,
-): Promise<IdentityWithRolesAndPolicies | null> => {
-  return prisma.identity.findFirst({
-    where: { id, tenantId, deletedAt: null },
-    include: {
-      identityRoles: {
-        include: {
-          role: {
-            include: { rolePolicies: { include: { policy: true } } },
-          },
-        },
-      },
-    },
+    where: { id, deletedAt: null },
+    include: { identityPermissions: true },
   });
 };
 
@@ -245,13 +211,13 @@ const changePassword = async (
 
 // Looks up an identity by username, verifies the HMAC-prefixed bcrypt hash,
 // manages failed attempt counting and account locking, and returns the full
-// identity with roles+policies on success.
+// identity with permissions on success.
 //
 // Tenant resolution: input.tenantId takes priority; falls back to tenantSlug.
 // One of the two must be provided — there is no admin login path.
 const verifyIdentity = async (
   input: VerifyIdentityInput,
-): Promise<IdentityWithRolesAndPolicies> => {
+): Promise<IdentityWithPermissions> => {
   let tenantId: string;
 
   if (input.tenantId) {
@@ -293,61 +259,9 @@ const verifyIdentity = async (
     lockedUntil: null,
   });
 
-  const full = await getIdentityWithRolesAndPolicies(identity.id, tenantId);
+  const full = await getIdentityWithPermissions(identity.id);
   if (!full) throw new Error("internal");
   return full;
-};
-
-// ─── Role assignment (many-to-many) ──────────────────────────
-
-// Inserts a row into the explicit _identity_roles join table.
-// Verifies the identity belongs to tenantId before inserting.
-// Throws P2002 if the same [identityId, roleId] already exists.
-// Throws P2025 if the role does not exist.
-const assignRoleToIdentity = async (
-  input: AssignRoleInput,
-): Promise<IdentityRole> => {
-  const identity = await getIdentityById(input.identityId, input.tenantId);
-  if (!identity) throw new Error("not_found");
-  return prisma.identityRole.create({
-    data: { identityId: input.identityId, roleId: input.roleId },
-  });
-};
-
-// Removes a row from the explicit _identity_roles join table.
-// Verifies the identity belongs to tenantId before deleting.
-// Throws P2025 if the [identityId, roleId] row does not exist.
-const removeRoleFromIdentity = async (
-  input: AssignRoleInput,
-): Promise<IdentityRole> => {
-  const identity = await getIdentityById(input.identityId, input.tenantId);
-  if (!identity) throw new Error("not_found");
-  return prisma.identityRole.delete({
-    where: {
-      identityId_roleId: {
-        identityId: input.identityId,
-        roleId: input.roleId,
-      },
-    },
-  });
-};
-
-// Replaces all assigned roles for an identity atomically.
-// Verifies the identity belongs to tenantId before the transaction.
-const setRolesForIdentity = async (
-  identityId: string,
-  tenantId: string,
-  roleIds: string[],
-): Promise<void> => {
-  const identity = await getIdentityById(identityId, tenantId);
-  if (!identity) throw new Error("not_found");
-  await prisma.$transaction([
-    prisma.identityRole.deleteMany({ where: { identityId } }),
-    prisma.identityRole.createMany({
-      data: roleIds.map((roleId) => ({ identityId, roleId })),
-      skipDuplicates: true,
-    }),
-  ]);
 };
 
 // ─── TOTP ────────────────────────────────────────────────────
@@ -387,7 +301,7 @@ const disableTotp = async (id: string, tenantId: string): Promise<void> => {
 
 // ─── Soft delete ─────────────────────────────────────────────
 
-// Soft-deletes an identity. IdentityRole join rows are left intact.
+// Soft-deletes an identity.
 // Verifies the identity belongs to tenantId before writing.
 const softDeleteIdentity = async (
   id: string,
@@ -415,14 +329,10 @@ export {
   getIdentityById,
   getIdentityByUsername,
   getIdentityByEmail,
-  getIdentityWithRoles,
-  getIdentityWithRolesAndPolicies,
+  getIdentityWithPermissions,
   listIdentities,
   changePassword,
   updateIdentity,
-  assignRoleToIdentity,
-  removeRoleFromIdentity,
-  setRolesForIdentity,
   softDeleteIdentity,
   restoreIdentity,
   saveTotpSecret,

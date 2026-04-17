@@ -7,7 +7,6 @@ import {
   requireTenantScope,
 } from "../../middleware/guard";
 import identitiesRouter from "../identities";
-import rolesRouter from "../roles";
 import { getTenant } from "./controller/get";
 import { list } from "./controller/list";
 import { remove } from "./controller/remove";
@@ -30,6 +29,5 @@ router.delete("/:tenantSlug", requireAdmin(), remove);
 router.post("/:tenantSlug/restore", requireAdmin(), restore);
 
 router.use("/:tenantSlug/identities", identitiesRouter);
-router.use("/:tenantSlug/roles", rolesRouter);
 
 export default router;

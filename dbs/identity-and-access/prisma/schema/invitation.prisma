@@ -25,12 +25,11 @@ model Invitation {
     tenantId    String    @db.Uuid
     tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
     email       String
-    tokenHash   String    @unique // SHA-256 hash of the raw email token
-    roleId      String?   @db.Uuid
-    role        Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
-    invitedById String    @db.Uuid
-    invitedBy   Identity  @relation("IssuedInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
-    expiresAt   DateTime
+    tokenHash          String    @unique // SHA-256 hash of the raw email token
+    invitedById        String    @db.Uuid
+    invitedBy          Identity           @relation("IssuedInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+    invitationPolicies InvitationPolicy[] // policies to stamp onto the identity on accept
+    expiresAt          DateTime
     acceptedAt  DateTime?
 
     // Timestamps

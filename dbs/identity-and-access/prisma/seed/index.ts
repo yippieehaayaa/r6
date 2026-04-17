@@ -34,8 +34,8 @@
  *   hris:tenant:full-access   → hris:tenant:create/read/update/delete/restore
  */
 
-import { upsertRole, linkPolicyToRole } from "./role.js";
-import { upsertIdentity, linkRoleToIdentity } from "./identity.js";
+import { upsertIdentityPermission } from "../../src/models/identity-permission.js";
+import { upsertIdentity } from "./identity.js";
 import { upsertPolicy } from "./policy.js";
 import { upsertTenant } from "./tenant.js";
 import { prisma } from "../../src/client.js";
@@ -44,12 +44,9 @@ async function main() {
 	console.log("\n── Cleanup ───────────────────────────────────");
 
 	await prisma.refreshToken.deleteMany();
-	await prisma.identityRole.deleteMany();
-	await prisma.rolePolicy.deleteMany();
 	await prisma.identityPermission.deleteMany();
 	await prisma.invitation.deleteMany();
 	await prisma.identity.deleteMany();
-	await prisma.role.deleteMany();
 	await prisma.policy.deleteMany();
 	await prisma.tenant.deleteMany();
 
@@ -57,9 +54,6 @@ async function main() {
 
 	console.log("\n── Platform tenant ───────────────────────────");
 
-	// The platform tenant owns all ADMIN identities and platform-level
-	// roles/policies. tenantId is non-nullable on Identity — ADMIN
-	// identities belong here instead of having tenantId = null.
 	const platformTenant = await upsertTenant({
 		name: "Platform",
 		slug: "platform",
@@ -67,82 +61,18 @@ async function main() {
 		isPlatform: true,
 	});
 
-	console.log("\n── Policies ──────────────────────────────────");
+	console.log("\n── Policies (platform) ───────────────────────");
 
-	const adminPolicy = await upsertPolicy({
-		tenantId: platformTenant.id,
-		name: "iam:admin:full-access",
-		description: "Grants full access to all IAM resources and actions",
-		permissions: ["iam:*:*"],
-	});
+	const PLATFORM_PERMISSIONS = [
+		"iam:*:*",
+		"iam:identity:create", "iam:identity:read", "iam:identity:update", "iam:identity:delete", "iam:identity:restore",
+		"iam:policy:create",   "iam:policy:read",   "iam:policy:update",   "iam:policy:delete",   "iam:policy:restore",
+		"iam:tenant:create",   "iam:tenant:read",   "iam:tenant:update",   "iam:tenant:delete",   "iam:tenant:restore",
+	] as const;
 
-	const identityCrudPolicy = await upsertPolicy({
-		tenantId: platformTenant.id,
-		name: "iam:identity:full-access",
-		description: "Full CRUD access to identities",
-		permissions: [
-			"iam:identity:create",
-			"iam:identity:read",
-			"iam:identity:update",
-			"iam:identity:delete",
-			"iam:identity:restore",
-		],
-	});
-
-	const roleCrudPolicy = await upsertPolicy({
-		tenantId: platformTenant.id,
-		name: "iam:role:full-access",
-		description: "Full CRUD access to roles",
-		permissions: [
-			"iam:role:create",
-			"iam:role:read",
-			"iam:role:update",
-			"iam:role:delete",
-			"iam:role:restore",
-		],
-	});
-
-	const policyCrudPolicy = await upsertPolicy({
-		tenantId: platformTenant.id,
-		name: "iam:policy:full-access",
-		description: "Full CRUD access to policies",
-		permissions: [
-			"iam:policy:create",
-			"iam:policy:read",
-			"iam:policy:update",
-			"iam:policy:delete",
-			"iam:policy:restore",
-		],
-	});
-
-	const tenantCrudPolicy = await upsertPolicy({
-		tenantId: platformTenant.id,
-		name: "iam:tenant:full-access",
-		description: "Full CRUD access to tenants",
-		permissions: [
-			"iam:tenant:create",
-			"iam:tenant:read",
-			"iam:tenant:update",
-			"iam:tenant:delete",
-			"iam:tenant:restore",
-		],
-	});
-
-	console.log("\n── Roles ─────────────────────────────────────");
-
-	const adminRole = await upsertRole(
-		"admin",
-		"Full IAM administration access",
-		platformTenant.id,
-	);
-
-	console.log("\n── Role → Policy assignments ─────────────────");
-
-	await linkPolicyToRole(adminRole.id, adminPolicy.id, "admin → iam:admin:full-access");
-	await linkPolicyToRole(adminRole.id, identityCrudPolicy.id, "admin → iam:identity:full-access");
-	await linkPolicyToRole(adminRole.id, roleCrudPolicy.id, "admin → iam:role:full-access");
-	await linkPolicyToRole(adminRole.id, policyCrudPolicy.id, "admin → iam:policy:full-access");
-	await linkPolicyToRole(adminRole.id, tenantCrudPolicy.id, "admin → iam:tenant:full-access");
+	for (const perm of PLATFORM_PERMISSIONS) {
+		await upsertPolicy({ tenantId: platformTenant.id, name: perm, description: `Grants ${perm}`, permissions: [perm] });
+	}
 
 	console.log("\n── Identities ────────────────────────────────");
 
@@ -154,9 +84,9 @@ async function main() {
 		kind: "ADMIN",
 	});
 
-	console.log("\n── Identity → Role assignments ───────────────");
+	console.log("\n── Identity permissions (admin) ──────────────");
 
-	await linkRoleToIdentity(adminRole.id, adminIdentity.id, "admin → role:admin");
+	await upsertIdentityPermission({ tenantId: platformTenant.id, identityId: adminIdentity.id, permission: "iam:*:*", effect: "ALLOW" });
 
 	// ── R6 tenant ────────────────────────────────────────────────────────────
 
@@ -169,140 +99,22 @@ async function main() {
 		isPlatform: false,
 	});
 
-	console.log("\n── Policies (r6 — IAM) ───────────────────────");
+	console.log("\n── Policies (r6) ─────────────────────────────");
 
-	const r6IamFullPolicy = await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "iam:full-access",
-		description: "Full access to all IAM resources and actions",
-		permissions: ["iam:*:*"],
-	});
+	const R6_PERMISSIONS = [
+		"iam:*:*",
+		"iam:identity:create", "iam:identity:read", "iam:identity:update", "iam:identity:delete", "iam:identity:restore",
+		"iam:policy:create",   "iam:policy:read",   "iam:policy:update",   "iam:policy:delete",   "iam:policy:restore",
+		"iam:tenant:create",   "iam:tenant:read",   "iam:tenant:update",   "iam:tenant:delete",   "iam:tenant:restore",
+		"hris:*:*",
+		"hris:identity:create", "hris:identity:read", "hris:identity:update", "hris:identity:delete", "hris:identity:restore",
+		"hris:policy:create",   "hris:policy:read",   "hris:policy:update",   "hris:policy:delete",   "hris:policy:restore",
+		"hris:tenant:create",   "hris:tenant:read",   "hris:tenant:update",   "hris:tenant:delete",   "hris:tenant:restore",
+	] as const;
 
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "iam:identity:full-access",
-		description: "Full CRUD access to identities",
-		permissions: [
-			"iam:identity:create",
-			"iam:identity:read",
-			"iam:identity:update",
-			"iam:identity:delete",
-			"iam:identity:restore",
-		],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "iam:role:full-access",
-		description: "Full CRUD access to roles",
-		permissions: [
-			"iam:role:create",
-			"iam:role:read",
-			"iam:role:update",
-			"iam:role:delete",
-			"iam:role:restore",
-		],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "iam:policy:full-access",
-		description: "Full CRUD access to policies",
-		permissions: [
-			"iam:policy:create",
-			"iam:policy:read",
-			"iam:policy:update",
-			"iam:policy:delete",
-			"iam:policy:restore",
-		],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "iam:tenant:full-access",
-		description: "Full CRUD access to tenants",
-		permissions: [
-			"iam:tenant:create",
-			"iam:tenant:read",
-			"iam:tenant:update",
-			"iam:tenant:delete",
-			"iam:tenant:restore",
-		],
-	});
-
-	console.log("\n── Policies (r6 — HRIS) ──────────────────────");
-
-	const r6HrisFullPolicy = await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "hris:full-access",
-		description: "Full access to all HRIS resources and actions",
-		permissions: ["hris:*:*"],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "hris:identity:full-access",
-		description: "Full CRUD access to HRIS identities",
-		permissions: [
-			"hris:identity:create",
-			"hris:identity:read",
-			"hris:identity:update",
-			"hris:identity:delete",
-			"hris:identity:restore",
-		],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "hris:role:full-access",
-		description: "Full CRUD access to HRIS roles",
-		permissions: [
-			"hris:role:create",
-			"hris:role:read",
-			"hris:role:update",
-			"hris:role:delete",
-			"hris:role:restore",
-		],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "hris:policy:full-access",
-		description: "Full CRUD access to HRIS policies",
-		permissions: [
-			"hris:policy:create",
-			"hris:policy:read",
-			"hris:policy:update",
-			"hris:policy:delete",
-			"hris:policy:restore",
-		],
-	});
-
-	await upsertPolicy({
-		tenantId: r6Tenant.id,
-		name: "hris:tenant:full-access",
-		description: "Full CRUD access to HRIS tenants",
-		permissions: [
-			"hris:tenant:create",
-			"hris:tenant:read",
-			"hris:tenant:update",
-			"hris:tenant:delete",
-			"hris:tenant:restore",
-		],
-	});
-
-	console.log("\n── Roles (r6) ────────────────────────────────");
-
-	const tenantOwnerRole = await upsertRole(
-		"tenant-owner",
-		"Full access to all modules",
-		r6Tenant.id,
-	);
-
-	console.log("\n── Role → Policy assignments (r6) ───────────");
-
-	await linkPolicyToRole(tenantOwnerRole.id, r6IamFullPolicy.id, "tenant-owner → iam:full-access");
-	await linkPolicyToRole(tenantOwnerRole.id, r6HrisFullPolicy.id, "tenant-owner → hris:full-access");
+	for (const perm of R6_PERMISSIONS) {
+		await upsertPolicy({ tenantId: r6Tenant.id, name: perm, description: `Grants ${perm}`, permissions: [perm] });
+	}
 
 	console.log("\n── Identities (r6) ───────────────────────────");
 
@@ -314,13 +126,14 @@ async function main() {
 		kind: "USER",
 	});
 
-	console.log("\n── Identity → Role assignments (r6) ──────────");
+	console.log("\n── Identity permissions (owner) ──────────────");
 
-	await linkRoleToIdentity(tenantOwnerRole.id, ownerIdentity.id, "owner → role:tenant-owner");
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "iam:*:*", effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "hris:*:*", effect: "ALLOW" });
 
 	console.log("\n── Done ──────────────────────────────────────\n");
-	console.log("Platform admin:  admin  (Password@1234!)  [ADMIN bypass — all IAM sections]");
-	console.log("R6 tenant owner: owner  (Password@1234!)  [iam:*:*  hris:*:*]");
+	console.log("Platform admin:  admin  (Password@1234!)  [iam:*:* stamped directly]");
+	console.log("R6 tenant owner: owner  (Password@1234!)  [iam:*:*  hris:*:* stamped directly]");
 	console.log();
 }
 

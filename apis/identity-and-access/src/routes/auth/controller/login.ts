@@ -97,7 +97,6 @@ export async function login(
           kind: full.kind,
           tenantId: full.tenantId ?? null,
           tenantSlug: tenant?.slug ?? null,
-          roles: claims.roles,
           permissions: claims.permissions,
         }),
         signRefreshToken(full.id),

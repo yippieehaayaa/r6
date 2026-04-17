@@ -1,6 +1,6 @@
 import {
   createRefreshToken,
-  getIdentityWithRolesAndPolicies,
+  getIdentityWithPermissions,
   getTenantById,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
@@ -42,8 +42,8 @@ export async function verifyTotp(
       );
     }
 
-    // Load identity with roles+policies so we can build full token claims.
-    const identity = await getIdentityWithRolesAndPolicies(sub);
+    // Load identity with direct permission overrides to build token claims.
+    const identity = await getIdentityWithPermissions(sub);
     if (!identity || identity.deletedAt) {
       throw new AppError(401, "invalid_token", "Identity not found");
     }
@@ -84,7 +84,6 @@ export async function verifyTotp(
           kind: identity.kind,
           tenantId: identity.tenantId ?? null,
           tenantSlug: tenant?.slug ?? null,
-          roles: claims.roles,
           permissions: claims.permissions,
         }),
         signRefreshToken(identity.id),

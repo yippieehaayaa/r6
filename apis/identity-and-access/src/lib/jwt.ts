@@ -52,8 +52,6 @@ export type AccessTokenPayload = {
   tenantId: string | null;
   /** null for ADMIN identities; slug string for USER / SERVICE */
   tenantSlug: string | null;
-  /** Role names assigned to this identity */
-  roles: string[];
   /** Flattened permission strings from all attached policies */
   permissions: string[];
 };
@@ -72,7 +70,6 @@ export const signAccessToken = async (
     kind: payload.kind,
     tenantId: payload.tenantId,
     tenantSlug: payload.tenantSlug,
-    roles: payload.roles,
     permissions: payload.permissions,
   })
     .setProtectedHeader({ alg: "RS256" })

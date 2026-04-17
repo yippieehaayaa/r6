@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../lib/errors";
+import { checkPermission } from "../../lib/jwt";
 import type { AuthJwtPayload } from "../auth";
 
 // Allows:
@@ -30,12 +31,12 @@ export const requireAdminOrTenantOwner =
       );
     }
 
-    const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+    const hasFullIamAccess = checkPermission(
+      "iam:*:*",
+      (payload.permissions as string[] | undefined) ?? [],
+    );
 
-    if (
-      !roles.includes("tenant-owner") ||
-      payload.tenantSlug !== targetTenantSlug
-    ) {
+    if (!hasFullIamAccess || payload.tenantSlug !== targetTenantSlug) {
       return next(
         new AppError(
           403,

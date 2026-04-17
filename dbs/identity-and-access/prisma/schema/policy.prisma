@@ -40,8 +40,8 @@ model Policy {
     isManaged   Boolean @default(false) // true = platform-seeded, tenants cannot edit/delete
 
     // Relations
-    tenant       Tenant      @relation("TenantPolicies", fields: [tenantId], references: [id], onDelete: Cascade)
-    rolePolicies RolePolicy[] // explicit join table (replaces implicit Role[])
+    tenant             Tenant             @relation("TenantPolicies", fields: [tenantId], references: [id], onDelete: Cascade)
+    invitationPolicies InvitationPolicy[] // policies available to attach to invitations
 
     // Timestamps
     createdAt DateTime  @default(now())

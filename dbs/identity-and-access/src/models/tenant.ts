@@ -70,14 +70,11 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 
 // ─── Create with defaults ─────────────────────────────────────────────────────
 
-// Atomically creates a Tenant, its two standard protected roles
-// (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
-// identity using the pre-computed password hash/salt.
+// Atomically creates a Tenant and a bootstrapped tenant-owner identity,
+// then stamps permissions directly onto the owner.
 //
-// ownerPolicyNames / adminPolicyNames — names of platform-level policies
-// (tenantId = null) to attach to the owner and admin roles respectively.
-// These are business-rule decisions owned by the API layer — pass them in
-// rather than hard-coding here.
+// ownerPermissions — permission strings to stamp onto the owner identity.
+//   Defaults to ["iam:*:*"] if not provided.
 //
 // The owner's username is derived from the slug: "${slug.slice(0,58)}-owner"
 // (capped so the total stays within the 64-char username limit).
@@ -91,8 +88,7 @@ const createTenantWithDefaults = async (
   ownerHash: string,
   ownerSalt: string,
   ownerEmail: string | null,
-  ownerPolicyNames: readonly string[],
-  adminPolicyNames: readonly string[],
+  ownerPermissions: readonly string[] = ["iam:*:*"],
 ): Promise<{ tenant: Tenant; ownerIdentity: Identity }> => {
   return prisma.$transaction(async (tx) => {
     const tenant = await tx.tenant.create({
@@ -102,46 +98,6 @@ const createTenantWithDefaults = async (
         moduleAccess: { set: input.moduleAccess },
       },
     });
-
-    // Roles + default policy lookups are independent — run in parallel.
-    // Resolve the platform tenant first so we can scope the policy lookup.
-    const platformTenant = await tx.tenant.findFirstOrThrow({
-      where: { isPlatform: true },
-      select: { id: true },
-    });
-
-    const [ownerRole, adminRole, ownerPolicies, adminPolicies] =
-      await Promise.all([
-        tx.role.create({
-          data: {
-            tenantId: tenant.id,
-            name: "tenant-owner",
-            description:
-              "Tenant owner — bootstrapped at tenant creation. Unique per tenant.",
-          },
-        }),
-        tx.role.create({
-          data: {
-            tenantId: tenant.id,
-            name: "tenant-admin",
-            description: "Tenant administrator — full IAM management access.",
-          },
-        }),
-        tx.policy.findMany({
-          where: {
-            tenantId: platformTenant.id,
-            name: { in: [...ownerPolicyNames] },
-          },
-          select: { id: true },
-        }),
-        tx.policy.findMany({
-          where: {
-            tenantId: platformTenant.id,
-            name: { in: [...adminPolicyNames] },
-          },
-          select: { id: true },
-        }),
-      ]);
 
     const ownerUsername = `${tenant.slug.slice(0, 58)}-owner`;
 
@@ -159,33 +115,18 @@ const createTenantWithDefaults = async (
       },
     });
 
-    // Role-policy assignments and owner identity-role assignment are independent.
-    await Promise.all([
-      // Assign owner role to the owner identity (explicit join table).
-      tx.identityRole.create({
-        data: { identityId: ownerIdentity.id, roleId: ownerRole.id },
-      }),
-      // Attach platform policies to the owner role.
-      ownerPolicies.length > 0
-        ? tx.rolePolicy.createMany({
-            data: ownerPolicies.map((p) => ({
-              roleId: ownerRole.id,
-              policyId: p.id,
-            })),
-            skipDuplicates: true,
-          })
-        : Promise.resolve(),
-      // Attach platform policies to the admin role.
-      adminPolicies.length > 0
-        ? tx.rolePolicy.createMany({
-            data: adminPolicies.map((p) => ({
-              roleId: adminRole.id,
-              policyId: p.id,
-            })),
-            skipDuplicates: true,
-          })
-        : Promise.resolve(),
-    ]);
+    // Stamp permissions directly onto the owner identity.
+    if (ownerPermissions.length > 0) {
+      await tx.identityPermission.createMany({
+        data: ownerPermissions.map((permission) => ({
+          tenantId: tenant.id,
+          identityId: ownerIdentity.id,
+          permission,
+          effect: "ALLOW",
+        })),
+        skipDuplicates: true,
+      });
+    }
 
     // Back-patch ownerId now that the owner identity exists.
     const updatedTenant = await tx.tenant.update({

@@ -39,22 +39,3 @@ export async function upsertIdentity(input: {
 	return identity;
 }
 
-export async function linkRoleToIdentity(
-	roleId: string,
-	identityId: string,
-	label: string,
-) {
-	const exists = await prisma.identityRole.findFirst({
-		where: { identityId, roleId },
-	});
-
-	if (exists) {
-		skip(`role → identity "${label}"`);
-		return;
-	}
-
-	await prisma.identityRole.create({
-		data: { identityId, roleId },
-	});
-	log(`role → identity "${label}"`);
-}

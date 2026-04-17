@@ -34,7 +34,6 @@ model Tenant {
 
     // Back-relations
     identities          Identity[]           @relation("TenantIdentities")
-    roles               Role[]               @relation("TenantRoles")
     policies            Policy[]             @relation("TenantPolicies")
     identityPermissions IdentityPermission[] @relation("TenantIdentityPermissions") // per-user permission overrides
     invitations         Invitation[]

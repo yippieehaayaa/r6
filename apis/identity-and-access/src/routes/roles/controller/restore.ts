@@ -1,16 +1,3 @@
-import { restoreRole } from "@r6/db-identity-and-access";
-import type { NextFunction, Request, Response } from "express";
+// Removed — Role restore controller removed.
 
-export async function restore(
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> {
-  try {
-    const id = req.params.id as string;
-    const restored = await restoreRole(id);
-    res.status(200).json(restored);
-  } catch (error) {
-    next(error);
-  }
-}
+export {};

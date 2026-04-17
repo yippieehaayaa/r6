@@ -1,0 +1,27 @@
+// ============================================================
+//  INVITATION ↔ POLICY   (explicit many-to-many join table)
+//
+//  Records which policies are attached to an invitation.
+//  On invitation accept, the server expands each policy's
+//  permissions[] into IdentityPermission ALLOW rows for the
+//  newly created identity. Policies act as templates only —
+//  changing a policy later does NOT affect existing identities.
+//
+//  assignedAt — when the policy was linked to the invite.
+//  onDelete: Cascade on both sides — join row is removed
+//    automatically when either the invitation or the policy
+//    is hard-deleted.
+// ============================================================
+
+model InvitationPolicy {
+    id           String     @id @default(uuid()) @db.Uuid
+    invitationId String     @db.Uuid
+    invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+    policyId     String     @db.Uuid
+    policy       Policy     @relation(fields: [policyId], references: [id], onDelete: Cascade)
+    assignedAt   DateTime   @default(now())
+
+    @@unique([invitationId, policyId])
+    @@index([policyId])
+    @@map("_invitation_policies")
+}

@@ -28,10 +28,15 @@ export const requireSelfOrAdminOrTenantOwner =
 
     if (payload.kind === "ADMIN") return next();
 
-    const roles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
+    const permissions: string[] = Array.isArray(payload.permissions)
+      ? payload.permissions
+      : [];
     const tenantSlug = req.params.tenantSlug;
 
-    if (roles.includes("tenant-owner") && payload.tenantSlug === tenantSlug) {
+    if (
+      checkPermission("iam:*:*", permissions) &&
+      payload.tenantSlug === tenantSlug
+    ) {
       return next();
     }
 

@@ -9,19 +9,13 @@
 //    tenantId non-nullable       — all policies belong to a tenant
 //    permissions String[]        — required array, stored as Postgres text[]
 //    isManaged Boolean           — true = platform-seeded, cannot be edited
-//    rolePolicies RolePolicy[]   — explicit join table _role_policies
 //    deletedAt soft-delete
 //
 //  All policies are implicitly ALLOW — the system is deny-by-default.
 //  Per-user overrides live on IdentityPermission, not here.
 // ============================================================
 
-import type {
-  Policy,
-  Prisma,
-  Role,
-  RolePolicy,
-} from "../../generated/prisma/client.js";
+import type { Policy, Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
 import type { PaginatedResult } from "./shared.js";
 import { buildPaginationQuery } from "./shared.js";
@@ -31,13 +25,7 @@ import type {
   UpdatePolicyInput,
 } from "./types.js";
 
-// ─── Composite types ─────────────────────────────────────────
-
-export type PolicyWithRoles = Policy & {
-  rolePolicies: (RolePolicy & { role: Role })[];
-};
-
-// ─── Create ──────────────────────────────────────────────────
+// ─── Read ─────────────────────────────────────────────────────
 
 // Inserts a new Policy.
 // Throws P2002 if [tenantId, name] already exists.
@@ -77,12 +65,10 @@ const getPolicyByName = async (
 };
 
 // Returns a policy with its attached roles included (via explicit join table).
-const getPolicyWithRoles = async (
-  id: string,
-): Promise<PolicyWithRoles | null> => {
+// Returns a non-deleted policy by primary key.
+const getPolicyWithRoles = async (id: string): Promise<Policy | null> => {
   return prisma.policy.findFirst({
     where: { id, deletedAt: null },
-    include: { rolePolicies: { include: { role: true } } },
   });
 };
 

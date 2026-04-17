@@ -9,18 +9,5 @@
 
 // ─── Tenant provisioning ─────────────────────────────────────
 
-// Platform-level policies (tenantId = null) attached to the tenant-owner
-// role on every new tenant. Names must match the platform seed policies.
-export const TENANT_OWNER_DEFAULT_POLICIES = [
-  "iam:identity:full-access",
-  "iam:role:full-access",
-  "iam:policy:full-access",
-] as const;
-
-// Platform-level policies attached to the tenant-admin role on every
-// new tenant. Names must match the platform seed policies.
-export const TENANT_ADMIN_DEFAULT_POLICIES = [
-  "iam:identity:full-access",
-  "iam:role:full-access",
-  "iam:policy:read-only",
-] as const;
+// Permission strings stamped directly onto the owner identity at tenant creation.
+export const TENANT_OWNER_DEFAULT_PERMISSIONS = ["iam:*:*"] as const;

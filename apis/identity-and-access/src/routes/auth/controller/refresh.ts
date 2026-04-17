@@ -1,6 +1,6 @@
 import {
   createRefreshToken,
-  getIdentityWithRolesAndPolicies,
+  getIdentityWithPermissions,
   getRefreshToken,
   getTenantById,
   revokeRefreshToken,
@@ -72,7 +72,7 @@ export async function refresh(
     // ── Token rotation (invalidate old, issue new) ───────────
     await revokeRefreshToken(payload.jti);
 
-    const full = await getIdentityWithRolesAndPolicies(payload.sub);
+    const full = await getIdentityWithPermissions(payload.sub);
     if (!full) throw new AppError(401, "invalid_token", "Identity not found");
     if (full.status !== "ACTIVE") {
       throw new AppError(403, "account_inactive", "Account is not active");
@@ -88,7 +88,6 @@ export async function refresh(
           kind: full.kind,
           tenantId: full.tenantId ?? null,
           tenantSlug: tenant?.slug ?? null,
-          roles: claims.roles,
           permissions: claims.permissions,
         }),
         signRefreshToken(full.id),

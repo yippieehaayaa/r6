@@ -22,7 +22,6 @@ export const InvitationSchema = z.object({
   email: z.string().regex(emailRegex).max(254).toLowerCase(),
   /** SHA-256 hash of the raw invitation token — internal use only */
   tokenHash: z.string().min(1),
-  roleId: UuidSchema.nullable(),
   invitedById: UuidSchema,
   expiresAt: TimestampSchema,
   acceptedAt: NullableTimestampSchema,
@@ -46,8 +45,8 @@ export const CreateInvitationSchema = z.object({
     .regex(emailRegex, "Must be a valid email address")
     .max(254)
     .toLowerCase(),
-  /** Optional role to automatically assign when the invitation is accepted */
-  roleId: UuidSchema.optional(),
+  /** Optional policy IDs to stamp onto the identity when the invitation is accepted */
+  policyIds: UuidSchema.array().optional(),
 });
 export type CreateInvitationInput = z.infer<typeof CreateInvitationSchema>;
 
