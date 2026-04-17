@@ -10,19 +10,19 @@
 import type {
   Identity,
   IdentityKind,
+  IdentityPermission,
   IdentityStatus,
+  Invitation,
   Policy,
   PolicyEffect,
   Role,
   Tenant,
   TenantModule,
 } from "../../generated/prisma/client.js";
-// IdentityPermission type is available after running: prisma migrate dev
-// import type { IdentityPermission } from "../../generated/prisma/client.js";
 
 // ─── Re-exports for consumers ───────────────────────────────
 
-export type { Tenant, Identity, Role, Policy };
+export type { Tenant, Identity, IdentityPermission, Invitation, Role, Policy };
 export type { IdentityKind, IdentityStatus, PolicyEffect, TenantModule };
 
 // Pagination primitives live in shared.ts — re-exported here for consumers.
@@ -207,4 +207,31 @@ export type UpdateIdentityPermissionInput = {
 export type ListIdentityPermissionsInput = PaginationInput & {
   identityId: string;
   tenantId: string;
+};
+
+// ─── Invitation ───────────────────────────────────────────────
+
+// Create a new invitation for a user to join a tenant.
+// tenantId and invitedById are injected by the controller from JWT context.
+export type CreateInvitationInput = {
+  tenantId: string;
+  invitedById: string;
+  email: string;
+  /** Raw invitation token (server-generated); stored only as SHA-256 hash */
+  tokenHash: string;
+  expiresAt: Date;
+  roleId?: string | null;
+};
+
+// Accept a pending invitation. Verified by looking up the token hash.
+export type AcceptInvitationInput = {
+  tokenHash: string; // SHA-256(rawToken from email link)
+  username: string;
+  password: string; // already hashed by the service layer
+};
+
+export type ListInvitationsInput = PaginationInput & {
+  tenantId: string;
+  /** When true, include already-accepted invitations */
+  includeAccepted?: boolean;
 };

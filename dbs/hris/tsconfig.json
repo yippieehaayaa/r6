@@ -1,5 +1,5 @@
 {
-	"extends": "@r6/typescript-config/base.json",
-	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "tsup.config.ts"],
-	"exclude": ["node_modules", "generated", "dist", "prisma"]
+  "extends": "@r6/typescript-config/base.json",
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "tsup.config.ts"],
+  "exclude": ["node_modules", "generated", "dist", "prisma"]
 }

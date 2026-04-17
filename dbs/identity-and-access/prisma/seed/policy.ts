@@ -2,16 +2,14 @@ import { prisma } from "../../src/client.js";
 import { log, skip } from "./helpers.js";
 
 export async function upsertPolicy(input: {
-	tenantId?: string | null;
+	tenantId: string;
 	name: string;
 	description: string;
-	effect: "ALLOW" | "DENY";
 	permissions: string[];
-	audience: string[];
 }) {
 	// @@unique([tenantId, name]) — scope lookup to the correct tenant
 	const exists = await prisma.policy.findFirst({
-		where: { tenantId: input.tenantId ?? null, name: input.name },
+		where: { tenantId: input.tenantId, name: input.name },
 	});
 
 	if (exists) {
@@ -19,10 +17,14 @@ export async function upsertPolicy(input: {
 		return exists;
 	}
 
-	const { tenantId, ...rest } = input;
 	const p = await prisma.policy.create({
-		data: { tenantId: tenantId ?? null, ...rest },
+		data: {
+			tenantId: input.tenantId,
+			name: input.name,
+			description: input.description,
+			permissions: input.permissions,
+		},
 	});
-	log(`policy "${input.name}" (${input.effect})`);
+	log(`policy "${input.name}"`);
 	return p;
 }

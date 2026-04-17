@@ -39,3 +39,21 @@ export type IdentityKind = z.infer<typeof IdentityKindSchema>;
 export const PolicyEffectSchema = z.enum(["ALLOW", "DENY"]);
 
 export type PolicyEffect = z.infer<typeof PolicyEffectSchema>;
+
+/**
+ * Recognised microservice / module names.
+ * Mirrors the TenantModule Prisma enum.
+ * Lowercase values match the audience string convention used in permission
+ * checks. IAM access is always implicit and not gated by moduleAccess.
+ */
+export const TenantModuleEnum = [
+  "hris",
+  "inventory",
+  "procurement",
+  "pos",
+  "financial",
+  "request",
+  "rma",
+] as const;
+export type TenantModule = (typeof TenantModuleEnum)[number];
+export const TenantModuleSchema = z.enum(TenantModuleEnum);

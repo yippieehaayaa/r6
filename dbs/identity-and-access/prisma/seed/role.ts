@@ -4,11 +4,11 @@ import { log, skip } from "./helpers.js";
 export async function upsertRole(
 	name: string,
 	description: string,
-	tenantId?: string | null,
+	tenantId: string,
 ) {
 	// @@unique([tenantId, name]) — scope lookup to the correct tenant
 	const exists = await prisma.role.findFirst({
-		where: { tenantId: tenantId ?? null, name },
+		where: { tenantId, name },
 	});
 
 	if (exists) {
@@ -17,7 +17,7 @@ export async function upsertRole(
 	}
 
 	const r = await prisma.role.create({
-		data: { tenantId: tenantId ?? null, name, description },
+		data: { tenantId, name, description },
 	});
 	log(`role "${name}"`);
 	return r;
@@ -28,19 +28,17 @@ export async function linkPolicyToRole(
 	policyId: string,
 	label: string,
 ) {
-	const r = await prisma.role.findUnique({
-		where: { id: roleId },
-		include: { policies: { where: { id: policyId } } },
+	const exists = await prisma.rolePolicy.findFirst({
+		where: { roleId, policyId },
 	});
 
-	if (r?.policies.length) {
+	if (exists) {
 		skip(`policy → role "${label}"`);
 		return;
 	}
 
-	await prisma.role.update({
-		where: { id: roleId },
-		data: { policies: { connect: { id: policyId } } },
+	await prisma.rolePolicy.create({
+		data: { roleId, policyId },
 	});
 	log(`policy → role "${label}"`);
 }

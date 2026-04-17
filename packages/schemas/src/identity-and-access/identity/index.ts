@@ -179,6 +179,14 @@ export const UpdateIdentitySchema = IdentitySchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  // Immutable after creation — re-classifying USER ↔ SERVICE ↔ ADMIN
+  // must go through a dedicated privileged operation, not a PATCH.
+  kind: true,
+  // TOTP fields are managed exclusively via dedicated /totp/* endpoints;
+  // exposing them through a general PATCH is a security gap.
+  totpEnabled: true,
+  totpSecret: true,
+  totpVerifiedAt: true,
 }).partial();
 
 export type UpdateIdentityInput = z.infer<typeof UpdateIdentitySchema>;

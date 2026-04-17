@@ -4,7 +4,7 @@ import { prisma } from "../../src/client.js";
 import { log, skip } from "./helpers.js";
 
 export async function upsertIdentity(input: {
-	tenantId?: string | null;
+	tenantId: string;
 	username: string;
 	email?: string;
 	password: string;
@@ -12,7 +12,7 @@ export async function upsertIdentity(input: {
 }) {
 	// @@unique([tenantId, username]) — scope lookup to the correct tenant
 	const exists = await prisma.identity.findFirst({
-		where: { tenantId: input.tenantId ?? null, username: input.username },
+		where: { tenantId: input.tenantId, username: input.username },
 	});
 
 	if (exists) {
@@ -24,7 +24,7 @@ export async function upsertIdentity(input: {
 
 	const identity = await prisma.identity.create({
 		data: {
-			tenantId: input.tenantId ?? null,
+			tenantId: input.tenantId,
 			username: input.username,
 			email: input.email,
 			hash,
@@ -44,19 +44,17 @@ export async function linkRoleToIdentity(
 	identityId: string,
 	label: string,
 ) {
-	const r = await prisma.role.findUnique({
-		where: { id: roleId },
-		include: { identities: { where: { id: identityId } } },
+	const exists = await prisma.identityRole.findFirst({
+		where: { identityId, roleId },
 	});
 
-	if (r?.identities.length) {
+	if (exists) {
 		skip(`role → identity "${label}"`);
 		return;
 	}
 
-	await prisma.role.update({
-		where: { id: roleId },
-		data: { identities: { connect: { id: identityId } } },
+	await prisma.identityRole.create({
+		data: { identityId, roleId },
 	});
 	log(`role → identity "${label}"`);
 }

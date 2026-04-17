@@ -5,6 +5,10 @@ import {
   NullableUuidSchema,
   slugRegex,
 } from "../base.schema";
+import type { TenantModule } from "../enums.schema";
+import { TenantModuleEnum, TenantModuleSchema } from "../enums.schema";
+export type { TenantModule };
+export { TenantModuleEnum, TenantModuleSchema };
 
 // ============================================================
 //  TENANT SCHEMA
@@ -12,26 +16,6 @@ import {
 //  The Tenant record owns the tenantId stamped across ALL
 //  microservices (Inventory, Procurement, Transaction, etc.).
 // ============================================================
-
-/**
- * Recognised microservice / module names.
- * Values mirror the Prisma TenantModule enum — lowercase to match
- * the audience string convention used in Policy records.
- * IAM access is always implicit and is NOT listed here.
- */
-export const TenantModuleEnum = [
-  "hris",
-  "inventory",
-  "procurement",
-  "pos",
-  "financial",
-  "request",
-  "rma",
-] as const;
-
-export type TenantModule = (typeof TenantModuleEnum)[number];
-
-export const TenantModuleSchema = z.enum(TenantModuleEnum);
 
 // ── Full read model (as returned from the DB) ───────────────
 
