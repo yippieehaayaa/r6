@@ -33,10 +33,11 @@ model Tenant {
     owner   Identity? @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
     // Back-relations
-    identities   Identity[]   @relation("TenantIdentities")
-    roles        Role[]       @relation("TenantRoles")
-    policies     Policy[]     @relation("TenantPolicies")
-    invitations  Invitation[]
+    identities          Identity[]           @relation("TenantIdentities")
+    roles               Role[]               @relation("TenantRoles")
+    policies            Policy[]             @relation("TenantPolicies")
+    identityPermissions IdentityPermission[] @relation("TenantIdentityPermissions") // per-user permission overrides
+    invitations         Invitation[]
 
     // Timestamps
     createdAt DateTime  @default(now())

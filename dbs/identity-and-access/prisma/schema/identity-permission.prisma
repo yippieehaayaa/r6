@@ -1,0 +1,40 @@
+// ============================================================
+//  IDENTITY PERMISSION  (per-user permission override)
+//  Grants or explicitly denies a single permission for one identity,
+//  on top of whatever their assigned roles provide.
+//
+//  Use cases:
+//    ALLOW — grant an extra permission to one user without changing
+//            their role (e.g. allow this cashier to also run reports).
+//    DENY  — carve out an exception for one user whose role grants
+//            broad access (e.g. block this manager from deleting stock).
+//
+//  Resolution order (evaluated after role permissions are collected):
+//    1. Start with the union of all permissions from active roles.
+//    2. Add any identity ALLOW overrides.
+//    3. Remove any identity DENY overrides (DENY always wins).
+//
+//  All overrides are tenant-scoped and tied to a single identity.
+// ============================================================
+
+model IdentityPermission {
+    id         String       @id @default(uuid()) @db.Uuid
+    tenantId   String       @db.Uuid
+    identityId String       @db.Uuid
+    permission String // "service:resource:action" — no wildcards
+    effect     PolicyEffect // ALLOW to add, DENY to remove
+
+    // Relations
+    tenant   Tenant   @relation("TenantIdentityPermissions", fields: [tenantId], references: [id], onDelete: Cascade)
+    identity Identity @relation("IdentityPermissionOverrides", fields: [identityId], references: [id], onDelete: Cascade)
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // One override row per permission per identity
+    @@unique([identityId, permission])
+    @@index([tenantId])
+    @@index([identityId])
+    @@map("identity_permissions")
+}

@@ -17,6 +17,8 @@ import type {
   Tenant,
   TenantModule,
 } from "../../generated/prisma/client.js";
+// IdentityPermission will be available after running: prisma migrate dev
+// import type { IdentityPermission } from "../../generated/prisma/client.js";
 
 // ─── Re-exports for consumers ───────────────────────────────
 
@@ -100,12 +102,12 @@ export type ListRolesInput = PaginationInput & {
 
 // ─── Policy list ──────────────────────────────────────────────
 
-// Filters for listPolicies. Policies are global (tenantId = null).
-// audience filter uses Postgres array containment: { has: service }.
-// search performs a case-insensitive OR match on name and description.
+// Filters for listPolicies. tenantId scopes the query.
+// search performs a case-insensitive OR match on name, displayName, and description.
 export type ListPoliciesInput = PaginationInput & {
-  audience?: string; // match policies whose audience array contains this value
-  search?: string; // case-insensitive OR filter on name + description
+  tenantId?: string; // scope to a specific tenant
+  isManaged?: boolean; // filter by managed/unmanaged
+  search?: string; // case-insensitive OR filter on name + displayName + description
 };
 
 // ─── Identity ─────────────────────────────────────────────────
@@ -153,11 +155,14 @@ export type UpdateIdentityInput = {
 export type CreateRoleInput = {
   tenantId: string; // required — use platform tenant ID for platform roles
   name: string; // unique per tenantId
+  displayName?: string | null; // human-readable label shown in the UI
   description?: string | null;
+  isManaged?: boolean; // true = platform-seeded, tenants cannot edit/delete
 };
 
 export type UpdateRoleInput = {
   name?: string;
+  displayName?: string | null;
   description?: string | null;
   isActive?: boolean;
 };
@@ -167,30 +172,22 @@ export type UpdateRoleInput = {
 // @@unique([tenantId, name])
 // All policies belong to a tenant.
 // Platform-level policies belong to the platform tenant (isPlatform = true).
+// All policies are implicitly ALLOW — the system is deny-by-default.
+// Per-user DENY overrides live on IdentityPermission, not here.
 export type CreatePolicyInput = {
   tenantId: string; // required — use platform tenant ID for platform policies
   name: string; // unique per tenantId
+  displayName?: string | null; // human-readable label shown in the UI
   description?: string | null;
-  effect: PolicyEffect; // required — no default
   permissions: string[]; // required — convention: "service:resource:action"
-  audience: string[]; // required — which services enforce this policy
-  // Pass null to explicitly clear conditions.
-  // Prisma.InputJsonObject is the correct concrete type for a JSON object —
-  // Record<string, unknown> is not assignable to InputJsonValue.
-  // The use case layer handles the null → Prisma.JsonNull conversion.
-  conditions?: Record<string, unknown> | null;
+  isManaged?: boolean; // true = platform-seeded, tenants cannot edit/delete
 };
 
 export type UpdatePolicyInput = {
   name?: string;
+  displayName?: string | null;
   description?: string | null;
-  effect?: PolicyEffect;
   permissions?: string[];
-  audience?: string[];
-  // Pass null to explicitly clear conditions.
-  // Prisma.InputJsonObject is the correct concrete type for a JSON object.
-  // The use case layer handles the null → Prisma.JsonNull conversion.
-  conditions?: Record<string, unknown> | null;
 };
 
 // ─── Relation inputs ─────────────────────────────────────────
@@ -207,4 +204,24 @@ export type AssignRoleInput = {
 export type AttachPolicyInput = {
   roleId: string;
   policyId: string;
+};
+
+// ─── Identity Permission ──────────────────────────────────────
+
+// Per-user permission override — grants or explicitly denies a single
+// permission for one identity on top of their role-derived permissions.
+export type CreateIdentityPermissionInput = {
+  tenantId: string;
+  identityId: string;
+  permission: string; // "service:resource:action" — no wildcards
+  effect: PolicyEffect; // ALLOW to add, DENY to remove
+};
+
+export type UpdateIdentityPermissionInput = {
+  effect: PolicyEffect;
+};
+
+export type ListIdentityPermissionsInput = PaginationInput & {
+  identityId: string;
+  tenantId: string;
 };

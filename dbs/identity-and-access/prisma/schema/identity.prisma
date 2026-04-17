@@ -43,11 +43,12 @@ model Identity {
     totpVerifiedAt     DateTime? // when the secret was first confirmed by the identity
 
     // Relations
-    tenant              Tenant         @relation("TenantIdentities", fields: [tenantId], references: [id], onDelete: Cascade)
-    ownedTenants        Tenant[]       @relation("TenantOwner")
-    identityRoles       IdentityRole[] // explicit join table (replaces implicit Role[])
-    issuedInvitations   Invitation[]   @relation("IssuedInvitations")
-    refreshTokens       RefreshToken[]
+    tenant                 Tenant                @relation("TenantIdentities", fields: [tenantId], references: [id], onDelete: Cascade)
+    ownedTenants           Tenant[]              @relation("TenantOwner")
+    identityRoles          IdentityRole[]        // explicit join table (replaces implicit Role[])
+    identityPermissions    IdentityPermission[]  @relation("IdentityPermissionOverrides") // per-user permission overrides
+    issuedInvitations      Invitation[]          @relation("IssuedInvitations")
+    refreshTokens          RefreshToken[]
 
     // Timestamps
     createdAt DateTime  @default(now())

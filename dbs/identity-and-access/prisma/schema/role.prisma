@@ -18,8 +18,10 @@ model Role {
     // Platform-level roles (for ADMIN identities) belong to the platform tenant.
     tenantId    String  @db.Uuid
     name        String
+    displayName String? // human-readable label shown in the UI
     description String?
     isActive    Boolean @default(true)
+    isManaged   Boolean @default(false) // true = platform-seeded, tenants cannot edit/delete
 
     // Relations
     tenant        Tenant       @relation("TenantRoles", fields: [tenantId], references: [id], onDelete: Cascade)
