@@ -10,9 +10,9 @@ export async function upsertIdentity(input: {
 	password: string;
 	kind: "USER" | "ADMIN" | "SERVICE";
 }) {
-	// @@unique([tenantId, username]) — scope lookup to the correct tenant
+	// @unique username — globally unique, no tenant scope needed
 	const exists = await prisma.identity.findFirst({
-		where: { tenantId: input.tenantId, username: input.username },
+		where: { username: input.username },
 	});
 
 	if (exists) {

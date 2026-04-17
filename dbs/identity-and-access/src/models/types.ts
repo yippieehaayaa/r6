@@ -84,7 +84,7 @@ export type ListPoliciesInput = PaginationInput & {
 
 // ─── Identity ─────────────────────────────────────────────────
 
-// @@unique([tenantId, username]), @@unique([tenantId, email])
+// @unique username (globally), @@unique([tenantId, email])
 // All identities belong to a tenant.
 export type CreateIdentityInput = {
   tenantId: string; // required — always tenant-scoped
@@ -95,11 +95,9 @@ export type CreateIdentityInput = {
   mustChangePassword?: boolean;
 };
 
-// tenantId or tenantSlug must be provided — there is no admin login path.
+// username is globally unique — no tenant context needed for verification.
 export type VerifyIdentityInput = {
-  tenantId?: string;
-  tenantSlug?: string;
-  username: string; // always required
+  username: string;
   password: string;
 };
 

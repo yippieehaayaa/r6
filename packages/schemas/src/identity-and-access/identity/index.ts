@@ -40,7 +40,7 @@ const usernameRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/;
 export const IdentitySchema = TenantScopedSchema.extend({
   /**
    * Human-readable login name.
-   * Unique per tenant: two tenants may share the same username.
+   * Globally unique across all tenants.
    */
   username: z
     .string()

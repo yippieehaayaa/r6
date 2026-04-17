@@ -27,7 +27,7 @@ model Identity {
     // ADMIN identities belong to the platform tenant (isPlatform = true).
     // USER and SERVICE identities belong to a regular tenant.
     tenantId            String         @db.Uuid
-    username            String
+    username            String         @unique
     email               String?
     hash                String // bcrypt hash of password
     salt                String // per-identity salt
@@ -55,8 +55,7 @@ model Identity {
     deletedAt DateTime?
 
     // Indexes
-    // username unique per tenant (two tenants can have the same username)
-    @@unique([tenantId, username])
+    // username globally unique across all tenants
     // email unique per tenant
     @@unique([tenantId, email])
     @@index([tenantId])

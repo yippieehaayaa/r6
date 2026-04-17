@@ -3,7 +3,7 @@
 //  Use cases for the Identity model.
 //
 //  Constraints enforced here (from schema):
-//    @@unique([tenantId, username])   — username unique per tenant
+//    @unique username                 — username globally unique
 //    @@unique([tenantId, email])      — email unique per tenant
 //    @@index([tenantId])
 //    @@index([tenantId, status])
@@ -29,7 +29,6 @@ import { prisma } from "../client.js";
 import { LOGIN_LOCK_MS, LOGIN_MAX_ATTEMPTS } from "./constants.js";
 import type { PaginatedResult } from "./shared.js";
 import { buildPaginationQuery } from "./shared.js";
-import { getTenantBySlug } from "./tenant.js";
 import type {
   ChangePasswordInput,
   CreateIdentityInput,
@@ -48,7 +47,7 @@ export type IdentityWithPermissions = Identity & {
 // ─── Create ──────────────────────────────────────────────────
 
 // Inserts a new Identity row.
-// Throws P2002 if [tenantId, username] or [tenantId, email] already exists.
+// Throws P2002 if username already exists globally or [tenantId, email] already exists.
 const createIdentity = async (
   input: CreateIdentityInput,
 ): Promise<Identity> => {
@@ -79,14 +78,13 @@ const getIdentityById = async (
   });
 };
 
-// Finds a non-deleted identity by [tenantId, username].
-// Uses @@unique([tenantId, username]) index.
+// Finds a non-deleted identity by username.
+// Uses @unique username index.
 const getIdentityByUsername = async (
-  tenantId: string,
   username: string,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
-    where: { tenantId, username, deletedAt: null },
+    where: { username, deletedAt: null },
   });
 };
 
@@ -213,26 +211,11 @@ const changePassword = async (
 // manages failed attempt counting and account locking, and returns the full
 // identity with permissions on success.
 //
-// Tenant resolution: input.tenantId takes priority; falls back to tenantSlug.
-// One of the two must be provided — there is no admin login path.
+// Username is globally unique — no tenant context needed for lookup.
 const verifyIdentity = async (
   input: VerifyIdentityInput,
 ): Promise<IdentityWithPermissions> => {
-  let tenantId: string;
-
-  if (input.tenantId) {
-    tenantId = input.tenantId;
-  } else if (input.tenantSlug) {
-    const tenant = await getTenantBySlug(input.tenantSlug);
-    if (!tenant) throw new Error("invalid_credentials");
-    if (!tenant.isActive || tenant.deletedAt)
-      throw new Error("account_inactive:tenant_suspended");
-    tenantId = tenant.id;
-  } else {
-    throw new Error("invalid_credentials");
-  }
-
-  const identity = await getIdentityByUsername(tenantId, input.username);
+  const identity = await getIdentityByUsername(input.username);
 
   if (!identity) throw new Error("invalid_credentials");
 
@@ -247,14 +230,14 @@ const verifyIdentity = async (
   if (!valid) {
     const newAttempts = identity.failedLoginAttempts + 1;
     const lock = newAttempts >= LOGIN_MAX_ATTEMPTS;
-    await updateIdentity(identity.id, tenantId, {
+    await updateIdentity(identity.id, identity.tenantId, {
       failedLoginAttempts: newAttempts,
       lockedUntil: lock ? new Date(Date.now() + LOGIN_LOCK_MS) : undefined,
     });
     throw new Error("invalid_credentials");
   }
 
-  await updateIdentity(identity.id, tenantId, {
+  await updateIdentity(identity.id, identity.tenantId, {
     failedLoginAttempts: 0,
     lockedUntil: null,
   });

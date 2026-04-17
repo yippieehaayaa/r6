@@ -26,16 +26,12 @@ export async function login(
     if (!login)
       throw new AppError(400, "validation_error", "login is required");
 
-    // Parse combined identifier: "username@tenant-slug" or plain "username" (ADMIN)
-    const atIndex = login.lastIndexOf("@");
-    const username = atIndex === -1 ? login : login.slice(0, atIndex);
-    const tenantSlug =
-      atIndex === -1 ? undefined : login.slice(atIndex + 1) || undefined;
+    // Username is globally unique — no tenant context needed for login.
+    const username = login;
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
       full = await verifyIdentity({
-        tenantSlug,
         username,
         password,
       });
