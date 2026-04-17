@@ -17,7 +17,7 @@ import type {
   Tenant,
   TenantModule,
 } from "../../generated/prisma/client.js";
-// IdentityPermission will be available after running: prisma migrate dev
+// IdentityPermission type is available after running: prisma migrate dev
 // import type { IdentityPermission } from "../../generated/prisma/client.js";
 
 // ─── Re-exports for consumers ───────────────────────────────
@@ -25,12 +25,14 @@ import type {
 export type { Tenant, Identity, Role, Policy };
 export type { IdentityKind, IdentityStatus, PolicyEffect, TenantModule };
 
+// Pagination primitives live in shared.ts — re-exported here for consumers.
+import type { PaginatedResult, PaginationInput } from "./shared.js";
+export type { PaginationInput, PaginatedResult };
+
 // ─── Tenant ───────────────────────────────────────────────────
 
 // @@unique([name]), @@unique([slug])
 // moduleAccess is required — must contain at least one module name.
-// Financial config (costingMethod, currency, VAT) belongs to the
-// Financial Service, not the tenant record.
 export type CreateTenantInput = {
   name: string; // @@unique
   slug: string; // @@unique — url-safe e.g. "acme-corp"
@@ -43,25 +45,6 @@ export type UpdateTenantInput = {
   slug?: string;
   isActive?: boolean;
   moduleAccess?: TenantModule[];
-};
-
-// ─── Pagination ───────────────────────────────────────────────
-
-// Shared paginated result wrapper — same shape as the listMovements pattern.
-// data: the page of records, total: total matching rows,
-// page: current page (1-based), limit: page size.
-export type PaginatedResult<T> = {
-  data: T[];
-  total: number;
-  page: number;
-  limit: number;
-};
-
-// Input for any paginated list query.
-// page is 1-based. skip = (page - 1) * limit is computed internally.
-export type PaginationInput = {
-  page: number;
-  limit: number;
 };
 
 // ─── Tenant list ──────────────────────────────────────────────
@@ -93,20 +76,21 @@ export type ListIdentitiesInput = PaginationInput & {
 
 // Filters for listRoles. tenantId required.
 // @@index([tenantId, isActive]) backs the isActive filter.
-// search performs a case-insensitive OR match on name and description.
+// search performs a case-insensitive OR match on name, displayName, and description.
 export type ListRolesInput = PaginationInput & {
   tenantId: string;
   isActive?: boolean;
-  search?: string; // case-insensitive OR filter on name + description
+  search?: string; // case-insensitive OR filter on name + displayName + description
 };
 
 // ─── Policy list ──────────────────────────────────────────────
 
-// Filters for listPolicies. tenantId scopes the query.
+// Filters for listPolicies. tenantId is required — policies are tenant-scoped.
+// isManaged filters platform-seeded (true) vs. tenant-created (false) policies.
 // search performs a case-insensitive OR match on name, displayName, and description.
 export type ListPoliciesInput = PaginationInput & {
-  tenantId?: string; // scope to a specific tenant
-  isManaged?: boolean; // filter by managed/unmanaged
+  tenantId: string; // required — policies are tenant-scoped
+  isManaged?: boolean; // filter platform-seeded (true) vs. tenant-created (false)
   search?: string; // case-insensitive OR filter on name + displayName + description
 };
 
@@ -114,10 +98,8 @@ export type ListPoliciesInput = PaginationInput & {
 
 // @@unique([tenantId, username]), @@unique([tenantId, email])
 // All identities belong to a tenant.
-// ADMIN identities belong to the platform tenant (isPlatform = true).
-// hash + salt are required — caller is responsible for hashing.
 export type CreateIdentityInput = {
-  tenantId: string; // required — use platform tenant ID for ADMIN kind
+  tenantId: string; // required — always tenant-scoped
   username: string;
   email?: string | null;
   password: string;
@@ -125,10 +107,11 @@ export type CreateIdentityInput = {
   mustChangePassword?: boolean;
 };
 
+// tenantId or tenantSlug must be provided — there is no admin login path.
 export type VerifyIdentityInput = {
   tenantId?: string;
-  tenantSlug?: string | null;
-  username?: string;
+  tenantSlug?: string;
+  username: string; // always required
   password: string;
 };
 
@@ -151,9 +134,8 @@ export type UpdateIdentityInput = {
 
 // @@unique([tenantId, name])
 // All roles belong to a tenant.
-// Platform-level roles belong to the platform tenant (isPlatform = true).
 export type CreateRoleInput = {
-  tenantId: string; // required — use platform tenant ID for platform roles
+  tenantId: string; // required — always tenant-scoped
   name: string; // unique per tenantId
   displayName?: string | null; // human-readable label shown in the UI
   description?: string | null;
@@ -171,11 +153,10 @@ export type UpdateRoleInput = {
 
 // @@unique([tenantId, name])
 // All policies belong to a tenant.
-// Platform-level policies belong to the platform tenant (isPlatform = true).
 // All policies are implicitly ALLOW — the system is deny-by-default.
 // Per-user DENY overrides live on IdentityPermission, not here.
 export type CreatePolicyInput = {
-  tenantId: string; // required — use platform tenant ID for platform policies
+  tenantId: string; // required — always tenant-scoped
   name: string; // unique per tenantId
   displayName?: string | null; // human-readable label shown in the UI
   description?: string | null;

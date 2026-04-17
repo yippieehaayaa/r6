@@ -10,8 +10,8 @@
 //    @@index([tenantId, kind])
 //    @@index([deletedAt])
 //    tenantId non-nullable           — all identities belong to a tenant
-//                                      ADMIN identities use the platform tenant
 //    identityRoles IdentityRole[]    — explicit M2M join table
+//    identityPermissions []          — per-user permission overrides
 //    mustChangePassword default true
 //    failedLoginAttempts default 0
 //    status default PENDING_VERIFICATION
@@ -30,13 +30,15 @@ import type {
   RolePolicy,
 } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
-import { getPlatformTenantOrFail, getTenantBySlug } from "./tenant.js";
+import { LOGIN_LOCK_MS, LOGIN_MAX_ATTEMPTS } from "./constants.js";
+import type { PaginatedResult } from "./shared.js";
+import { buildPaginationQuery } from "./shared.js";
+import { getTenantBySlug } from "./tenant.js";
 import type {
   AssignRoleInput,
   ChangePasswordInput,
   CreateIdentityInput,
   ListIdentitiesInput,
-  PaginatedResult,
   UpdateIdentityInput,
   VerifyIdentityInput,
 } from "./types.js";
@@ -47,17 +49,20 @@ export type IdentityWithRoles = Identity & {
   identityRoles: (IdentityRole & { role: Role })[];
 };
 
+// Used during auth to build JWT claims.
+// identityPermissions provides the per-user ALLOW/DENY overrides.
+// NOTE: identityPermissions relation requires `prisma migrate dev` first.
 export type IdentityWithRolesAndPolicies = Identity & {
   identityRoles: (IdentityRole & {
     role: Role & { rolePolicies: (RolePolicy & { policy: Policy })[] };
   })[];
+  // identityPermissions: IdentityPermission[]; // uncomment after migration
 };
 
 // ─── Create ──────────────────────────────────────────────────
 
 // Inserts a new Identity row.
 // Throws P2002 if [tenantId, username] or [tenantId, email] already exists.
-// tenantId is required — use the platform tenant ID for ADMIN identities.
 const createIdentity = async (
   input: CreateIdentityInput,
 ): Promise<Identity> => {
@@ -78,14 +83,13 @@ const createIdentity = async (
 
 // ─── Read ────────────────────────────────────────────────────
 
-// Finds a non-deleted identity by primary key.
-// Optional tenantId adds DB-level tenant scope enforcement.
+// Finds a non-deleted identity by primary key within a tenant.
 const getIdentityById = async (
   id: string,
-  tenantId?: string,
+  tenantId: string,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
-    where: { id, deletedAt: null, ...(tenantId !== undefined && { tenantId }) },
+    where: { id, tenantId, deletedAt: null },
   });
 };
 
@@ -112,25 +116,25 @@ const getIdentityByEmail = async (
 };
 
 // Returns a non-deleted identity with its assigned roles included.
-// Uses explicit join table identityRoles → role.
 const getIdentityWithRoles = async (
   id: string,
+  tenantId: string,
 ): Promise<IdentityWithRoles | null> => {
   return prisma.identity.findFirst({
-    where: { id, deletedAt: null },
+    where: { id, tenantId, deletedAt: null },
     include: { identityRoles: { include: { role: true } } },
   });
 };
 
 // Returns a non-deleted identity with roles and their attached policies.
-// Used during auth flows to build token claims (role IDs + permission strings).
-// Optional tenantId adds DB-level tenant scope enforcement.
+// Used during auth flows to build token claims (role names + permission strings).
+// TODO: add identityPermissions include after `prisma migrate dev`.
 const getIdentityWithRolesAndPolicies = async (
   id: string,
-  tenantId?: string,
+  tenantId: string,
 ): Promise<IdentityWithRolesAndPolicies | null> => {
   return prisma.identity.findFirst({
-    where: { id, deletedAt: null, ...(tenantId !== undefined && { tenantId }) },
+    where: { id, tenantId, deletedAt: null },
     include: {
       identityRoles: {
         include: {
@@ -164,18 +168,17 @@ const buildWhere = (
 // Returns a paginated list of identities for a tenant.
 // status filter uses @@index([tenantId, status]).
 // kind filter uses @@index([tenantId, kind]).
-// Runs findMany + count in parallel — same pattern as listMovements.
 const listIdentities = async (
   input: ListIdentitiesInput,
 ): Promise<PaginatedResult<Identity>> => {
   const where = buildWhere(input);
-  const skip = (input.page - 1) * input.limit;
+  const { skip, take } = buildPaginationQuery(input);
 
   const [data, total] = await Promise.all([
     prisma.identity.findMany({
       where,
       skip,
-      take: input.limit,
+      take,
       orderBy: { username: "asc" },
     }),
     prisma.identity.count({ where }),
@@ -185,98 +188,6 @@ const listIdentities = async (
 };
 
 // ─── Update ──────────────────────────────────────────────────
-
-const changePassword = async (
-  id: string,
-  input: ChangePasswordInput,
-): Promise<Identity> => {
-  const identity = await getIdentityById(id);
-  if (!identity) throw new Error("Identity not found");
-
-  const valid = await verifyPassword(
-    hmac(input.currentPassword),
-    identity.hash,
-  );
-  if (!valid) throw new Error("Current password is incorrect");
-
-  const { hash, salt } = await encryptPassword(hmac(input.newPassword));
-
-  return prisma.identity.update({
-    where: { id },
-    data: { hash, salt, mustChangePassword: false },
-  });
-};
-
-// ─── Verify (login) ─────────────────────────────────────────
-
-const LOGIN_MAX_ATTEMPTS = 5;
-const LOGIN_LOCK_MS = 15 * 60 * 1000;
-
-// Looks up an identity by username, verifies the HMAC-prefixed bcrypt hash,
-// manages failed attempt counting and account locking, and returns the full
-// identity with roles+policies on success.
-//
-// Tenant resolution priority:
-//   1. input.tenantId provided  → use directly
-//   2. input.tenantSlug provided → resolve slug → tenantId; checks tenant active
-//   3. Neither provided          → ADMIN login path; resolves platform tenant
-const verifyIdentity = async (
-  input: VerifyIdentityInput,
-): Promise<IdentityWithRolesAndPolicies> => {
-  let tenantId: string;
-
-  if (input.tenantId) {
-    tenantId = input.tenantId;
-  } else if (input.tenantSlug) {
-    // Resolve slug → tenantId. Unknown slug is reported as invalid_credentials
-    // to avoid leaking whether a tenant exists.
-    const tenant = await getTenantBySlug(input.tenantSlug);
-    if (!tenant) throw new Error("invalid_credentials");
-    // Block login if the tenant is suspended or soft-deleted.
-    if (!tenant.isActive || tenant.deletedAt)
-      throw new Error("account_inactive:tenant_suspended");
-    tenantId = tenant.id;
-  } else {
-    // ADMIN login path: no tenant context in the request.
-    // All ADMIN identities live under the platform tenant.
-    const platform = await getPlatformTenantOrFail();
-    tenantId = platform.id;
-  }
-
-  const identity = await getIdentityByUsername(
-    tenantId,
-    input.username as string,
-  );
-
-  if (!identity) throw new Error("invalid_credentials");
-
-  if (identity.lockedUntil && identity.lockedUntil > new Date())
-    throw new Error(`account_locked:${identity.lockedUntil.toISOString()}`);
-
-  if (identity.status !== "ACTIVE")
-    throw new Error(`account_inactive:${identity.status}`);
-
-  const valid = await verifyPassword(hmac(input.password), identity.hash);
-
-  if (!valid) {
-    const newAttempts = identity.failedLoginAttempts + 1;
-    const lock = newAttempts >= LOGIN_MAX_ATTEMPTS;
-    await updateIdentity(identity.id, {
-      failedLoginAttempts: newAttempts,
-      lockedUntil: lock ? new Date(Date.now() + LOGIN_LOCK_MS) : undefined,
-    });
-    throw new Error("invalid_credentials");
-  }
-
-  await updateIdentity(identity.id, {
-    failedLoginAttempts: 0,
-    lockedUntil: null,
-  });
-
-  const full = await getIdentityWithRolesAndPolicies(identity.id);
-  if (!full) throw new Error("internal");
-  return full;
-};
 
 // Updates mutable fields on an existing identity.
 // Throws P2002 if updated email collides within the same tenant.
@@ -305,11 +216,90 @@ const updateIdentity = async (
   });
 };
 
+const changePassword = async (
+  id: string,
+  tenantId: string,
+  input: ChangePasswordInput,
+): Promise<Identity> => {
+  const identity = await getIdentityById(id, tenantId);
+  if (!identity) throw new Error("Identity not found");
+
+  const valid = await verifyPassword(
+    hmac(input.currentPassword),
+    identity.hash,
+  );
+  if (!valid) throw new Error("Current password is incorrect");
+
+  const { hash, salt } = await encryptPassword(hmac(input.newPassword));
+
+  return prisma.identity.update({
+    where: { id },
+    data: { hash, salt, mustChangePassword: false },
+  });
+};
+
+// ─── Verify (login) ─────────────────────────────────────────
+
+// Looks up an identity by username, verifies the HMAC-prefixed bcrypt hash,
+// manages failed attempt counting and account locking, and returns the full
+// identity with roles+policies on success.
+//
+// Tenant resolution: input.tenantId takes priority; falls back to tenantSlug.
+// One of the two must be provided — there is no admin login path.
+const verifyIdentity = async (
+  input: VerifyIdentityInput,
+): Promise<IdentityWithRolesAndPolicies> => {
+  let tenantId: string;
+
+  if (input.tenantId) {
+    tenantId = input.tenantId;
+  } else if (input.tenantSlug) {
+    const tenant = await getTenantBySlug(input.tenantSlug);
+    if (!tenant) throw new Error("invalid_credentials");
+    if (!tenant.isActive || tenant.deletedAt)
+      throw new Error("account_inactive:tenant_suspended");
+    tenantId = tenant.id;
+  } else {
+    throw new Error("invalid_credentials");
+  }
+
+  const identity = await getIdentityByUsername(tenantId, input.username);
+
+  if (!identity) throw new Error("invalid_credentials");
+
+  if (identity.lockedUntil && identity.lockedUntil > new Date())
+    throw new Error(`account_locked:${identity.lockedUntil.toISOString()}`);
+
+  if (identity.status !== "ACTIVE")
+    throw new Error(`account_inactive:${identity.status}`);
+
+  const valid = await verifyPassword(hmac(input.password), identity.hash);
+
+  if (!valid) {
+    const newAttempts = identity.failedLoginAttempts + 1;
+    const lock = newAttempts >= LOGIN_MAX_ATTEMPTS;
+    await updateIdentity(identity.id, {
+      failedLoginAttempts: newAttempts,
+      lockedUntil: lock ? new Date(Date.now() + LOGIN_LOCK_MS) : undefined,
+    });
+    throw new Error("invalid_credentials");
+  }
+
+  await updateIdentity(identity.id, {
+    failedLoginAttempts: 0,
+    lockedUntil: null,
+  });
+
+  const full = await getIdentityWithRolesAndPolicies(identity.id, tenantId);
+  if (!full) throw new Error("internal");
+  return full;
+};
+
 // ─── Role assignment (many-to-many) ──────────────────────────
 
 // Inserts a row into the explicit _identity_roles join table.
-// Throws P2002 if the same [identityId, roleId] already exists (duplicate assign).
-// Throws P2025 if either the identity or role does not exist (FK violation).
+// Throws P2002 if the same [identityId, roleId] already exists.
+// Throws P2025 if either the identity or role does not exist.
 const assignRoleToIdentity = async (
   input: AssignRoleInput,
 ): Promise<IdentityRole> => {
@@ -334,7 +324,6 @@ const removeRoleFromIdentity = async (
 };
 
 // Replaces all assigned roles for an identity atomically.
-// Deletes all existing join rows then inserts the new set in one transaction.
 const setRolesForIdentity = async (
   identityId: string,
   roleIds: string[],
@@ -350,10 +339,8 @@ const setRolesForIdentity = async (
 
 // ─── TOTP ────────────────────────────────────────────────────
 
-// Persists an AES-256-GCM encrypted TOTP secret for the identity.
-// totpEnabled remains false until the user confirms the code (activateTotp).
-// Calling this again while TOTP is already enabled will overwrite the secret,
-// so the caller should guard against that.
+// Persists an AES-256-GCM encrypted TOTP secret. totpEnabled stays false
+// until the user confirms the first code via activateTotp.
 const saveTotpSecret = async (
   id: string,
   encryptedSecret: string,
@@ -368,7 +355,7 @@ const saveTotpSecret = async (
   });
 };
 
-// Marks TOTP as enabled after the identity has verified their first code.
+// Marks TOTP as enabled after the identity verifies their first code.
 const activateTotp = async (id: string): Promise<void> => {
   await prisma.identity.update({
     where: { id },
@@ -376,7 +363,7 @@ const activateTotp = async (id: string): Promise<void> => {
   });
 };
 
-// Clears all TOTP data from an identity, returning them to single-factor auth.
+// Clears all TOTP data, returning the identity to single-factor auth.
 const disableTotp = async (id: string): Promise<void> => {
   await prisma.identity.update({
     where: { id },
@@ -386,10 +373,7 @@ const disableTotp = async (id: string): Promise<void> => {
 
 // ─── Soft delete ─────────────────────────────────────────────
 
-// Soft-deletes an identity.
-// @@index([deletedAt]) supports filtering deleted records out.
-// IdentityRole join rows are left intact — they are removed by CASCADE
-// only on hard-delete (not applicable here since we soft-delete).
+// Soft-deletes an identity. IdentityRole join rows are left intact.
 const softDeleteIdentity = async (id: string): Promise<Identity> => {
   return prisma.identity.update({
     where: { id },

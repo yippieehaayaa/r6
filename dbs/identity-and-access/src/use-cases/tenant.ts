@@ -17,10 +17,15 @@
 
 import type { Tenant } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
+import {
+  TENANT_ADMIN_DEFAULT_POLICIES,
+  TENANT_OWNER_DEFAULT_POLICIES,
+} from "./constants.js";
+import type { PaginatedResult } from "./shared.js";
+import { buildPaginationQuery } from "./shared.js";
 import type {
   CreateTenantInput,
   ListTenantsInput,
-  PaginatedResult,
   UpdateTenantInput,
 } from "./types.js";
 
@@ -71,19 +76,7 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 
 // Platform-level policies automatically connected to the tenant-owner role
 // on every new tenant. Names must match the platform tenant's seeded policies.
-const TENANT_OWNER_DEFAULT_POLICIES = [
-  "iam:identity:full-access",
-  "iam:role:full-access",
-  "iam:policy:full-access",
-] as const;
-
-// Platform-level policies automatically connected to the tenant-admin role
-// on every new tenant. Names must match the platform tenant's seeded policies.
-const TENANT_ADMIN_DEFAULT_POLICIES = [
-  "iam:identity:full-access",
-  "iam:role:full-access",
-  "iam:policy:read-only",
-] as const;
+// (Imported from ./constants.ts)
 
 // Atomically creates a Tenant, its two standard protected roles
 // (tenant-owner and tenant-admin), and a bootstrapped tenant-owner
@@ -237,13 +230,13 @@ const listTenants = async (
   input: ListTenantsInput,
 ): Promise<PaginatedResult<Tenant>> => {
   const where = buildWhere(input);
-  const skip = (input.page - 1) * input.limit;
+  const { skip, take } = buildPaginationQuery(input);
 
   const [data, total] = await Promise.all([
     prisma.tenant.findMany({
       where,
       skip,
-      take: input.limit,
+      take,
       orderBy: { name: "asc" },
     }),
     prisma.tenant.count({ where }),
