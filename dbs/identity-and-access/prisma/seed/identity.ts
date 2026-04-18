@@ -4,7 +4,7 @@ import { prisma } from "../../src/client.js";
 import { log, skip } from "./helpers.js";
 
 export async function upsertIdentity(input: {
-	tenantId: string;
+	tenantId?: string | null;
 	username: string;
 	email: string;
 	password: string;
@@ -24,13 +24,15 @@ export async function upsertIdentity(input: {
 
 	const identity = await prisma.identity.create({
 		data: {
-			tenantId: input.tenantId,
+			tenantId: input.tenantId ?? null,
 			username: input.username,
 			email: input.email,
 			hash,
 			salt,
 			kind: input.kind,
 			status: "ACTIVE",
+			isActive: true,
+			isEmailVerified: true,
 			mustChangePassword: false,
 		},
 	});

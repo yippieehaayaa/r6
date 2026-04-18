@@ -4,14 +4,15 @@
 //
 //  Constraints enforced here (from schema):
 //    @unique username                 — username globally unique
-//    @@unique([tenantId, email])      — email unique per tenant
+//    @unique email                    — email globally unique
 //    @@index([tenantId])
 //    @@index([tenantId, status])
 //    @@index([tenantId, kind])
 //    @@index([deletedAt])
-//    tenantId non-nullable           — all identities belong to a tenant
+//    tenantId nullable               — null for unaffiliated users + ADMIN identities
+//    isActive default false          — set to true once email is verified
 //    identityPermissions []          — per-user permission overrides (stamped from policies)
-//    mustChangePassword default true
+//    mustChangePassword default false
 //    failedLoginAttempts default 0
 //    status default PENDING_VERIFICATION
 //    kind default USER
@@ -47,7 +48,7 @@ export type IdentityWithPermissions = Identity & {
 // ─── Create ──────────────────────────────────────────────────
 
 // Inserts a new Identity row.
-// Throws P2002 if username already exists globally or [tenantId, email] already exists.
+// Throws P2002 if username or email already exists globally.
 const createIdentity = async (
   input: CreateIdentityInput,
 ): Promise<Identity> => {
@@ -55,26 +56,28 @@ const createIdentity = async (
 
   return prisma.identity.create({
     data: {
-      tenantId: input.tenantId,
+      tenantId: input.tenantId ?? null,
       username: input.username,
       email: input.email,
       hash,
       salt,
       kind: input.kind ?? "USER",
-      mustChangePassword: input.mustChangePassword ?? true,
+      mustChangePassword: input.mustChangePassword ?? false,
     },
   });
 };
 
 // ─── Read ────────────────────────────────────────────────────
 
-// Finds a non-deleted identity by primary key within a tenant.
+// Finds a non-deleted identity by primary key.
+// When tenantId is provided, also filters by tenantId (tenant-scope check).
+// When tenantId is undefined, only filters by id (internal/admin use).
 const getIdentityById = async (
   id: string,
-  tenantId: string,
+  tenantId?: string | null,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
-    where: { id, tenantId, deletedAt: null },
+    where: { id, ...(tenantId !== undefined && { tenantId }), deletedAt: null },
   });
 };
 
@@ -88,14 +91,13 @@ const getIdentityByUsername = async (
   });
 };
 
-// Finds a non-deleted identity by [tenantId, email].
-// Uses @@unique([tenantId, email]) index.
+// Finds a non-deleted identity by email.
+// Uses @unique email index.
 const getIdentityByEmail = async (
-  tenantId: string,
   email: string,
 ): Promise<Identity | null> => {
   return prisma.identity.findFirst({
-    where: { tenantId, email, deletedAt: null },
+    where: { email, deletedAt: null },
   });
 };
 
@@ -154,11 +156,12 @@ const listIdentities = async (
 // ─── Update ──────────────────────────────────────────────────
 
 // Updates mutable fields on an existing identity.
-// Verifies the identity belongs to tenantId before writing — prevents cross-tenant mutation.
-// Throws P2002 if updated email collides within the same tenant.
+// When tenantId is provided, verifies the identity belongs to that tenant first
+// — prevents cross-tenant mutation. Pass undefined to skip the tenant scope check.
+// Throws P2002 if updated email collides globally.
 const updateIdentity = async (
   id: string,
-  tenantId: string,
+  tenantId: string | null | undefined,
   input: UpdateIdentityInput,
 ): Promise<Identity> => {
   const existing = await getIdentityById(id, tenantId);
@@ -166,7 +169,12 @@ const updateIdentity = async (
   return prisma.identity.update({
     where: { id },
     data: {
+      ...(input.tenantId !== undefined && { tenantId: input.tenantId }),
+      ...(input.isActive !== undefined && { isActive: input.isActive }),
       ...(input.email !== undefined && { email: input.email }),
+      ...(input.isEmailVerified !== undefined && {
+        isEmailVerified: input.isEmailVerified,
+      }),
       ...(input.hash !== undefined && { hash: input.hash }),
       ...(input.salt !== undefined && { salt: input.salt }),
       ...(input.failedLoginAttempts !== undefined && {
@@ -185,7 +193,7 @@ const updateIdentity = async (
 
 const changePassword = async (
   id: string,
-  tenantId: string,
+  tenantId: string | null | undefined,
   input: ChangePasswordInput,
 ): Promise<Identity> => {
   const identity = await getIdentityById(id, tenantId);
@@ -253,11 +261,11 @@ const verifyIdentity = async (
 // until the user confirms the first code via activateTotp.
 const saveTotpSecret = async (
   id: string,
-  tenantId: string,
+  tenantId: string | null | undefined,
   encryptedSecret: string,
 ): Promise<void> => {
   await prisma.identity.updateMany({
-    where: { id, tenantId, deletedAt: null },
+    where: { id, ...(tenantId !== undefined && { tenantId }), deletedAt: null },
     data: {
       totpSecret: encryptedSecret,
       totpEnabled: false,
@@ -267,17 +275,17 @@ const saveTotpSecret = async (
 };
 
 // Marks TOTP as enabled after the identity verifies their first code.
-const activateTotp = async (id: string, tenantId: string): Promise<void> => {
+const activateTotp = async (id: string, tenantId: string | null | undefined): Promise<void> => {
   await prisma.identity.updateMany({
-    where: { id, tenantId, deletedAt: null },
+    where: { id, ...(tenantId !== undefined && { tenantId }), deletedAt: null },
     data: { totpEnabled: true, totpVerifiedAt: new Date() },
   });
 };
 
 // Clears all TOTP data, returning the identity to single-factor auth.
-const disableTotp = async (id: string, tenantId: string): Promise<void> => {
+const disableTotp = async (id: string, tenantId: string | null | undefined): Promise<void> => {
   await prisma.identity.updateMany({
-    where: { id, tenantId, deletedAt: null },
+    where: { id, ...(tenantId !== undefined && { tenantId }), deletedAt: null },
     data: { totpSecret: null, totpEnabled: false, totpVerifiedAt: null },
   });
 };
@@ -285,10 +293,10 @@ const disableTotp = async (id: string, tenantId: string): Promise<void> => {
 // ─── Soft delete ─────────────────────────────────────────────
 
 // Soft-deletes an identity.
-// Verifies the identity belongs to tenantId before writing.
+// When tenantId is provided, verifies the identity belongs to that tenant first.
 const softDeleteIdentity = async (
   id: string,
-  tenantId: string,
+  tenantId: string | null | undefined,
 ): Promise<Identity> => {
   const existing = await getIdentityById(id, tenantId);
   if (!existing) throw new Error("not_found");

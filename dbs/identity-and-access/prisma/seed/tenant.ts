@@ -5,6 +5,7 @@ import { log, skip } from "./helpers.js";
 export async function upsertTenant(input: {
 	name: string;
 	slug: string;
+	ownerId: string;
 	moduleAccess: TenantModule[];
 	isPlatform?: boolean;
 }) {
@@ -21,6 +22,8 @@ export async function upsertTenant(input: {
 		data: {
 			name: input.name,
 			slug: input.slug,
+			ownerId: input.ownerId,
+			isActive: true,
 			moduleAccess: { set: input.moduleAccess },
 			isPlatform: input.isPlatform ?? false,
 		},

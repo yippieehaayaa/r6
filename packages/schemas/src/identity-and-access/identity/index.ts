@@ -1,9 +1,10 @@
 import { z } from "zod";
 import {
+  BaseRecordSchema,
   emailRegex,
   ListQuerySchema,
   NullableTimestampSchema,
-  TenantScopedSchema,
+  NullableUuidSchema,
 } from "../base.schema";
 import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 
@@ -12,12 +13,20 @@ import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 //  Represents a human user, service account, or platform admin.
 //
 //  Multi-tenancy rules:
-//    • tenantId is null  → ADMIN identity (platform-level)
-//    • tenantId is uuid  → USER or SERVICE identity (tenant-owned)
+//    • tenantId is null  → unaffiliated user (registered, no tenant yet)
+//                          OR ADMIN identity (platform-level)
+//    • tenantId is uuid  → USER or SERVICE identity belonging to a tenant
+//
+//  A user may only belong to one tenant at a time.
+//  tenantId is set when the user creates a tenant or accepts an invitation.
+//
+//  isActive:
+//    Starts as false. Set to true once the identity verifies their email.
+//    Tenant.isActive is also set to true at that point.
 //
 //  Security note:
 //    `hash` and `salt` are NEVER returned to clients. Use
-//    IdentityPublicSchema / IdentitySafeSchema for API responses.
+//    IdentitySafeSchema for API responses.
 // ============================================================
 
 /**
@@ -37,7 +46,14 @@ const usernameRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/;
 
 // ── Full model (internal / DB shape) ───────────────────────
 
-export const IdentitySchema = TenantScopedSchema.extend({
+export const IdentitySchema = BaseRecordSchema.extend({
+  /**
+   * FK → Tenant.id — null for unaffiliated users (registered, no tenant yet)
+   * and for ADMIN identities (platform-level).
+   * Set once the user creates a tenant or accepts an invitation.
+   */
+  tenantId: NullableUuidSchema,
+
   /**
    * Human-readable login name.
    * Globally unique across all tenants.
@@ -53,7 +69,7 @@ export const IdentitySchema = TenantScopedSchema.extend({
 
   /**
    * E-mail address. Required for all identities.
-   * Unique per tenant.
+   * Globally unique — one account per email address across the entire system.
    */
   email: z
     .string()
@@ -63,6 +79,9 @@ export const IdentitySchema = TenantScopedSchema.extend({
 
   /** Whether the identity has verified ownership of the email address */
   isEmailVerified: z.boolean().default(false),
+
+  /** Whether this identity is active. Set to true once email is verified. */
+  isActive: z.boolean().default(false),
 
   /** bcrypt hash of the password — NEVER expose to clients */
   hash: z
@@ -86,7 +105,7 @@ export const IdentitySchema = TenantScopedSchema.extend({
   lockedUntil: NullableTimestampSchema,
 
   /** When true, the identity must set a new password on next login */
-  mustChangePassword: z.boolean().default(true),
+  mustChangePassword: z.boolean().default(false),
 
   kind: IdentityKindSchema.default("USER"),
   status: IdentityStatusSchema.default("PENDING_VERIFICATION"),

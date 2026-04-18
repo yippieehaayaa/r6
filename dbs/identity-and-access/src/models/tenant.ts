@@ -62,6 +62,7 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
     data: {
       name: input.name,
       slug: input.slug,
+      ownerId: input.ownerId,
       // moduleAccess is a Postgres enum[] — Prisma requires set: []
       moduleAccess: { set: input.moduleAccess },
     },
@@ -70,49 +71,44 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 
 // ─── Create with defaults ─────────────────────────────────────────────────────
 
-// Atomically creates a Tenant and a bootstrapped tenant-owner identity,
-// then stamps permissions directly onto the owner.
+// Atomically creates a Tenant (linked to an existing owner identity) and
+// stamps permissions onto that owner. The owner Identity must already exist
+// (e.g. self-registered + email verified) before calling this function.
 //
-// ownerPermissions — permission strings to stamp onto the owner identity.
-//   Defaults to ["iam:*:*"] if not provided.
+// Flow inside the transaction:
+//   1. Fetch the owner identity (ensures it exists and is not soft-deleted).
+//   2. Create the Tenant with ownerId set immediately; isActive mirrors the
+//      owner's isEmailVerified so unverified owners start with an inactive tenant.
+//   3. Update the owner identity's tenantId to the new tenant's id.
+//   4. Stamp ownerPermissions as IdentityPermission ALLOW rows.
 //
-// The owner's username is derived from the slug: "${slug.slice(0,58)}-owner"
-// (capped so the total stays within the 64-char username limit).
-//
-// Caller is responsible for pre-computing hash + salt (bcrypt is async and
-// cannot run safely inside a Prisma interactive transaction callback).
+// ownerPermissions — permission strings to stamp. Defaults to ["iam:*:*"].
 //
 // Returns: { tenant, ownerIdentity }
 const createTenantWithDefaults = async (
   input: CreateTenantInput,
-  ownerHash: string,
-  ownerSalt: string,
-  ownerEmail: string,
   ownerPermissions: readonly string[] = ["iam:*:*"],
 ): Promise<{ tenant: Tenant; ownerIdentity: Identity }> => {
   return prisma.$transaction(async (tx) => {
+    // Owner must exist and not be soft-deleted.
+    const ownerIdentity = await tx.identity.findFirstOrThrow({
+      where: { id: input.ownerId, deletedAt: null },
+    });
+
     const tenant = await tx.tenant.create({
       data: {
         name: input.name,
         slug: input.slug,
+        ownerId: input.ownerId,
+        isActive: ownerIdentity.isEmailVerified,
         moduleAccess: { set: input.moduleAccess },
       },
     });
 
-    const ownerUsername = `${tenant.slug.slice(0, 58)}-owner`;
-
-    // Create the owner identity first so we can back-patch ownerId on tenant.
-    const ownerIdentity = await tx.identity.create({
-      data: {
-        tenantId: tenant.id,
-        username: ownerUsername,
-        email: ownerEmail,
-        hash: ownerHash,
-        salt: ownerSalt,
-        kind: "USER",
-        status: "ACTIVE",
-        mustChangePassword: false,
-      },
+    // Bind the owner identity to this tenant.
+    const updatedOwner = await tx.identity.update({
+      where: { id: input.ownerId },
+      data: { tenantId: tenant.id },
     });
 
     // Stamp permissions directly onto the owner identity.
@@ -120,7 +116,7 @@ const createTenantWithDefaults = async (
       await tx.identityPermission.createMany({
         data: ownerPermissions.map((permission) => ({
           tenantId: tenant.id,
-          identityId: ownerIdentity.id,
+          identityId: input.ownerId,
           permission,
           effect: "ALLOW",
         })),
@@ -128,13 +124,7 @@ const createTenantWithDefaults = async (
       });
     }
 
-    // Back-patch ownerId now that the owner identity exists.
-    const updatedTenant = await tx.tenant.update({
-      where: { id: tenant.id },
-      data: { ownerId: ownerIdentity.id },
-    });
-
-    return { tenant: updatedTenant, ownerIdentity };
+    return { tenant, ownerIdentity: updatedOwner };
   });
 };
 

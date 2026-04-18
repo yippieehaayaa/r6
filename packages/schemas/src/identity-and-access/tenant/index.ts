@@ -4,6 +4,7 @@ import {
   ListQuerySchema,
   NullableUuidSchema,
   slugRegex,
+  UuidSchema,
 } from "../base.schema";
 import type { TenantModule } from "../enums.schema";
 import { TenantModuleEnum, TenantModuleSchema } from "../enums.schema";
@@ -50,8 +51,8 @@ export const TenantSchema = BaseRecordSchema.extend({
    */
   isPlatform: z.boolean(),
 
-  /** Primary owner identity ID — null until set after tenant creation */
-  ownerId: NullableUuidSchema,
+  /** Primary owner identity ID — required; the owner Identity must exist before the Tenant is created */
+  ownerId: UuidSchema,
 
   /**
    * List of enabled paid microservice module names.
@@ -70,9 +71,9 @@ export const CreateTenantSchema = TenantSchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-  isActive: true, // defaulted to true on creation
+  isActive: true, // defaulted to false on creation; set to true once the owner verifies email
   isPlatform: true, // server-managed — cannot be set via API
-  ownerId: true, // set internally after owner identity is created
+  ownerId: true, // injected from the caller's JWT identity (req.auth.sub)
 });
 
 export type CreateTenantInput = z.infer<typeof CreateTenantSchema>;
@@ -93,15 +94,10 @@ export type UpdateTenantInput = z.infer<typeof UpdateTenantSchema>;
 // ── Create response (tenant + one-time owner credentials) ──────────────────
 
 /**
- * Returned by POST /tenants (ADMIN-only).
- * ownerCredentials is shown exactly once — the caller must persist it.
+ * Returned by POST /tenants.
+ * The caller (already an Identity) created the tenant — no owner credentials needed.
  */
-export const CreateTenantResponseSchema = TenantSchema.extend({
-  ownerCredentials: z.object({
-    username: z.string(),
-    password: z.string(),
-  }),
-});
+export const CreateTenantResponseSchema = TenantSchema;
 
 export type CreateTenantResponse = z.infer<typeof CreateTenantResponseSchema>;
 

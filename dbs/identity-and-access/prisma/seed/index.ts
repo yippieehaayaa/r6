@@ -9,7 +9,7 @@
  * │ login  │ password       │ kind  │ tenant     │ resolved permissions                             │
  * ├────────┼────────────────┼───────┼────────────┼──────────────────────────────────────────────────┤
  * │ admin  │ Password@1234! │ ADMIN │ platform   │ iam:*:*  (ADMIN kind — bypasses all guards)      │
- * │ owner  │ Password@1234! │ USER  │ r6         │ iam:*:*  hris:*:*  (via tenant-owner role)       │
+ * │ owner  │ Password@1234! │ USER  │ r6         │ iam:*:*  hris:*:*  (stamped directly)            │
  * └────────┴────────────────┴───────┴────────────┴──────────────────────────────────────────────────┘
  *
  * Seeded policies (platform tenant)
@@ -46,20 +46,45 @@ async function main() {
 	await prisma.refreshToken.deleteMany();
 	await prisma.identityPermission.deleteMany();
 	await prisma.invitation.deleteMany();
-	await prisma.identity.deleteMany();
 	await prisma.policy.deleteMany();
+	// Tenants must be deleted before identities because Tenant.ownerId
+	// has onDelete: Restrict — deleting an owner identity while it still
+	// owns a tenant would be blocked by the DB.
 	await prisma.tenant.deleteMany();
+	await prisma.identity.deleteMany();
 
 	console.log("  ✓ All existing data removed");
+
+	// ── Platform admin identity ───────────────────────────────────────────────
+	// Identity is created first (tenantId=null), then the tenant is created
+	// with ownerId pointing to it, then we bind the identity to the tenant.
+
+	console.log("\n── Platform admin identity ───────────────────");
+
+	const adminIdentity = await upsertIdentity({
+		tenantId: null,
+		username: "admin",
+		email: "admin@example.com",
+		password: "Password@1234!",
+		kind: "ADMIN",
+	});
 
 	console.log("\n── Platform tenant ───────────────────────────");
 
 	const platformTenant = await upsertTenant({
 		name: "Platform",
 		slug: "platform",
+		ownerId: adminIdentity.id,
 		moduleAccess: [],
 		isPlatform: true,
 	});
+
+	// Bind admin identity to the platform tenant now that the tenant exists.
+	await prisma.identity.update({
+		where: { id: adminIdentity.id },
+		data: { tenantId: platformTenant.id },
+	});
+	console.log(`  ✓ admin identity bound to tenant "${platformTenant.slug}"`);
 
 	console.log("\n── Policies (platform) ───────────────────────");
 
@@ -74,30 +99,38 @@ async function main() {
 		await upsertPolicy({ tenantId: platformTenant.id, name: perm, description: `Grants ${perm}`, permissions: [perm] });
 	}
 
-	console.log("\n── Identities ────────────────────────────────");
-
-	const adminIdentity = await upsertIdentity({
-		tenantId: platformTenant.id,
-		username: "admin",
-		email: "admin@example.com",
-		password: "Password@1234!",
-		kind: "ADMIN",
-	});
-
 	console.log("\n── Identity permissions (admin) ──────────────");
 
 	await upsertIdentityPermission({ tenantId: platformTenant.id, identityId: adminIdentity.id, permission: "iam:*:*", effect: "ALLOW" });
 
 	// ── R6 tenant ────────────────────────────────────────────────────────────
 
+	console.log("\n── R6 owner identity ─────────────────────────");
+
+	const ownerIdentity = await upsertIdentity({
+		tenantId: null,
+		username: "owner",
+		email: "owner@r6.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
 	console.log("\n── R6 tenant ─────────────────────────────────");
 
 	const r6Tenant = await upsertTenant({
 		name: "R6",
 		slug: "r6",
+		ownerId: ownerIdentity.id,
 		moduleAccess: ["hris"],
 		isPlatform: false,
 	});
+
+	// Bind owner identity to the r6 tenant now that the tenant exists.
+	await prisma.identity.update({
+		where: { id: ownerIdentity.id },
+		data: { tenantId: r6Tenant.id },
+	});
+	console.log(`  ✓ owner identity bound to tenant "${r6Tenant.slug}"`);
 
 	console.log("\n── Policies (r6) ─────────────────────────────");
 
@@ -115,16 +148,6 @@ async function main() {
 	for (const perm of R6_PERMISSIONS) {
 		await upsertPolicy({ tenantId: r6Tenant.id, name: perm, description: `Grants ${perm}`, permissions: [perm] });
 	}
-
-	console.log("\n── Identities (r6) ───────────────────────────");
-
-	const ownerIdentity = await upsertIdentity({
-		tenantId: r6Tenant.id,
-		username: "owner",
-		email: "owner@r6.com",
-		password: "Password@1234!",
-		kind: "USER",
-	});
 
 	console.log("\n── Identity permissions (owner) ──────────────");
 

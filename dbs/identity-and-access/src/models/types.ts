@@ -31,10 +31,11 @@ export type { PaginationInput, PaginatedResult };
 // ─── Tenant ───────────────────────────────────────────────────
 
 // @@unique([name]), @@unique([slug])
-// moduleAccess is required — must contain at least one module name.
+// ownerId is required — the owner Identity must exist before the Tenant is created.
 export type CreateTenantInput = {
   name: string; // @@unique
   slug: string; // @@unique — url-safe e.g. "acme-corp"
+  ownerId: string; // required — FK to Identity.id; set at creation, never back-patched
   moduleAccess: TenantModule[]; // required — enabled microservice modules
 };
 
@@ -84,10 +85,11 @@ export type ListPoliciesInput = PaginationInput & {
 
 // ─── Identity ─────────────────────────────────────────────────
 
-// @unique username (globally), @@unique([tenantId, email])
-// All identities belong to a tenant.
+// @unique username (globally), @unique email (globally)
+// tenantId is null for unaffiliated users (registered but not yet in a tenant)
+// and for ADMIN identities. Set when the user creates or joins a tenant.
 export type CreateIdentityInput = {
-  tenantId: string; // required — always tenant-scoped
+  tenantId?: string | null;
   username: string;
   email: string;
   password: string;
@@ -107,8 +109,10 @@ export type ChangePasswordInput = {
 };
 
 export type UpdateIdentityInput = {
+  tenantId?: string | null; // set when user creates/joins a tenant
   email?: string;
   isEmailVerified?: boolean;
+  isActive?: boolean;
   hash?: string;
   salt?: string;
   failedLoginAttempts?: number;
