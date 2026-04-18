@@ -28,7 +28,8 @@ model Identity {
     // USER and SERVICE identities belong to a regular tenant.
     tenantId            String         @db.Uuid
     username            String         @unique
-    email               String?
+    email               String
+    isEmailVerified     Boolean        @default(false)
     hash                String // bcrypt hash of password
     salt                String // per-identity salt
     failedLoginAttempts Int            @default(0)

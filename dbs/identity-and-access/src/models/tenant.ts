@@ -87,7 +87,7 @@ const createTenantWithDefaults = async (
   input: CreateTenantInput,
   ownerHash: string,
   ownerSalt: string,
-  ownerEmail: string | null,
+  ownerEmail: string,
   ownerPermissions: readonly string[] = ["iam:*:*"],
 ): Promise<{ tenant: Tenant; ownerIdentity: Identity }> => {
   return prisma.$transaction(async (tx) => {

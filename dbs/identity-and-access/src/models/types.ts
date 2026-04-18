@@ -89,7 +89,7 @@ export type ListPoliciesInput = PaginationInput & {
 export type CreateIdentityInput = {
   tenantId: string; // required — always tenant-scoped
   username: string;
-  email?: string | null;
+  email: string;
   password: string;
   kind?: IdentityKind;
   mustChangePassword?: boolean;
@@ -107,7 +107,8 @@ export type ChangePasswordInput = {
 };
 
 export type UpdateIdentityInput = {
-  email?: string | null;
+  email?: string;
+  isEmailVerified?: boolean;
   hash?: string;
   salt?: string;
   failedLoginAttempts?: number;

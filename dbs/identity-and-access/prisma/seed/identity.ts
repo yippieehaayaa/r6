@@ -6,7 +6,7 @@ import { log, skip } from "./helpers.js";
 export async function upsertIdentity(input: {
 	tenantId: string;
 	username: string;
-	email?: string;
+	email: string;
 	password: string;
 	kind: "USER" | "ADMIN" | "SERVICE";
 }) {

@@ -52,16 +52,17 @@ export const IdentitySchema = TenantScopedSchema.extend({
     .max(64, "Username must not exceed 64 characters"),
 
   /**
-   * Optional e-mail address.
-   * Unique per tenant when present.
-   * null for SERVICE accounts that don't have an inbox.
+   * E-mail address. Required for all identities.
+   * Unique per tenant.
    */
   email: z
     .string()
     .regex(emailRegex, "Must be a valid e-mail address")
     .max(254, "E-mail must not exceed 254 characters")
-    .toLowerCase()
-    .nullable(),
+    .toLowerCase(),
+
+  /** Whether the identity has verified ownership of the email address */
+  isEmailVerified: z.boolean().default(false),
 
   /** bcrypt hash of the password — NEVER expose to clients */
   hash: z
@@ -227,7 +228,7 @@ export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
  */
 export const ProvisionIdentitySchema = z.object({
   username: IdentitySchema.shape.username,
-  email: IdentitySchema.shape.email.optional(),
+  email: IdentitySchema.shape.email,
   plainPassword: z
     .string()
     .min(8, "Password must be at least 8 characters")
