@@ -20,9 +20,10 @@ import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 //  A user may only belong to one tenant at a time.
 //  tenantId is set when the user creates a tenant or accepts an invitation.
 //
-//  isActive:
-//    Starts as false. Set to true once the identity verifies their email.
-//    Tenant.isActive is also set to true at that point.
+//  status (lifecycle):
+//    PENDING_VERIFICATION → ACTIVE once email is verified.
+//    INACTIVE             → disabled by an admin.
+//    SUSPENDED            → locked due to policy (e.g. too many failed logins).
 //
 //  Security note:
 //    `hash` and `salt` are NEVER returned to clients. Use
@@ -54,6 +55,43 @@ export const IdentitySchema = BaseRecordSchema.extend({
    */
   tenantId: NullableUuidSchema,
 
+  // ── Personal info ──────────────────────────────────────────
+
+  /** Legal first name */
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "First name cannot be empty")
+    .max(100, "First name must not exceed 100 characters"),
+
+  /** Legal middle name — optional */
+  middleName: z
+    .string()
+    .trim()
+    .min(1, "Middle name cannot be empty")
+    .max(100, "Middle name must not exceed 100 characters")
+    .nullable()
+    .optional(),
+
+  /** Legal last name */
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last name cannot be empty")
+    .max(100, "Last name must not exceed 100 characters"),
+
+  /**
+   * ISO 3166-1 alpha-2 country code — 2 uppercase letters.
+   * e.g. "PH" (Philippines), "US" (United States), "GB" (United Kingdom)
+   */
+  country: z
+    .string()
+    .length(2, "Country must be a 2-letter ISO 3166-1 alpha-2 code")
+    .regex(/^[A-Z]{2}$/, "Country must be uppercase letters (e.g. PH, US, GB)")
+    .toUpperCase(),
+
+  // ── Account ────────────────────────────────────────────────
+
   /**
    * Human-readable login name.
    * Globally unique across all tenants.
@@ -79,9 +117,6 @@ export const IdentitySchema = BaseRecordSchema.extend({
 
   /** Whether the identity has verified ownership of the email address */
   isEmailVerified: z.boolean().default(false),
-
-  /** Whether this identity is active. Set to true once email is verified. */
-  isActive: z.boolean().default(false),
 
   /** bcrypt hash of the password — NEVER expose to clients */
   hash: z

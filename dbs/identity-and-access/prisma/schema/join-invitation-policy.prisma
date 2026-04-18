@@ -14,12 +14,17 @@
 // ============================================================
 
 model InvitationPolicy {
-    id           String     @id @default(uuid()) @db.Uuid
-    invitationId String     @db.Uuid
-    invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
-    policyId     String     @db.Uuid
-    policy       Policy     @relation(fields: [policyId], references: [id], onDelete: Cascade)
-    assignedAt   DateTime   @default(now())
+    // ── Core ─────────────────────────────────────────────────
+    id           String @id @default(uuid()) @db.Uuid
+    invitationId String @db.Uuid
+    policyId     String @db.Uuid
+
+    // ── Timestamps ───────────────────────────────────────────
+    assignedAt DateTime @default(now())
+
+    // ── Relations ────────────────────────────────────────────
+    invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+    policy     Policy     @relation(fields: [policyId], references: [id], onDelete: Cascade)
 
     @@unique([invitationId, policyId])
     @@index([policyId])

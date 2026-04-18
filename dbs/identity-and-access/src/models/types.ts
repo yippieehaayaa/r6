@@ -90,6 +90,10 @@ export type ListPoliciesInput = PaginationInput & {
 // and for ADMIN identities. Set when the user creates or joins a tenant.
 export type CreateIdentityInput = {
   tenantId?: string | null;
+  firstName: string;
+  middleName?: string | null;
+  lastName: string;
+  country: string; // ISO 3166-1 alpha-2
   username: string;
   email: string;
   password: string;
@@ -110,9 +114,12 @@ export type ChangePasswordInput = {
 
 export type UpdateIdentityInput = {
   tenantId?: string | null; // set when user creates/joins a tenant
+  firstName?: string;
+  middleName?: string | null;
+  lastName?: string;
+  country?: string; // ISO 3166-1 alpha-2
   email?: string;
   isEmailVerified?: boolean;
-  isActive?: boolean;
   hash?: string;
   salt?: string;
   failedLoginAttempts?: number;

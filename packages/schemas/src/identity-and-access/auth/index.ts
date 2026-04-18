@@ -10,10 +10,8 @@ import { IdentitySafeSchema } from "../identity/index";
 // ── Login ────────────────────────────────────────────────────
 
 // Combined login identifier.
-// Tenanted users: "username@tenant-slug" (e.g. "john@acme-corp")
-// ADMIN users:    plain username, no "@" (e.g. "admin")
 export const LoginRequestSchema = z.object({
-  login: z.string().min(1, "Login is required"),
+  username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -93,6 +91,42 @@ export type SessionsResponse = z.infer<typeof SessionsResponseSchema>;
 // Used by POST /auth/register (public — no auth required).
 // Creates an unaffiliated identity; tenant creation is a separate step.
 export const RegisterSchema = z.object({
+  // ── Personal info ────────────────────────────────────────
+
+  /** Legal first name */
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "First name cannot be empty")
+    .max(100, "First name must not exceed 100 characters"),
+
+  /** Legal middle name — optional */
+  middleName: z
+    .string()
+    .trim()
+    .min(1, "Middle name cannot be empty")
+    .max(100, "Middle name must not exceed 100 characters")
+    .optional(),
+
+  /** Legal last name */
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last name cannot be empty")
+    .max(100, "Last name must not exceed 100 characters"),
+
+  /**
+   * ISO 3166-1 alpha-2 country code — 2 uppercase letters.
+   * e.g. "PH" (Philippines), "US" (United States), "GB" (United Kingdom)
+   */
+  country: z
+    .string()
+    .length(2, "Country must be a 2-letter ISO 3166-1 alpha-2 code")
+    .regex(/^[A-Z]{2}$/, "Country must be uppercase letters (e.g. PH, US, GB)")
+    .toUpperCase(),
+
+  // ── Account ──────────────────────────────────────────────
+
   /**
    * Globally unique login name.
    * Letters, digits, underscores, hyphens, dots allowed.

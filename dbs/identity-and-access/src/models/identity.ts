@@ -10,7 +10,7 @@
 //    @@index([tenantId, kind])
 //    @@index([deletedAt])
 //    tenantId nullable               — null for unaffiliated users + ADMIN identities
-//    isActive default false          — set to true once email is verified
+//    status default PENDING_VERIFICATION — transitions to ACTIVE on email verification
 //    identityPermissions []          — per-user permission overrides (stamped from policies)
 //    mustChangePassword default false
 //    failedLoginAttempts default 0
@@ -57,6 +57,10 @@ const createIdentity = async (
   return prisma.identity.create({
     data: {
       tenantId: input.tenantId ?? null,
+      firstName: input.firstName,
+      middleName: input.middleName ?? null,
+      lastName: input.lastName,
+      country: input.country,
       username: input.username,
       email: input.email,
       hash,
@@ -168,7 +172,10 @@ const updateIdentity = async (
     where: { id },
     data: {
       ...(input.tenantId !== undefined && { tenantId: input.tenantId }),
-      ...(input.isActive !== undefined && { isActive: input.isActive }),
+      ...(input.firstName !== undefined && { firstName: input.firstName }),
+      ...(input.middleName !== undefined && { middleName: input.middleName }),
+      ...(input.lastName !== undefined && { lastName: input.lastName }),
+      ...(input.country !== undefined && { country: input.country }),
       ...(input.email !== undefined && { email: input.email }),
       ...(input.isEmailVerified !== undefined && {
         isEmailVerified: input.isEmailVerified,
@@ -319,7 +326,6 @@ const verifyEmail = async (identityId: string): Promise<Identity> => {
     where: { id: identityId },
     data: {
       isEmailVerified: true,
-      isActive: true,
       status: "ACTIVE",
     },
   });

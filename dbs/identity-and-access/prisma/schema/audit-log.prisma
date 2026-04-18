@@ -20,16 +20,23 @@
 // ============================================================
 
 model AuditLog {
-    id         String  @id @default(uuid()) @db.Uuid
-    tenantId   String? @db.Uuid // bare UUID — no FK; null for cross-tenant system actions
-    actorId    String? @db.Uuid // bare UUID — no FK; survives identity deletion
-    action     String // e.g. "identity.created", "role.assigned"
-    resource   String // e.g. "identity", "role", "policy", "tenant"
+    // ── Core ─────────────────────────────────────────────────
+    id String @id @default(uuid()) @db.Uuid
+
+    // ── Context (bare UUIDs — no FK constraints) ─────────────
+    // No FKs so audit rows survive deletion of the referenced tenant or identity.
+    tenantId String? @db.Uuid // null for cross-tenant system actions
+    actorId  String? @db.Uuid // survives identity deletion
+
+    // ── Event ────────────────────────────────────────────────
+    action     String  // e.g. "identity.created", "role.assigned"
+    resource   String  // e.g. "identity", "role", "policy", "tenant"
     resourceId String? @db.Uuid // PK of the affected entity
-    changes    Json? // { before: {...}, after: {...} }
+    changes    Json?   // { before: {...}, after: {...} }
     ipAddress  String?
 
-    // Timestamps
+    // ── Timestamps ───────────────────────────────────────────
+    // No updatedAt / deletedAt — audit rows are immutable and never soft-deleted.
     createdAt DateTime @default(now())
 
     @@index([tenantId])

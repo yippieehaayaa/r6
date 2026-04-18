@@ -14,7 +14,15 @@ export async function register(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { username, email, password } = RegisterSchema.parse(req.body);
+    const {
+      username,
+      email,
+      password,
+      firstName,
+      middleName,
+      lastName,
+      country,
+    } = RegisterSchema.parse(req.body);
 
     // Create the identity without a tenant yet.
     // tenantId will be set later when the user creates or joins a tenant.
@@ -23,6 +31,10 @@ export async function register(
       username,
       email,
       password,
+      firstName,
+      middleName: middleName ?? null,
+      lastName,
+      country,
       tenantId: null,
     });
 

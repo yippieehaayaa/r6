@@ -5,6 +5,10 @@ import { log, skip } from "./helpers.js";
 
 export async function upsertIdentity(input: {
 	tenantId?: string | null;
+	firstName: string;
+	middleName?: string | null;
+	lastName: string;
+	country: string;
 	username: string;
 	email: string;
 	password: string;
@@ -25,13 +29,16 @@ export async function upsertIdentity(input: {
 	const identity = await prisma.identity.create({
 		data: {
 			tenantId: input.tenantId ?? null,
+			firstName: input.firstName,
+			middleName: input.middleName ?? null,
+			lastName: input.lastName,
+			country: input.country,
 			username: input.username,
 			email: input.email,
 			hash,
 			salt,
 			kind: input.kind,
 			status: "ACTIVE",
-			isActive: true,
 			isEmailVerified: true,
 			mustChangePassword: false,
 		},

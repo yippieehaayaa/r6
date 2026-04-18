@@ -29,24 +29,27 @@
 // ============================================================
 
 model Policy {
-    id          String  @id @default(uuid()) @db.Uuid
+    // ── Core ─────────────────────────────────────────────────
     // All policies belong to a tenant.
     // Platform-level policies (for ADMIN roles) belong to the platform tenant.
-    tenantId    String  @db.Uuid
+    id       String @id @default(uuid()) @db.Uuid
+    tenantId String @db.Uuid
+
+    // ── Definition ───────────────────────────────────────────
     name        String
-    displayName String? // human-readable label shown in the UI
+    displayName String?  // human-readable label shown in the UI
     description String?
     permissions String[] // e.g. ["inventory:stock:read", "inventory:stock:write"]
-    isManaged   Boolean @default(false) // true = platform-seeded, tenants cannot edit/delete
+    isManaged   Boolean  @default(false) // true = platform-seeded, tenants cannot edit/delete
 
-    // Relations
-    tenant             Tenant             @relation("TenantPolicies", fields: [tenantId], references: [id], onDelete: Cascade)
-    invitationPolicies InvitationPolicy[] // policies available to attach to invitations
-
-    // Timestamps
+    // ── Timestamps ───────────────────────────────────────────
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
+
+    // ── Relations ────────────────────────────────────────────
+    tenant             Tenant             @relation("TenantPolicies", fields: [tenantId], references: [id], onDelete: Cascade)
+    invitationPolicies InvitationPolicy[]
 
     @@unique([tenantId, name])
     @@index([tenantId])

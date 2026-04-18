@@ -63,6 +63,9 @@ async function main() {
 
 	const adminIdentity = await upsertIdentity({
 		tenantId: null,
+		firstName: "Platform",
+		lastName: "Admin",
+		country: "US",
 		username: "admin",
 		email: "admin@example.com",
 		password: "Password@1234!",
@@ -109,6 +112,9 @@ async function main() {
 
 	const ownerIdentity = await upsertIdentity({
 		tenantId: null,
+		firstName: "R6",
+		lastName: "Owner",
+		country: "PH",
 		username: "owner",
 		email: "owner@r6.com",
 		password: "Password@1234!",

@@ -16,18 +16,15 @@ export async function login(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { login, password } = req.body as {
-      login?: string;
+    const { username, password } = req.body as {
+      username?: string;
       password?: string;
     };
 
     if (!password)
       throw new AppError(400, "validation_error", "password is required");
-    if (!login)
-      throw new AppError(400, "validation_error", "login is required");
-
-    // Username is globally unique — no tenant context needed for login.
-    const username = login;
+    if (!username)
+      throw new AppError(400, "validation_error", "username is required");
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {

@@ -31,30 +31,33 @@
 // ============================================================
 
 model Tenant {
-    id           String         @id @default(uuid()) @db.Uuid
-    name         String         @unique // company name
-    slug         String         @unique // url-safe identifier e.g. "acme-corp"
-    isActive     Boolean        @default(false) // set to true once the owner verifies their email
-    isPlatform   Boolean        @default(false) // true for the single platform tenant that owns ADMIN identities
-    moduleAccess TenantModule[] // enabled microservice names (enum-typed)
+    // ── Core ─────────────────────────────────────────────────
+    id   String @id @default(uuid()) @db.Uuid
+    name String @unique // company display name
+    slug String @unique // url-safe identifier e.g. "acme-corp"
 
-    // Primary owner identity for this tenant.
+    // ── Status & access ──────────────────────────────────────
+    isActive     Boolean        @default(false) // true once the owner verifies their email
+    isPlatform   Boolean        @default(false) // true for the single platform tenant that owns ADMIN identities
+    moduleAccess TenantModule[]                 // enabled microservice modules
+
+    // ── Ownership ────────────────────────────────────────────
     // Required — the Identity must exist before the Tenant is created.
     // onDelete: Restrict prevents the owner from being deleted while
     // they still own this tenant (transfer ownership first).
-    ownerId String   @db.Uuid
-    owner   Identity @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+    ownerId String @db.Uuid
 
-    // Back-relations
-    identities          Identity[]           @relation("TenantIdentities")
-    policies            Policy[]             @relation("TenantPolicies")
-    identityPermissions IdentityPermission[] @relation("TenantIdentityPermissions") // per-user permission overrides
-    invitations         Invitation[]
-
-    // Timestamps
+    // ── Timestamps ───────────────────────────────────────────
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
+
+    // ── Relations ────────────────────────────────────────────
+    owner               Identity             @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+    identities          Identity[]           @relation("TenantIdentities")
+    policies            Policy[]             @relation("TenantPolicies")
+    identityPermissions IdentityPermission[] @relation("TenantIdentityPermissions")
+    invitations         Invitation[]
 
     @@index([isActive])
     @@index([isPlatform])
