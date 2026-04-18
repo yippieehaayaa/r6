@@ -3,10 +3,27 @@
 //  Represents a human user, service account, or platform admin.
 //
 //  Multi-tenancy:
-//    tenantId is null for ADMIN identities (platform-level).
-//    All USER and SERVICE identities must have a tenantId.
-//    This is the same tenantId stamped on every record across
-//    all other microservices (Inventory, Procurement, etc.).
+//    tenantId is null for:
+//      • Unaffiliated users — registered but have not yet created
+//        or joined a tenant. They can log in but cannot access
+//        any tenant-scoped resource until they have a tenantId.
+//      • ADMIN identities — platform-level, belong to the special
+//        platform tenant (isPlatform = true) and are scoped there.
+//
+//  isActive:
+//    Starts as false. Set to true once the identity's email address
+//    has been verified. Tenantless users can still log in but are
+//    limited until isActive = true.
+//
+//  Registration flow:
+//    1. User registers → tenantId = null, isActive = false,
+//       status = PENDING_VERIFICATION.
+//    2. User verifies email → isEmailVerified = true, isActive = true,
+//       status = ACTIVE. If they own a tenant, tenant.isActive is
+//       also set to true.
+//    3. User creates a tenant → tenantId is set; they become owner.
+//       OR user accepts an invitation → tenantId is set to that tenant.
+//    A user may only belong to one tenant at a time.
 //
 //  Removed from original:
 //    • Session       — handled externally (JWT / refresh tokens
@@ -23,18 +40,19 @@
 
 model Identity {
     id                  String         @id @default(uuid()) @db.Uuid
-    // Every identity belongs to a tenant.
-    // ADMIN identities belong to the platform tenant (isPlatform = true).
-    // USER and SERVICE identities belong to a regular tenant.
-    tenantId            String         @db.Uuid
+    // Null for unaffiliated users (registered, no tenant yet) and ADMIN identities.
+    // Set once the user creates a tenant or accepts an invitation.
+    // A user can only belong to one tenant at a time.
+    tenantId            String?        @db.Uuid
     username            String         @unique
-    email               String
+    email               String         @unique // globally unique — one account per email address
     isEmailVerified     Boolean        @default(false)
+    isActive            Boolean        @default(false) // set to true once email is verified
     hash                String // bcrypt hash of password
     salt                String // per-identity salt
     failedLoginAttempts Int            @default(0)
     lockedUntil         DateTime? // set when SUSPENDED due to failed logins
-    mustChangePassword  Boolean        @default(true) // force reset on first login
+    mustChangePassword  Boolean        @default(false) // self-registered users chose their own password
     kind                IdentityKind   @default(USER)
     status              IdentityStatus @default(PENDING_VERIFICATION)
 
@@ -44,7 +62,7 @@ model Identity {
     totpVerifiedAt     DateTime? // when the secret was first confirmed by the identity
 
     // Relations
-    tenant                 Tenant                @relation("TenantIdentities", fields: [tenantId], references: [id], onDelete: Cascade)
+    tenant                 Tenant?               @relation("TenantIdentities", fields: [tenantId], references: [id], onDelete: SetNull)
     ownedTenants           Tenant[]              @relation("TenantOwner")
     identityPermissions    IdentityPermission[]  @relation("IdentityPermissionOverrides") // per-user permission overrides
     issuedInvitations      Invitation[]          @relation("IssuedInvitations")
@@ -56,9 +74,7 @@ model Identity {
     deletedAt DateTime?
 
     // Indexes
-    // username globally unique across all tenants
-    // email unique per tenant
-    @@unique([tenantId, email])
+    // username and email are globally unique (enforced by @unique above)
     @@index([tenantId])
     @@index([tenantId, status])
     @@index([tenantId, kind])
