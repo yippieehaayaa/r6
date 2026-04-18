@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { emailRegex, slugRegex } from "../base.schema";
+import { emailRegex } from "../base.schema";
 import { IdentitySafeSchema } from "../identity/index";
-import { TenantSchema } from "../tenant/index";
 
 // ============================================================
 //  AUTH SCHEMAS
@@ -92,29 +91,23 @@ export type SessionsResponse = z.infer<typeof SessionsResponseSchema>;
 // ── Registration ─────────────────────────────────────────────
 
 // Used by POST /auth/register (public — no auth required).
-// Creates a new tenant and a tenant-owner identity in one atomic operation.
-// The caller becomes the owner and receives IAM access by default.
+// Creates an unaffiliated identity; tenant creation is a separate step.
 export const RegisterSchema = z.object({
-  /** Company / workspace display name — e.g. "Acme Corporation" */
-  companyName: z
-    .string()
-    .min(1, "Company name cannot be empty")
-    .max(255, "Company name must not exceed 255 characters"),
-
   /**
-   * URL-safe tenant identifier — e.g. "acme-corp".
-   * Must be globally unique.
+   * Globally unique login name.
+   * Letters, digits, underscores, hyphens, dots allowed.
+   * Must start with a letter or digit.
    */
-  slug: z
+  username: z
     .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(64, "Username must not exceed 64 characters")
     .regex(
-      slugRegex,
-      "Slug must be lowercase alphanumeric with hyphens (e.g. acme-corp)",
-    )
-    .min(2, "Slug must be at least 2 characters")
-    .max(63, "Slug must not exceed 63 characters"),
+      /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/,
+      "Username must be 3–64 alphanumeric characters (., _, - allowed; must start with a letter or digit)",
+    ),
 
-  /** Owner's email address — used to log in via email@slug */
+  /** Owner's email address — globally unique */
   email: z
     .string()
     .regex(emailRegex, "Must be a valid e-mail address")
@@ -122,7 +115,7 @@ export const RegisterSchema = z.object({
     .toLowerCase(),
 
   /** Plain-text password — hashed server-side before storage */
-  plainPassword: z
+  password: z
     .string()
     .min(8, "Password must be at least 8 characters")
     .max(128, "Password must not exceed 128 characters")
@@ -137,11 +130,39 @@ export const RegisterSchema = z.object({
 
 export type RegisterInput = z.infer<typeof RegisterSchema>;
 
-// Returned by POST /auth/register.
-// Contains the new tenant and the owner identity (no secrets).
+// Returned by POST /auth/register — just a message; no identity returned
+// until the email is verified.
 export const RegisterResponseSchema = z.object({
-  tenant: TenantSchema,
-  owner: IdentitySafeSchema,
+  message: z.string(),
 });
 
 export type RegisterResponse = z.infer<typeof RegisterResponseSchema>;
+
+// ── Email verification ────────────────────────────────────────
+
+// Used by POST /auth/register/verify-email (public — no auth required).
+// Submits the 6-digit OTP that was emailed to the registrant.
+export const VerifyEmailRequestSchema = z.object({
+  /** The email address that was used during registration */
+  email: z
+    .string()
+    .regex(emailRegex, "Must be a valid e-mail address")
+    .max(254, "E-mail must not exceed 254 characters")
+    .toLowerCase(),
+
+  /** 6-digit numeric OTP sent to the registrant's email */
+  code: z
+    .string()
+    .length(6, "Verification code must be exactly 6 digits")
+    .regex(/^\d{6}$/, "Verification code must be 6 digits"),
+});
+
+export type VerifyEmailRequestInput = z.infer<typeof VerifyEmailRequestSchema>;
+
+// Returned by POST /auth/register/verify-email on success.
+// Returns the now-active identity (no tenant yet — tenant creation is separate).
+export const VerifyEmailResponseSchema = z.object({
+  owner: IdentitySafeSchema,
+});
+
+export type VerifyEmailResponse = z.infer<typeof VerifyEmailResponseSchema>;

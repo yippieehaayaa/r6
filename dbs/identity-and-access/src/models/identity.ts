@@ -93,9 +93,7 @@ const getIdentityByUsername = async (
 
 // Finds a non-deleted identity by email.
 // Uses @unique email index.
-const getIdentityByEmail = async (
-  email: string,
-): Promise<Identity | null> => {
+const getIdentityByEmail = async (email: string): Promise<Identity | null> => {
   return prisma.identity.findFirst({
     where: { email, deletedAt: null },
   });
@@ -230,6 +228,8 @@ const verifyIdentity = async (
   if (identity.lockedUntil && identity.lockedUntil > new Date())
     throw new Error(`account_locked:${identity.lockedUntil.toISOString()}`);
 
+  if (!identity.isEmailVerified) throw new Error("email_not_verified");
+
   if (identity.status !== "ACTIVE")
     throw new Error(`account_inactive:${identity.status}`);
 
@@ -275,7 +275,10 @@ const saveTotpSecret = async (
 };
 
 // Marks TOTP as enabled after the identity verifies their first code.
-const activateTotp = async (id: string, tenantId: string | null | undefined): Promise<void> => {
+const activateTotp = async (
+  id: string,
+  tenantId: string | null | undefined,
+): Promise<void> => {
   await prisma.identity.updateMany({
     where: { id, ...(tenantId !== undefined && { tenantId }), deletedAt: null },
     data: { totpEnabled: true, totpVerifiedAt: new Date() },
@@ -283,7 +286,10 @@ const activateTotp = async (id: string, tenantId: string | null | undefined): Pr
 };
 
 // Clears all TOTP data, returning the identity to single-factor auth.
-const disableTotp = async (id: string, tenantId: string | null | undefined): Promise<void> => {
+const disableTotp = async (
+  id: string,
+  tenantId: string | null | undefined,
+): Promise<void> => {
   await prisma.identity.updateMany({
     where: { id, ...(tenantId !== undefined && { tenantId }), deletedAt: null },
     data: { totpSecret: null, totpEnabled: false, totpVerifiedAt: null },
@@ -306,6 +312,19 @@ const softDeleteIdentity = async (
   });
 };
 
+// Marks an identity as email-verified and activates it.
+// Called after the user submits the correct OTP from the verification email.
+const verifyEmail = async (identityId: string): Promise<Identity> => {
+  return prisma.identity.update({
+    where: { id: identityId },
+    data: {
+      isEmailVerified: true,
+      isActive: true,
+      status: "ACTIVE",
+    },
+  });
+};
+
 // Restores a soft-deleted identity back to PENDING_VERIFICATION.
 const restoreIdentity = async (id: string): Promise<Identity> => {
   return prisma.identity.update({
@@ -316,6 +335,7 @@ const restoreIdentity = async (id: string): Promise<Identity> => {
 
 export {
   createIdentity,
+  verifyEmail,
   verifyIdentity,
   getIdentityById,
   getIdentityByUsername,

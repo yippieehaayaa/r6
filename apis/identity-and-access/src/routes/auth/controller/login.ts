@@ -39,6 +39,12 @@ export async function login(
       const msg = (e as Error).message;
       if (msg === "invalid_credentials")
         throw new AppError(401, "invalid_credentials", "Invalid credentials");
+      if (msg === "email_not_verified")
+        throw new AppError(
+          403,
+          "email_not_verified",
+          "Please verify your email address before logging in",
+        );
       if (msg.startsWith("account_locked")) {
         const lockedUntil = msg.split(":").slice(1).join(":") || undefined;
         throw new AppError(
