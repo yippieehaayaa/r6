@@ -1,7 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { register } from "./controller/register";
-import { verifyEmailHandler } from "./controller/verify-email";
+import { register } from "./controller/mutations/register";
+import { verifyEmailHandler } from "./controller/mutations/verify-email";
 
 const router: Router = Router();
 

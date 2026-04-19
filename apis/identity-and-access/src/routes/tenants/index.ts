@@ -2,9 +2,10 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authMiddleware } from "../../middleware/auth";
 import { requirePermission } from "../../middleware/guard";
-import { createTenant } from "./controller/create";
-import { invite } from "./controller/invite";
-import { listInvitationsHandler } from "./controller/list-invitations";
+import { createTenant } from "./controller/mutations/create";
+import { invite } from "./controller/mutations/invite";
+import { listInvitationsHandler } from "./controller/queries/list-invitations";
+import identities from "./identities";
 
 const router: Router = Router();
 
@@ -42,5 +43,9 @@ router.get(
   requirePermission("iam:invitation:read"),
   listInvitationsHandler,
 );
+
+// /tenants/:tenantId/identities — privileged identity management.
+// Tenant scope + per-route permission checks are enforced inside the sub-router.
+router.use("/:tenantId/identities", identities);
 
 export default router;

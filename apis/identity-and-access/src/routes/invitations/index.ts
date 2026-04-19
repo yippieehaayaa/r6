@@ -1,6 +1,6 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { acceptInvitationHandler } from "./controller/accept";
+import { acceptInvitationHandler } from "./controller/mutations/accept";
 
 const router: Router = Router();
 
