@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { authMiddleware } from "../middleware/auth";
 import auth from "./auth";
 import email from "./email";
 import main from "./main";
@@ -15,7 +16,7 @@ router.use("/.well-known", wellKnown);
 router.use("/email", email);
 router.use("/registration", registration);
 
-// Authenticated routes — authMiddleware applied here AND in each sub-router (defense-in-depth)
-router.use("/me", me);
+// Authenticated routes — authMiddleware applied at mount AND inside each sub-router (defense-in-depth)
+router.use("/me", authMiddleware(), me);
 
 export default router;

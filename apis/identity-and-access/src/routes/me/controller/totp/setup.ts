@@ -6,8 +6,8 @@ import {
   generateTotpUri,
 } from "@r6/totp";
 import type { NextFunction, Request, Response } from "express";
-import { env } from "../../../config";
-import { AppError } from "../../../lib/errors";
+import { env } from "../../../../config";
+import { AppError } from "../../../../lib/errors";
 
 // GET /me/totp/setup
 //

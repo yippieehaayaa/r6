@@ -2,7 +2,7 @@ import { activateTotp, getIdentityById } from "@r6/db-identity-and-access";
 import { TotpEnableRequestSchema } from "@r6/schemas";
 import { verifyTotpCode } from "@r6/totp";
 import type { NextFunction, Request, Response } from "express";
-import { AppError } from "../../../lib/errors";
+import { AppError } from "../../../../lib/errors";
 
 // POST /me/totp/enable
 //
@@ -18,7 +18,7 @@ import { AppError } from "../../../lib/errors";
 //   - A pending secret must already exist (i.e. setup was called first)
 //   - TOTP must not already be active
 
-export async function enableTotpHandler(
+export async function enableTotp(
   req: Request,
   res: Response,
   next: NextFunction,

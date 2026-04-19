@@ -1,13 +1,13 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authMiddleware } from "../../middleware/auth";
-import { enableTotpHandler } from "./controller/activate-totp";
-import { disableTotpHandler } from "./controller/disable-totp";
-import { setupTotp } from "./controller/setup-totp";
+import { disableTotp } from "./controller/totp/disable";
+import { enableTotp } from "./controller/totp/enable";
+import { setupTotp } from "./controller/totp/setup";
 
 const router: Router = Router();
 
-// Protect all /me routes with auth.
+// Protect all /me routes with auth (defense-in-depth — also applied at mount in routes/index.ts).
 router.use(authMiddleware());
 
 // Conservative rate limit for TOTP mutations — these are sensitive operations.
@@ -25,11 +25,11 @@ router.get("/totp/setup", totpLimiter, setupTotp);
 
 // POST /me/totp/enable
 //   Confirm setup with a valid 6-digit code. Sets totpEnabled = true.
-router.post("/totp/enable", totpLimiter, enableTotpHandler);
+router.post("/totp/enable", totpLimiter, enableTotp);
 
 // DELETE /me/totp
 //   Disable TOTP. Requires current account password to prevent
 //   stolen-token downgrade attacks.
-router.delete("/totp", totpLimiter, disableTotpHandler);
+router.delete("/totp", totpLimiter, disableTotp);
 
 export default router;

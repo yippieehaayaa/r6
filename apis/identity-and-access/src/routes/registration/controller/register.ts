@@ -4,8 +4,7 @@ import { redis } from "@r6/redis";
 import { RegisterSchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../config";
-import { EMAIL_VERIFY_TTL_SECONDS } from "../constants";
-import { generateOtp } from "../helpers";
+import { EMAIL_VERIFY_TTL_SECONDS, generateOtp } from "../helpers";
 
 export async function register(
   req: Request,

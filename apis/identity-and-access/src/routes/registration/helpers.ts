@@ -1,5 +1,7 @@
 import { randomInt } from "node:crypto";
 
+export const EMAIL_VERIFY_TTL_SECONDS = 600; // 10 minutes
+
 export function generateOtp(): string {
   return randomInt(0, 1_000_000).toString().padStart(6, "0");
 }

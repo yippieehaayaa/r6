@@ -1,1 +1,2 @@
-export const EMAIL_VERIFY_TTL_SECONDS = 600; // 10 minutes
+// Moved to ./helpers.ts — delete this file.
+export { EMAIL_VERIFY_TTL_SECONDS } from "./helpers";

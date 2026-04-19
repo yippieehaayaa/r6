@@ -1,9 +1,12 @@
 import { verifyPassword } from "@r6/bcrypt";
 import { hmac } from "@r6/crypto";
-import { disableTotp, getIdentityById } from "@r6/db-identity-and-access";
+import {
+  disableTotp as disableTotpInDb,
+  getIdentityById,
+} from "@r6/db-identity-and-access";
 import { TotpDisableRequestSchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
-import { AppError } from "../../../lib/errors";
+import { AppError } from "../../../../lib/errors";
 
 // DELETE /me/totp
 //
@@ -18,7 +21,7 @@ import { AppError } from "../../../lib/errors";
 //   - TOTP must be currently enabled
 //   - Valid current password required (prevents stolen-token downgrade attack)
 
-export async function disableTotpHandler(
+export async function disableTotp(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -47,7 +50,7 @@ export async function disableTotpHandler(
       );
     }
 
-    await disableTotp(identityId, identity.tenantId);
+    await disableTotpInDb(identityId, identity.tenantId);
 
     res.status(200).json({ message: "TOTP has been disabled." });
   } catch (err) {
