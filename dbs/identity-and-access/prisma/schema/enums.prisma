@@ -15,13 +15,11 @@ enum IdentityStatus {
 }
 
 // Type of identity.
-// USER    — human user belonging to a tenant
+// USER    — human user belonging to a tenant (owner, admin, or regular user — distinguished by permissions)
 // SERVICE — machine/service account for inter-service API calls
-// ADMIN   — platform-level super admin (cross-tenant, SaaS operator only)
 enum IdentityKind {
     USER
     SERVICE
-    ADMIN
 }
 
 // Whether a policy grants or explicitly denies access.

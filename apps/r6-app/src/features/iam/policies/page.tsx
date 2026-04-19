@@ -30,12 +30,11 @@ const PAGE_SIZE = 20;
 export default function PoliciesPage() {
 	const queryClient = useQueryClient();
 
-	const { claims } = useAuth();
-	const isAdmin = claims?.kind === "ADMIN";
-	const canCreate = isAdmin;
-	const canUpdate = isAdmin;
-	const canDelete = isAdmin;
-	const canRestore = isAdmin;
+	const { hasPermission } = useAuth();
+	const canCreate = hasPermission("iam:policy:create");
+	const canUpdate = hasPermission("iam:policy:update");
+	const canDelete = hasPermission("iam:policy:delete");
+	const canRestore = hasPermission("iam:policy:restore");
 
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,

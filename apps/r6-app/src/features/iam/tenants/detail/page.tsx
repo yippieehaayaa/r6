@@ -97,8 +97,8 @@ const roleColumns: ColumnDef<Role>[] = [
 
 export default function TenantDetailPage() {
 	const { tenantId } = routeApi.useParams();
-	const { claims } = useAuth();
-	const isAdmin = claims?.kind === "ADMIN";
+	const { hasPermission } = useAuth();
+	const canProvision = hasPermission("iam:identity:create");
 
 	const [identityPagination, setIdentityPagination] = useState<PaginationState>(
 		{ pageIndex: 0, pageSize: PAGE_SIZE },
@@ -208,7 +208,7 @@ export default function TenantDetailPage() {
 							Members belonging to this tenant.
 						</p>
 					</div>
-					{isAdmin && (
+					{canProvision && (
 						<Button size="sm" onClick={() => setProvisionOpen(true)}>
 							<UserPlus className="size-4" />
 							Provision Identity

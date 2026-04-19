@@ -9,13 +9,14 @@
 //    @@index([tenantId, status])
 //    @@index([tenantId, kind])
 //    @@index([deletedAt])
-//    tenantId nullable               — null for unaffiliated users + ADMIN identities
+//    tenantId nullable               — null for unaffiliated users (registered, no tenant yet)
 //    status default PENDING_VERIFICATION — transitions to ACTIVE on email verification
 //    identityPermissions []          — per-user permission overrides (stamped from policies)
 //    mustChangePassword default false
 //    failedLoginAttempts default 0
 //    status default PENDING_VERIFICATION
-//    kind default USER
+//    kind default USER               — all human users are USER; tier (owner/admin/user) is
+//                                      determined by stamped permissions, not by kind
 //    deletedAt soft-delete
 // ============================================================
 

@@ -17,40 +17,40 @@ import type { AuthJwtPayload } from "../../../middleware/auth";
 //     the owner's tenantId, and stamps the default owner permissions in a single
 //     Prisma transaction.
 export async function createTenant(
-	req: Request,
-	res: Response,
-	next: NextFunction,
+  req: Request,
+  res: Response,
+  next: NextFunction,
 ): Promise<void> {
-	try {
-		const payload = req.jwtPayload as AuthJwtPayload;
-		const ownerId = payload.sub;
+  try {
+    const payload = req.jwtPayload as AuthJwtPayload;
+    const ownerId = payload.sub;
 
-		if (!ownerId) {
-			return next(
-				new AppError(401, "unauthorized", "Identity not found in token"),
-			);
-		}
+    if (!ownerId) {
+      return next(
+        new AppError(401, "unauthorized", "Identity not found in token"),
+      );
+    }
 
-		// Prevent a user from creating a second tenant when they already belong to one.
-		if (payload.tenantId) {
-			return next(
-				new AppError(
-					409,
-					"tenant_already_exists",
-					"You already belong to a tenant",
-				),
-			);
-		}
+    // Prevent a user from creating a second tenant when they already belong to one.
+    if (payload.tenantId) {
+      return next(
+        new AppError(
+          409,
+          "tenant_already_exists",
+          "You already belong to a tenant",
+        ),
+      );
+    }
 
-		const { name, slug, moduleAccess } = CreateTenantSchema.parse(req.body);
+    const { name, slug, moduleAccess } = CreateTenantSchema.parse(req.body);
 
-		const { tenant } = await createTenantWithDefaults(
-			{ name, slug, ownerId, moduleAccess },
-			["iam:*:*"],
-		);
+    const { tenant } = await createTenantWithDefaults(
+      { name, slug, ownerId, moduleAccess },
+      ["iam:*:*"],
+    );
 
-		res.status(201).json(tenant);
-	} catch (err) {
-		next(err);
-	}
+    res.status(201).json(tenant);
+  } catch (err) {
+    next(err);
+  }
 }

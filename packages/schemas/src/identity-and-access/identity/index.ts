@@ -10,11 +10,10 @@ import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 
 // ============================================================
 //  IDENTITY SCHEMA
-//  Represents a human user, service account, or platform admin.
+//  Represents a human user or service account.
 //
 //  Multi-tenancy rules:
 //    • tenantId is null  → unaffiliated user (registered, no tenant yet)
-//                          OR ADMIN identity (platform-level)
 //    • tenantId is uuid  → USER or SERVICE identity belonging to a tenant
 //
 //  A user may only belong to one tenant at a time.
@@ -49,8 +48,7 @@ const usernameRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/;
 
 export const IdentitySchema = BaseRecordSchema.extend({
   /**
-   * FK → Tenant.id — null for unaffiliated users (registered, no tenant yet)
-   * and for ADMIN identities (platform-level).
+   * FK → Tenant.id — null for unaffiliated users (registered, no tenant yet).
    * Set once the user creates a tenant or accepts an invitation.
    */
   tenantId: NullableUuidSchema,

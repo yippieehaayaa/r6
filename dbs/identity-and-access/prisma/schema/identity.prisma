@@ -1,15 +1,21 @@
 // ============================================================
 //  IDENTITY
-//  Represents a human user, service account, or platform admin.
+//  Represents a human user or service account within a tenant.
 //
 //  Multi-tenancy:
 //    tenantId is null for:
 //      • Unaffiliated users — registered but have not yet created
 //        or joined a tenant. They can log in but cannot access
 //        any tenant-scoped resource until they have a tenantId.
-//      • ADMIN identities — platform-level, belong to the special
-//        platform tenant (isPlatform = true) and are scoped there.
 //    A user can only belong to one tenant at a time.
+//
+//  Within each tenant, there are three tiers of users:
+//    • Owner        — the tenant creator; has full access to all resources
+//                     within their tenant (iam:*:* stamped at creation).
+//                     Identified by Tenant.ownerId.
+//    • Tenant Admin — a USER promoted by the owner via role / policy
+//                     assignment; has a curated subset of permissions.
+//    • User         — a regular member of the tenant with standard access.
 //
 //  Registration flow:
 //    1. User registers → tenantId = null, status = PENDING_VERIFICATION.

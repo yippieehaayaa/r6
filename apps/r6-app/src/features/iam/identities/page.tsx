@@ -1,7 +1,7 @@
 import type { IdentitySafe } from "@r6/schemas";
 import { useQueryClient } from "@tanstack/react-query";
 import type { PaginationState } from "@tanstack/react-table";
-import { Building2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -9,7 +9,6 @@ import {
 	useRemoveIdentityMutation,
 	useRestoreIdentityMutation,
 } from "@/api/identity-and-access/identities";
-import { useListTenantsQuery } from "@/api/identity-and-access/tenants";
 import { useAuth } from "@/auth";
 import {
 	AlertDialog,
@@ -22,13 +21,6 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { IdentitiesTable } from "./identities-table";
 import { IdentitySheet } from "./identity-sheet";
@@ -37,23 +29,11 @@ const PAGE_SIZE = 20;
 
 export default function IdentitiesPage() {
 	const { claims, hasPermission } = useAuth();
-	const isAdmin = claims?.kind === "ADMIN";
-	const canCreate = !isAdmin && hasPermission("iam:identity:create");
-	const canUpdate = !isAdmin && hasPermission("iam:identity:update");
-	const canDelete = !isAdmin && hasPermission("iam:identity:delete");
-	// For tenant-owners the id comes from the JWT; for admins they pick a tenant.
-	const [selectedTenantId, setSelectedTenantId] = useState<string>(
-		claims?.tenantId ?? "",
-	);
-	const activeTenantId = isAdmin
-		? selectedTenantId
-		: (claims?.tenantId ?? "");
+	const canCreate = hasPermission("iam:identity:create");
+	const canUpdate = hasPermission("iam:identity:update");
+	const canDelete = hasPermission("iam:identity:delete");
+	const activeTenantId = claims?.tenantId ?? "";
 	const queryClient = useQueryClient();
-
-	const { data: tenantsData } = useListTenantsQuery(
-		{ limit: 100 },
-		{ staleTime: 5 * 60 * 1000, enabled: isAdmin },
-	);
 
 	const [pagination, setPagination] = useState<PaginationState>({
 		pageIndex: 0,
@@ -101,11 +81,11 @@ export default function IdentitiesPage() {
 	function confirmDelete() {
 		if (!deleteTarget || !canDelete) return;
 		removeMutation.mutate(
-			{ tenantSlug: activeTenantSlug, id: deleteTarget.id },
+			{ tenantId: activeTenantId, id: deleteTarget.id },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", activeTenantSlug],
+						queryKey: ["identities", activeTenantId],
 					});
 					toast.success("Identity deleted.");
 					setDeleteTarget(null);
@@ -118,11 +98,11 @@ export default function IdentitiesPage() {
 	function handleRestore(identity: IdentitySafe) {
 		if (!canDelete) return;
 		restoreMutation.mutate(
-			{ tenantSlug: activeTenantSlug, id: identity.id },
+			{ tenantId: activeTenantId, id: identity.id },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", activeTenantSlug],
+						queryKey: ["identities", activeTenantId],
 					});
 					toast.success("Identity restored.");
 				},
@@ -149,54 +129,24 @@ export default function IdentitiesPage() {
 			</div>
 
 			<div className="rounded-xl border bg-card p-4">
-				{isAdmin && !activeTenantId ? (
-					<div className="flex flex-col items-center justify-center gap-4 py-16 text-center animate-stagger-children">
-						<Building2 className="h-10 w-10 text-muted-foreground/50" />
-						<div>
-							<p className="font-medium">No tenant selected</p>
-							<p className="text-sm text-muted-foreground">
-								Choose a tenant to view its identities.
-							</p>
-						</div>
-						<Select
-							value={selectedTenantSlug}
-							onValueChange={(v) => {
-								setSelectedTenantSlug(v);
-								setPagination((p) => ({ ...p, pageIndex: 0 }));
-							}}
-						>
-							<SelectTrigger className="w-64">
-								<SelectValue placeholder="Select a tenant…" />
-							</SelectTrigger>
-							<SelectContent>
-								{(tenantsData?.data ?? []).map((t) => (
-								<SelectItem key={t.id} value={t.id}>
-										{t.name}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-				) : (
-					<IdentitiesTable
+				<IdentitiesTable
 					key={activeTenantId}
-						data={data?.data ?? []}
-						isLoading={isLoading}
-						onEdit={handleEdit}
-						onDelete={handleDelete}
-						onRestore={handleRestore}
-						canUpdate={canUpdate}
-						canDelete={canDelete}
-						rowCount={data?.total}
-						paginationState={pagination}
-						onPaginationChange={setPagination}
-						filterValue={search}
-						onFilterChange={(v) => {
-							setSearch(v);
-							setPagination((p) => ({ ...p, pageIndex: 0 }));
-						}}
-					/>
-				)}
+					data={data?.data ?? []}
+					isLoading={isLoading}
+					onEdit={handleEdit}
+					onDelete={handleDelete}
+					onRestore={handleRestore}
+					canUpdate={canUpdate}
+					canDelete={canDelete}
+					rowCount={data?.total}
+					paginationState={pagination}
+					onPaginationChange={setPagination}
+					filterValue={search}
+					onFilterChange={(v) => {
+						setSearch(v);
+						setPagination((p) => ({ ...p, pageIndex: 0 }));
+					}}
+				/>
 			</div>
 
 			<IdentitySheet

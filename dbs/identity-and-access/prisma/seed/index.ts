@@ -4,34 +4,37 @@
  * Destructive — wipes all existing data then re-creates from scratch.
  * Run with: npm run db:seed  (from dbs/identity-and-access/)
  *
+ * There is no longer a platform-level ADMIN kind. All users belong to a
+ * tenant. Within each tenant there are three tiers, distinguished purely
+ * by the permissions stamped on each identity:
+ *
+ *   Owner        — the tenant creator; has full access (iam:*:* + all module wildcards).
+ *                  Identified by Tenant.ownerId.
+ *   Tenant Admin — a USER promoted by the owner; has a curated subset of
+ *                  permissions (all read, plus identity/invitation management).
+ *   User         — a regular member; read-only access within the tenant.
+ *
  * Seeded identities
- * ┌────────┬────────────────┬───────┬────────────┬──────────────────────────────────────────────────┐
- * │ login  │ password       │ kind  │ tenant     │ resolved permissions                             │
- * ├────────┼────────────────┼───────┼────────────┼──────────────────────────────────────────────────┤
- * │ admin  │ Password@1234! │ ADMIN │ platform   │ iam:*:*  (ADMIN kind — bypasses all guards)      │
- * │ owner  │ Password@1234! │ USER  │ r6         │ iam:*:*  hris:*:*  (stamped directly)            │
- * └────────┴────────────────┴───────┴────────────┴──────────────────────────────────────────────────┘
+ * ┌────────┬────────────────┬──────┬────────┬───────────────────────────────────────────────────────────────────┐
+ * │ login  │ password       │ kind │ tenant │ resolved permissions                                              │
+ * ├────────┼────────────────┼──────┼────────┼───────────────────────────────────────────────────────────────────┤
+ * │ owner  │ Password@1234! │ USER │ r6     │ iam:*:*  hris:*:*  (Owner — full access)                         │
+ * │ admin  │ Password@1234! │ USER │ r6     │ iam:identity:* iam:invitation:* iam:policy:read iam:role:read ... │
+ * │ user   │ Password@1234! │ USER │ r6     │ iam:identity:read  iam:policy:read  iam:role:read                 │
+ * └────────┴────────────────┴──────┴────────┴───────────────────────────────────────────────────────────────────┘
  *
- * Seeded policies (platform tenant)
- *   iam:admin:full-access     → iam:*:*
- *   iam:identity:full-access  → iam:identity:create/read/update/delete/restore
- *   iam:role:full-access      → iam:role:create/read/update/delete/restore
- *   iam:policy:full-access    → iam:policy:create/read/update/delete/restore
- *   iam:tenant:full-access    → iam:tenant:create/read/update/delete/restore
- *
- * Seeded policies (r6 tenant — IAM)
+ * Seeded policies (r6 tenant)
  *   iam:full-access           → iam:*:*
  *   iam:identity:full-access  → iam:identity:create/read/update/delete/restore
+ *   iam:identity:manage       → iam:identity:create/read/update/delete
+ *   iam:identity:read-only    → iam:identity:read
+ *   iam:invitation:manage     → iam:invitation:create/read
  *   iam:role:full-access      → iam:role:create/read/update/delete/restore
+ *   iam:role:read-only        → iam:role:read
  *   iam:policy:full-access    → iam:policy:create/read/update/delete/restore
+ *   iam:policy:read-only      → iam:policy:read
  *   iam:tenant:full-access    → iam:tenant:create/read/update/delete/restore
- *
- * Seeded policies (r6 tenant — HRIS)
  *   hris:full-access          → hris:*:*
- *   hris:identity:full-access → hris:identity:create/read/update/delete/restore
- *   hris:role:full-access     → hris:role:create/read/update/delete/restore
- *   hris:policy:full-access   → hris:policy:create/read/update/delete/restore
- *   hris:tenant:full-access   → hris:tenant:create/read/update/delete/restore
  */
 
 import { upsertIdentityPermission } from "../../src/models/identity-permission.js";
@@ -55,60 +58,10 @@ async function main() {
 
 	console.log("  ✓ All existing data removed");
 
-	// ── Platform admin identity ───────────────────────────────────────────────
-	// Identity is created first (tenantId=null), then the tenant is created
-	// with ownerId pointing to it, then we bind the identity to the tenant.
+	// ── Tier 1: Owner identity ─────────────────────────────────────────────
+	// Created first (tenantId=null); bound to the tenant once it exists.
 
-	console.log("\n── Platform admin identity ───────────────────");
-
-	const adminIdentity = await upsertIdentity({
-		tenantId: null,
-		firstName: "Platform",
-		lastName: "Admin",
-		country: "US",
-		username: "admin",
-		email: "admin@example.com",
-		password: "Password@1234!",
-		kind: "ADMIN",
-	});
-
-	console.log("\n── Platform tenant ───────────────────────────");
-
-	const platformTenant = await upsertTenant({
-		name: "Platform",
-		slug: "platform",
-		ownerId: adminIdentity.id,
-		moduleAccess: [],
-		isPlatform: true,
-	});
-
-	// Bind admin identity to the platform tenant now that the tenant exists.
-	await prisma.identity.update({
-		where: { id: adminIdentity.id },
-		data: { tenantId: platformTenant.id },
-	});
-	console.log(`  ✓ admin identity bound to tenant "${platformTenant.slug}"`);
-
-	console.log("\n── Policies (platform) ───────────────────────");
-
-	const PLATFORM_PERMISSIONS = [
-		"iam:*:*",
-		"iam:identity:create", "iam:identity:read", "iam:identity:update", "iam:identity:delete", "iam:identity:restore",
-		"iam:policy:create",   "iam:policy:read",   "iam:policy:update",   "iam:policy:delete",   "iam:policy:restore",
-		"iam:tenant:create",   "iam:tenant:read",   "iam:tenant:update",   "iam:tenant:delete",   "iam:tenant:restore",
-	] as const;
-
-	for (const perm of PLATFORM_PERMISSIONS) {
-		await upsertPolicy({ tenantId: platformTenant.id, name: perm, description: `Grants ${perm}`, permissions: [perm] });
-	}
-
-	console.log("\n── Identity permissions (admin) ──────────────");
-
-	await upsertIdentityPermission({ tenantId: platformTenant.id, identityId: adminIdentity.id, permission: "iam:*:*", effect: "ALLOW" });
-
-	// ── R6 tenant ────────────────────────────────────────────────────────────
-
-	console.log("\n── R6 owner identity ─────────────────────────");
+	console.log("\n── Owner identity ────────────────────────────");
 
 	const ownerIdentity = await upsertIdentity({
 		tenantId: null,
@@ -138,31 +91,86 @@ async function main() {
 	});
 	console.log(`  ✓ owner identity bound to tenant "${r6Tenant.slug}"`);
 
+	// ── Tier 2: Tenant Admin identity ─────────────────────────────────────
+	// A USER promoted by the owner; has curated management permissions.
+
+	console.log("\n── Tenant admin identity ─────────────────────");
+
+	const adminIdentity = await upsertIdentity({
+		tenantId: r6Tenant.id,
+		firstName: "Tenant",
+		lastName: "Admin",
+		country: "PH",
+		username: "admin",
+		email: "admin@r6.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	// ── Tier 3: Regular user identity ─────────────────────────────────────
+	// A normal member of the tenant with read-only access.
+
+	console.log("\n── Regular user identity ─────────────────────");
+
+	const regularUser = await upsertIdentity({
+		tenantId: r6Tenant.id,
+		firstName: "Regular",
+		lastName: "User",
+		country: "PH",
+		username: "user",
+		email: "user@r6.com",
+		password: "Password@1234!",
+		kind: "USER",
+	});
+
+	// ── Policies (r6 tenant) ──────────────────────────────────────────────
+
 	console.log("\n── Policies (r6) ─────────────────────────────");
 
-	const R6_PERMISSIONS = [
-		"iam:*:*",
-		"iam:identity:create", "iam:identity:read", "iam:identity:update", "iam:identity:delete", "iam:identity:restore",
-		"iam:policy:create",   "iam:policy:read",   "iam:policy:update",   "iam:policy:delete",   "iam:policy:restore",
-		"iam:tenant:create",   "iam:tenant:read",   "iam:tenant:update",   "iam:tenant:delete",   "iam:tenant:restore",
-		"hris:*:*",
-		"hris:identity:create", "hris:identity:read", "hris:identity:update", "hris:identity:delete", "hris:identity:restore",
-		"hris:policy:create",   "hris:policy:read",   "hris:policy:update",   "hris:policy:delete",   "hris:policy:restore",
-		"hris:tenant:create",   "hris:tenant:read",   "hris:tenant:update",   "hris:tenant:delete",   "hris:tenant:restore",
-	] as const;
+	// Full-access wildcards — only stamped on the owner.
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:full-access",  description: "Full IAM access",  permissions: ["iam:*:*"]  });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "hris:full-access", description: "Full HRIS access", permissions: ["hris:*:*"] });
 
-	for (const perm of R6_PERMISSIONS) {
-		await upsertPolicy({ tenantId: r6Tenant.id, name: perm, description: `Grants ${perm}`, permissions: [perm] });
-	}
+	// Granular IAM policies — used to build per-tier access.
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:identity:full-access",  description: "Full identity access",         permissions: ["iam:identity:create", "iam:identity:read", "iam:identity:update", "iam:identity:delete", "iam:identity:restore"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:identity:manage",       description: "Create/read/update/delete identities", permissions: ["iam:identity:create", "iam:identity:read", "iam:identity:update", "iam:identity:delete"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:identity:read-only",    description: "View identities",              permissions: ["iam:identity:read"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:invitation:manage",     description: "Send and view invitations",     permissions: ["iam:invitation:create", "iam:invitation:read"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:role:full-access",      description: "Full role access",              permissions: ["iam:role:create", "iam:role:read", "iam:role:update", "iam:role:delete", "iam:role:restore"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:role:read-only",        description: "View roles",                    permissions: ["iam:role:read"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:policy:full-access",    description: "Full policy access",            permissions: ["iam:policy:create", "iam:policy:read", "iam:policy:update", "iam:policy:delete", "iam:policy:restore"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:policy:read-only",      description: "View policies",                 permissions: ["iam:policy:read"] });
+	await upsertPolicy({ tenantId: r6Tenant.id, name: "iam:tenant:full-access",    description: "Full tenant access",            permissions: ["iam:tenant:create", "iam:tenant:read", "iam:tenant:update", "iam:tenant:delete", "iam:tenant:restore"] });
 
+	// ── Identity permissions ──────────────────────────────────────────────
+
+	// Owner — full access to all modules.
 	console.log("\n── Identity permissions (owner) ──────────────");
-
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "iam:*:*", effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "iam:*:*",  effect: "ALLOW" });
 	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "hris:*:*", effect: "ALLOW" });
 
+	// Tenant Admin — curated management access (no wildcard).
+	console.log("\n── Identity permissions (tenant admin) ───────");
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:create",     effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:read",       effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:update",     effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:delete",     effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:invitation:create",   effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:invitation:read",     effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:role:read",           effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:policy:read",         effect: "ALLOW" });
+
+	// Regular User — read-only access.
+	console.log("\n── Identity permissions (regular user) ───────");
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:identity:read", effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:role:read",     effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:policy:read",   effect: "ALLOW" });
+
 	console.log("\n── Done ──────────────────────────────────────\n");
-	console.log("Platform admin:  admin  (Password@1234!)  [iam:*:* stamped directly]");
-	console.log("R6 tenant owner: owner  (Password@1234!)  [iam:*:*  hris:*:* stamped directly]");
+	console.log("Tenant: r6");
+	console.log("  Owner        (owner)  Password@1234!  [iam:*:*  hris:*:*]");
+	console.log("  Tenant Admin (admin)  Password@1234!  [iam:identity:*  iam:invitation:*  iam:role:read  iam:policy:read]");
+	console.log("  User         (user)   Password@1234!  [iam:identity:read  iam:role:read  iam:policy:read]");
 	console.log();
 }
 

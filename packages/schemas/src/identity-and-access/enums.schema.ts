@@ -24,11 +24,11 @@ export type IdentityStatus = z.infer<typeof IdentityStatusSchema>;
 /**
  * Type / kind of identity.
  *
- * USER    — human user belonging to a tenant
+ * USER    — human user belonging to a tenant (owner, admin, or regular user —
+ *           distinguished by the permissions stamped on the identity)
  * SERVICE — machine / service account for inter-service API calls
- * ADMIN   — platform-level super admin (cross-tenant, SaaS operator only)
  */
-export const IdentityKindSchema = z.enum(["USER", "SERVICE", "ADMIN"]);
+export const IdentityKindSchema = z.enum(["USER", "SERVICE"]);
 
 export type IdentityKind = z.infer<typeof IdentityKindSchema>;
 

@@ -5,7 +5,7 @@ export const Route = createFileRoute(
 	"/r6/_authenticated/iam/tenants_/$tenantId",
 )({
 	beforeLoad: ({ context }) => {
-		if (context.auth.claims?.kind !== "ADMIN") {
+		if (!context.auth.hasPermission("iam:tenant:read")) {
 			throw redirect({ to: "/r6/forbidden" });
 		}
 	},

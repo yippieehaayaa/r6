@@ -2,6 +2,7 @@ export * from "./client.js";
 export * from "./models/constants.js";
 export * from "./models/identity.js";
 export * from "./models/identity-permission.js";
+export * from "./models/invitation.js";
 export * from "./models/policy.js";
 export * from "./models/session.js";
 export * from "./models/shared.js";

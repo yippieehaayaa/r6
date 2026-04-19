@@ -12,7 +12,7 @@ export async function upsertIdentity(input: {
 	username: string;
 	email: string;
 	password: string;
-	kind: "USER" | "ADMIN" | "SERVICE";
+	kind: "USER" | "SERVICE";
 }) {
 	// @unique username — globally unique, no tenant scope needed
 	const exists = await prisma.identity.findFirst({
