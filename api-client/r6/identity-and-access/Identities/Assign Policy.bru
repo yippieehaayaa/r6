@@ -1,0 +1,21 @@
+meta {
+  name: Assign Policy
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{iamURL}}/tenants/{{tenantId}}/identities/{{identityId}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "policyId": "{{policyId}}"
+  }
+}

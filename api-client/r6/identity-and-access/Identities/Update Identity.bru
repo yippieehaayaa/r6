@@ -1,0 +1,24 @@
+meta {
+  name: Update Identity
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{iamURL}}/tenants/{{tenantId}}/identities/{{identityId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "firstName": "John",
+    "lastName": "Updated",
+    "country": "CA",
+    "status": "ACTIVE"
+  }
+}

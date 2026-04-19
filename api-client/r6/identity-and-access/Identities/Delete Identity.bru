@@ -1,0 +1,15 @@
+meta {
+  name: Delete Identity
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{iamURL}}/tenants/{{tenantId}}/identities/{{identityId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

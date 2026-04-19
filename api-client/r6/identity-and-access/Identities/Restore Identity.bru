@@ -1,0 +1,15 @@
+meta {
+  name: Restore Identity
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{iamURL}}/tenants/{{tenantId}}/identities/{{identityId}}/restore
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

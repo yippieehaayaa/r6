@@ -1,0 +1,18 @@
+meta {
+  name: Verify Email
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{iamURL}}/registration/verify-email
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "{{registerEmail}}",
+    "code": "000000"
+  }
+}
