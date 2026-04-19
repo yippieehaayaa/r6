@@ -162,6 +162,11 @@ export type UpdatePolicyInput = z.infer<typeof UpdatePolicySchema>;
 
 // ── List query params ───────────────────────────────────────
 
-export const ListPoliciesQuerySchema = ListQuerySchema;
+export const ListPoliciesQuerySchema = ListQuerySchema.extend({
+  isManaged: z
+    .union([z.literal("true"), z.literal("false")])
+    .transform((v) => v === "true")
+    .optional(),
+});
 
 export type ListPoliciesQuery = z.input<typeof ListPoliciesQuerySchema>;

@@ -299,6 +299,9 @@ export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;
 
 // ── List query params ───────────────────────────────────────
 
-export const ListIdentitiesQuerySchema = ListQuerySchema;
+export const ListIdentitiesQuerySchema = ListQuerySchema.extend({
+  status: IdentityStatusSchema.optional(),
+  kind: IdentityKindSchema.optional(),
+});
 
 export type ListIdentitiesQuery = z.input<typeof ListIdentitiesQuerySchema>;

@@ -59,6 +59,16 @@ export type CreateIdentityPermissionInput = z.infer<
   typeof CreateIdentityPermissionSchema
 >;
 
+// ── List query params ───────────────────────────────────────
+
+import { ListQuerySchema } from "../base.schema";
+
+export const ListIdentityPermissionsQuerySchema = ListQuerySchema;
+
+export type ListIdentityPermissionsQuery = z.input<
+  typeof ListIdentityPermissionsQuerySchema
+>;
+
 // ── Update payload ──────────────────────────────────────────
 
 /** Only the effect can be changed on an existing override */

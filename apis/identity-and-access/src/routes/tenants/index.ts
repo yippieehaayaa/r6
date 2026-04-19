@@ -6,6 +6,7 @@ import { createTenant } from "./controller/mutations/create";
 import { invite } from "./controller/mutations/invite";
 import { listInvitationsHandler } from "./controller/queries/list-invitations";
 import identities from "./identities";
+import policies from "./policies";
 
 const router: Router = Router();
 
@@ -47,5 +48,9 @@ router.get(
 // /tenants/:tenantId/identities — privileged identity management.
 // Tenant scope + per-route permission checks are enforced inside the sub-router.
 router.use("/:tenantId/identities", identities);
+
+// /tenants/:tenantId/policies — policy listing.
+// Tenant scope + permission checks are enforced inside the sub-router.
+router.use("/:tenantId/policies", policies);
 
 export default router;

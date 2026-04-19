@@ -139,6 +139,61 @@ const deleteAllIdentityPermissions = async (
   });
 };
 
+// ─── Bulk create ─────────────────────────────────────────────
+
+// Stamps multiple permission ALLOW rows for an identity from a Policy's
+// permissions array. Skips duplicates via skipDuplicates — safe to call
+// repeatedly (idempotent on the unique index).
+const createManyIdentityPermissions = async (
+  rows: Array<{
+    identityId: string;
+    tenantId: string;
+    permission: string;
+    effect: import("../../generated/prisma/client.js").PolicyEffect;
+  }>,
+): Promise<void> => {
+  await prisma.identityPermission.createMany({
+    data: rows,
+    skipDuplicates: true,
+  });
+};
+
+// Removes all overrides for the given specific permission strings.
+// Called when a policy is un-assigned from an identity.
+const deleteIdentityPermissionsByPermissions = async (
+  identityId: string,
+  tenantId: string,
+  permissions: string[],
+): Promise<void> => {
+  await prisma.identityPermission.deleteMany({
+    where: { identityId, tenantId, permission: { in: permissions } },
+  });
+};
+
+// Atomically replaces ALL permission overrides for an identity.
+// Called by the "set-policies" route which treats the provided policyIds
+// as the canonical full list — any permissions not covered are removed.
+const setPoliciesForIdentity = async (
+  identityId: string,
+  tenantId: string,
+  allPermissions: string[],
+): Promise<void> => {
+  await prisma.$transaction(async (tx) => {
+    await tx.identityPermission.deleteMany({ where: { identityId, tenantId } });
+    if (allPermissions.length > 0) {
+      await tx.identityPermission.createMany({
+        data: allPermissions.map((permission) => ({
+          identityId,
+          tenantId,
+          permission,
+          effect: "ALLOW" as const,
+        })),
+        skipDuplicates: true,
+      });
+    }
+  });
+};
+
 export {
   upsertIdentityPermission,
   getIdentityPermission,
@@ -146,4 +201,7 @@ export {
   updateIdentityPermission,
   deleteIdentityPermission,
   deleteAllIdentityPermissions,
+  createManyIdentityPermissions,
+  deleteIdentityPermissionsByPermissions,
+  setPoliciesForIdentity,
 };

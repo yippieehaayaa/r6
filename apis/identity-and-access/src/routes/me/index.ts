@@ -1,9 +1,11 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authMiddleware } from "../../middleware/auth";
-import { getTotpSetup } from "./controller/queries/get-totp-setup";
 import { disableTotp } from "./controller/mutations/disable-totp";
 import { enableTotp } from "./controller/mutations/enable-totp";
+import { getProfile } from "./controller/queries/get-profile";
+import { getTotpSetup } from "./controller/queries/get-totp-setup";
+import { listPermissions } from "./controller/queries/list-permissions";
 
 const router: Router = Router();
 
@@ -12,11 +14,22 @@ router.use(authMiddleware());
 
 // Conservative rate limit on sensitive self-service TOTP operations.
 const totpLimiter = rateLimit({
-	windowMs: 15 * 60 * 1000,
-	limit: 10,
-	standardHeaders: true,
-	legacyHeaders: false,
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+
+// ── Self-service profile ──────────────────────────────────────────────────────
+
+// GET /me
+//   Returns the authenticated identity's full safe profile.
+router.get("/", getProfile);
+
+// GET /me/permissions
+//   Returns the authenticated identity's raw IdentityPermission override rows
+//   (paginated). Requires the caller to belong to a tenant.
+router.get("/permissions", listPermissions);
 
 // ── TOTP management ──────────────────────────────────────────────────────────
 // These routes let a user set up, activate, and remove 2FA on their own account.
@@ -36,7 +49,6 @@ router.post("/totp/enable", totpLimiter, enableTotp);
 router.delete("/totp", totpLimiter, disableTotp);
 
 // ── Future self-service profile routes ───────────────────────────────────────
-// GET  /me          → getProfile     (fetch own profile)
 // PATCH /me         → updateProfile  (update own name, country, etc.)
 // PATCH /me/password → changePassword (change own password)
 
