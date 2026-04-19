@@ -1,12 +1,11 @@
-import { randomInt } from "node:crypto";
 import { createIdentity } from "@r6/db-identity-and-access";
 import { sendEmail } from "@r6/email";
 import { redis } from "@r6/redis";
 import { RegisterSchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../config";
-
-const EMAIL_VERIFY_TTL_SECONDS = 600; // 10 minutes
+import { EMAIL_VERIFY_TTL_SECONDS } from "../constants";
+import { generateOtp } from "../helpers";
 
 export async function register(
   req: Request,
@@ -38,8 +37,7 @@ export async function register(
       tenantId: null,
     });
 
-    // Generate a 6-digit zero-padded OTP.
-    const code = randomInt(0, 1_000_000).toString().padStart(6, "0");
+    const code = generateOtp();
 
     // Store the OTP alongside the identity id needed at verify-email time.
     await redis.set(

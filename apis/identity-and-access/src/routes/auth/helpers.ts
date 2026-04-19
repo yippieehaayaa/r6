@@ -18,10 +18,3 @@ export const buildTokenClaims = (identity: IdentityForToken) => {
   const permissions = [...allowSet].filter((p) => !denySet.has(p));
   return { permissions };
 };
-
-export const toSafeIdentity = <T extends { hash: string; salt: string }>(
-  identity: T,
-) => {
-  const { hash, salt, ...safe } = identity;
-  return safe;
-};
