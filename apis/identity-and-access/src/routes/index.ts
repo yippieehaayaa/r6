@@ -5,6 +5,7 @@ import email from "./email";
 import main from "./main";
 import me from "./me";
 import registration from "./registration";
+import tenants from "./tenants";
 import wellKnown from "./well-known";
 
 const router: Router = Router();
@@ -18,5 +19,6 @@ router.use("/registration", registration);
 
 // Authenticated routes — authMiddleware applied at mount AND inside each sub-router (defense-in-depth)
 router.use("/me", authMiddleware(), me);
+router.use("/tenants", authMiddleware(), tenants);
 
 export default router;
