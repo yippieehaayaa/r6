@@ -13,3 +13,4 @@ export * from "./invitation/index";
 export * from "./permissions";
 export * from "./policy/index";
 export * from "./tenant/index";
+export * from "./totp/index";

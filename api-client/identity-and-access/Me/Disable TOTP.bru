@@ -5,11 +5,17 @@ meta {
 }
 
 delete {
-  url: {{baseURL}}/me/totp/disable
-  body: none
+  url: {{baseURL}}/me/totp
+  body: json
   auth: bearer
 }
 
 auth:bearer {
   token: {{accessToken}}
+}
+
+body:json {
+  {
+    "password": "YourPassword1!"
+  }
 }

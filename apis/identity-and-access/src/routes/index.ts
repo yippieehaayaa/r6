@@ -2,6 +2,7 @@ import { Router } from "express";
 import auth from "./auth";
 import email from "./email";
 import main from "./main";
+import me from "./me";
 import registration from "./registration";
 import wellKnown from "./well-known";
 
@@ -15,5 +16,6 @@ router.use("/email", email);
 router.use("/registration", registration);
 
 // Authenticated routes — authMiddleware applied here AND in each sub-router (defense-in-depth)
+router.use("/me", me);
 
 export default router;

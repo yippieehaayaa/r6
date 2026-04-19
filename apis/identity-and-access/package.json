@@ -21,8 +21,6 @@
 		"helmet": "^8.1.0",
 		"jose": "^6.2.2",
 		"morgan": "^1.10.1",
-		"otplib": "^12.0.1",
-		"qrcode": "^1.5.4",
 		"rate-limit-redis": "^4.2.0",
 		"tsx": "^4.21.0",
 		"zod": "4.3.6"
@@ -33,6 +31,7 @@
 		"@r6/crypto": "*",
 		"@r6/db-identity-and-access": "*",
 		"@r6/schemas": "*",
+		"@r6/totp": "*",
 		"@r6/typescript-config": "*",
 		"@types/cookie-parser": "^1.4.10",
 		"@types/cors": "^2.8.19",
