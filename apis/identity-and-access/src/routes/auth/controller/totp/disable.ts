@@ -8,7 +8,7 @@ import { TotpDisableRequestSchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../../lib/errors";
 
-// DELETE /me/totp
+// DELETE /auth/totp
 //
 // Disables TOTP for the authenticated identity.
 //

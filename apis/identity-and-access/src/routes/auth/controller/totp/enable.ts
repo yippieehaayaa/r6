@@ -4,7 +4,7 @@ import { verifyTotpCode } from "@r6/totp";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../../lib/errors";
 
-// POST /me/totp/enable
+// POST /auth/totp/enable
 //
 // Confirms TOTP setup by verifying the first 6-digit code from the
 // authenticator app. Only after successful verification does the server
@@ -45,7 +45,7 @@ export async function enableTotp(
       throw new AppError(
         400,
         "totp_setup_required",
-        "No TOTP secret found. Call GET /me/totp/setup first.",
+        "No TOTP secret found. Call GET /auth/totp/setup first.",
       );
     }
 

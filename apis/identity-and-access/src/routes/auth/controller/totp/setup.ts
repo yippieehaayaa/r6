@@ -9,10 +9,10 @@ import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../../config";
 import { AppError } from "../../../../lib/errors";
 
-// GET /me/totp/setup
+// GET /auth/totp/setup
 //
 // Generates a new TOTP secret for the authenticated identity, encrypts it,
-// and stores it in the DB (totpEnabled remains false until POST /me/totp/enable).
+// and stores it in the DB (totpEnabled remains false until POST /auth/totp/enable).
 //
 // Returns the plaintext secret (for manual authenticator entry), the
 // otpauth:// URI, and a QR code data-URL. The plaintext secret is only
