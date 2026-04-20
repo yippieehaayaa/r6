@@ -29,7 +29,7 @@ import { Route as R6AuthenticatedIamTenantsRouteImport } from './routes/r6/_auth
 import { Route as R6AuthenticatedIamRolesRouteImport } from './routes/r6/_authenticated/iam/roles'
 import { Route as R6AuthenticatedIamPoliciesRouteImport } from './routes/r6/_authenticated/iam/policies'
 import { Route as R6AuthenticatedIamIdentitiesRouteImport } from './routes/r6/_authenticated/iam/identities'
-import { Route as R6AuthenticatedIamTenantsTenantSlugRouteImport } from './routes/r6/_authenticated/iam/tenants_.$tenantSlug'
+import { Route as R6AuthenticatedIamTenantsTenantIdRouteImport } from './routes/r6/_authenticated/iam/tenants_.$tenantId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -144,10 +144,10 @@ const R6AuthenticatedIamIdentitiesRoute =
     path: '/iam/identities',
     getParentRoute: () => R6AuthenticatedRoute,
   } as any)
-const R6AuthenticatedIamTenantsTenantSlugRoute =
-  R6AuthenticatedIamTenantsTenantSlugRouteImport.update({
-    id: '/iam/tenants_/$tenantSlug',
-    path: '/iam/tenants/$tenantSlug',
+const R6AuthenticatedIamTenantsTenantIdRoute =
+  R6AuthenticatedIamTenantsTenantIdRouteImport.update({
+    id: '/iam/tenants_/$tenantId',
+    path: '/iam/tenants/$tenantId',
     getParentRoute: () => R6AuthenticatedRoute,
   } as any)
 
@@ -172,7 +172,7 @@ export interface FileRoutesByFullPath {
   '/r6/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
   '/r6/iam/': typeof R6AuthenticatedIamIndexRoute
   '/r6/inventory/': typeof R6AuthenticatedInventoryIndexRoute
-  '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
+  '/r6/iam/tenants/$tenantId': typeof R6AuthenticatedIamTenantsTenantIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -194,7 +194,7 @@ export interface FileRoutesByTo {
   '/r6/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
   '/r6/iam': typeof R6AuthenticatedIamIndexRoute
   '/r6/inventory': typeof R6AuthenticatedInventoryIndexRoute
-  '/r6/iam/tenants/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
+  '/r6/iam/tenants/$tenantId': typeof R6AuthenticatedIamTenantsTenantIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -218,7 +218,7 @@ export interface FileRoutesById {
   '/r6/_authenticated/inventory/stock': typeof R6AuthenticatedInventoryStockRoute
   '/r6/_authenticated/iam/': typeof R6AuthenticatedIamIndexRoute
   '/r6/_authenticated/inventory/': typeof R6AuthenticatedInventoryIndexRoute
-  '/r6/_authenticated/iam/tenants_/$tenantSlug': typeof R6AuthenticatedIamTenantsTenantSlugRoute
+  '/r6/_authenticated/iam/tenants_/$tenantId': typeof R6AuthenticatedIamTenantsTenantIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -243,7 +243,7 @@ export interface FileRouteTypes {
     | '/r6/inventory/stock'
     | '/r6/iam/'
     | '/r6/inventory/'
-    | '/r6/iam/tenants/$tenantSlug'
+    | '/r6/iam/tenants/$tenantId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -265,7 +265,7 @@ export interface FileRouteTypes {
     | '/r6/inventory/stock'
     | '/r6/iam'
     | '/r6/inventory'
-    | '/r6/iam/tenants/$tenantSlug'
+    | '/r6/iam/tenants/$tenantId'
   id:
     | '__root__'
     | '/'
@@ -288,7 +288,7 @@ export interface FileRouteTypes {
     | '/r6/_authenticated/inventory/stock'
     | '/r6/_authenticated/iam/'
     | '/r6/_authenticated/inventory/'
-    | '/r6/_authenticated/iam/tenants_/$tenantSlug'
+    | '/r6/_authenticated/iam/tenants_/$tenantId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -440,11 +440,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R6AuthenticatedIamIdentitiesRouteImport
       parentRoute: typeof R6AuthenticatedRoute
     }
-    '/r6/_authenticated/iam/tenants_/$tenantSlug': {
-      id: '/r6/_authenticated/iam/tenants_/$tenantSlug'
-      path: '/iam/tenants/$tenantSlug'
-      fullPath: '/r6/iam/tenants/$tenantSlug'
-      preLoaderRoute: typeof R6AuthenticatedIamTenantsTenantSlugRouteImport
+    '/r6/_authenticated/iam/tenants_/$tenantId': {
+      id: '/r6/_authenticated/iam/tenants_/$tenantId'
+      path: '/iam/tenants/$tenantId'
+      fullPath: '/r6/iam/tenants/$tenantId'
+      preLoaderRoute: typeof R6AuthenticatedIamTenantsTenantIdRouteImport
       parentRoute: typeof R6AuthenticatedRoute
     }
   }
@@ -467,7 +467,7 @@ interface R6AuthenticatedRouteChildren {
   R6AuthenticatedInventoryStockRoute: typeof R6AuthenticatedInventoryStockRoute
   R6AuthenticatedIamIndexRoute: typeof R6AuthenticatedIamIndexRoute
   R6AuthenticatedInventoryIndexRoute: typeof R6AuthenticatedInventoryIndexRoute
-  R6AuthenticatedIamTenantsTenantSlugRoute: typeof R6AuthenticatedIamTenantsTenantSlugRoute
+  R6AuthenticatedIamTenantsTenantIdRoute: typeof R6AuthenticatedIamTenantsTenantIdRoute
 }
 
 const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
@@ -492,8 +492,7 @@ const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
   R6AuthenticatedInventoryStockRoute: R6AuthenticatedInventoryStockRoute,
   R6AuthenticatedIamIndexRoute: R6AuthenticatedIamIndexRoute,
   R6AuthenticatedInventoryIndexRoute: R6AuthenticatedInventoryIndexRoute,
-  R6AuthenticatedIamTenantsTenantSlugRoute:
-    R6AuthenticatedIamTenantsTenantSlugRoute,
+  R6AuthenticatedIamTenantsTenantIdRoute: R6AuthenticatedIamTenantsTenantIdRoute,
 }
 
 const R6AuthenticatedRouteWithChildren = R6AuthenticatedRoute._addFileChildren(

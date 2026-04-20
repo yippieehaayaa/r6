@@ -62,10 +62,14 @@ export const NullableUuidSchema = UuidSchema.nullable();
  * ISO 8601 timestamp string.
  * All timestamps are stored as DateTime in Prisma and transported
  * as ISO 8601 strings over the wire.
+ * Accepts both ISO 8601 strings and Date objects (coerced via toISOString()).
  */
-export const TimestampSchema = z
-  .string()
-  .regex(iso8601Regex, "Must be a valid ISO 8601 date-time with timezone");
+export const TimestampSchema = z.preprocess(
+  (val) => (val instanceof Date ? val.toISOString() : val),
+  z
+    .string()
+    .regex(iso8601Regex, "Must be a valid ISO 8601 date-time with timezone"),
+);
 
 export const NullableTimestampSchema = TimestampSchema.nullable();
 
@@ -100,10 +104,10 @@ export type BaseRecord = z.infer<typeof BaseRecordSchema>;
 export const TenantScopedSchema = BaseRecordSchema.extend({
   /**
    * FK → Tenant.id.
-   * null  = platform-level (ADMIN identities, platform roles/policies).
-   * uuid  = tenant-owned record.
+   * Every record belongs to a tenant — ADMIN identities and platform
+   * roles/policies belong to the platform tenant (isPlatform = true).
    */
-  tenantId: NullableUuidSchema,
+  tenantId: UuidSchema,
 });
 
 export type TenantScoped = z.infer<typeof TenantScopedSchema>;

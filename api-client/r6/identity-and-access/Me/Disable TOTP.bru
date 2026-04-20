@@ -1,0 +1,21 @@
+meta {
+  name: Disable TOTP
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{iamURL}}/me/totp
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "password": "YourPassword1!"
+  }
+}

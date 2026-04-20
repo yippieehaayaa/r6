@@ -47,13 +47,13 @@ const ROLE_OPTIONS = PROTECTED_ROLES.filter((r) => r !== "tenant-owner").map(
 interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	tenantSlug: string;
+	tenantId: string;
 }
 
 export function ProvisionIdentitySheet({
 	open,
 	onOpenChange,
-	tenantSlug,
+	tenantId,
 }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useProvisionIdentityMutation();
@@ -82,11 +82,11 @@ export function ProvisionIdentitySheet({
 
 	function onSubmit(values: ProvisionIdentityInput) {
 		mutation.mutate(
-			{ tenantSlug, body: values },
+			{ tenantId, body: values },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug],
+						queryKey: ["identities", tenantId],
 					});
 					toast.success(`Identity "${values.username}" provisioned.`);
 					handleOpenChange(false);

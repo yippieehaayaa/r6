@@ -7,18 +7,18 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface UpdateIdentityParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 	body: UpdateIdentityInput;
 }
 
 export async function updateIdentityFn({
-	tenantSlug,
+	tenantId,
 	id,
 	body,
 }: UpdateIdentityParams): Promise<IdentitySafe> {
 	const { data } = await identityApi.patch<unknown>(
-		`/tenants/${tenantSlug}/identities/${id}`,
+		`/tenants/${tenantId}/identities/${id}`,
 		body,
 	);
 	return IdentitySafeSchema.parse(data);

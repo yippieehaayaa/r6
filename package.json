@@ -27,9 +27,9 @@
 		"apis/identity-and-access",
 		"apis/api-gateway",
 		"apis/inventory",
-		"apps/*",
 		"dbs/identity-and-access",
 		"dbs/inventory",
+		"dbs/hris",
 		"packages/*"
 	],
 	"author": "Joshua Dave E. Oropilla <joshdave0915@gmail.com>",

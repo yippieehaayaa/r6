@@ -7,6 +7,18 @@
 //  The Tenant model lives here in IAM because tenant lifecycle
 //  (onboarding, suspension, offboarding) is an identity concern.
 //
+//  isActive:
+//    Starts as false. Set to true once the owner identity has
+//    verified their email address. This prevents a tenant from
+//    being usable before its owner has confirmed their account.
+//
+//  ownerId:
+//    Required (non-nullable). The creating identity must exist
+//    before the Tenant row is inserted — the new registration
+//    flow guarantees this. onDelete: Restrict prevents deletion
+//    of the owner identity while they still own a tenant;
+//    ownership must be transferred or the tenant deleted first.
+//
 //  moduleAccess:
 //    JSON list of enabled microservices for this tenant.
 //    Enforced at the API Gateway via policy audience checks.
@@ -19,18 +31,37 @@
 // ============================================================
 
 model Tenant {
-    id           String   @id @default(uuid()) @db.Uuid
-    name         String   @unique // company name
-    slug         String   @unique // url-safe identifier e.g. "acme-corp"
-    isActive     Boolean  @default(true)
-    moduleAccess String[] // enabled microservice names
+    // ── Core ─────────────────────────────────────────────────
+    id   String @id @default(uuid()) @db.Uuid
+    name String @unique // company display name
+    slug String @unique // url-safe identifier e.g. "acme-corp"
 
-    // Timestamps
+    // ── Status & access ──────────────────────────────────────
+    isActive     Boolean        @default(false) // true once the owner verifies their email
+    isPlatform   Boolean        @default(false) // true for the single platform tenant that owns ADMIN identities
+    moduleAccess TenantModule[]                 // enabled microservice modules
+
+    // ── Ownership ────────────────────────────────────────────
+    // Required — the Identity must exist before the Tenant is created.
+    // onDelete: Restrict prevents the owner from being deleted while
+    // they still own this tenant (transfer ownership first).
+    ownerId String @db.Uuid
+
+    // ── Timestamps ───────────────────────────────────────────
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
+    // ── Relations ────────────────────────────────────────────
+    owner               Identity             @relation("TenantOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+    identities          Identity[]           @relation("TenantIdentities")
+    policies            Policy[]             @relation("TenantPolicies")
+    identityPermissions IdentityPermission[] @relation("TenantIdentityPermissions")
+    invitations         Invitation[]
+
     @@index([isActive])
+    @@index([isPlatform])
+    @@index([ownerId])
     @@index([deletedAt])
     @@map("tenants")
 }

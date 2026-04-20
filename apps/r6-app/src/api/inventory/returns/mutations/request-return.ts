@@ -3,17 +3,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
 export interface RequestReturnParams {
-	tenantSlug: string;
+	tenantId: string;
 	body: RequestReturnInput;
 }
 
 export async function requestReturnFn({
-	tenantSlug,
+	tenantId,
 	body,
 }: RequestReturnParams): Promise<unknown> {
 	const validated = RequestReturnSchema.parse(body);
 	const { data } = await inventoryApi.post<unknown>(
-		`/tenants/${tenantSlug}/returns/request`,
+		`/tenants/${tenantId}/returns/request`,
 		validated,
 	);
 	return data;
@@ -23,8 +23,8 @@ export function useRequestReturnMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: requestReturnFn,
-		onSuccess: (_data, { tenantSlug }) => {
-			queryClient.invalidateQueries({ queryKey: ["returns", tenantSlug] });
+		onSuccess: (_data, { tenantId }) => {
+			queryClient.invalidateQueries({ queryKey: ["returns", tenantId] });
 		},
 	});
 }

@@ -14,11 +14,11 @@ import { PoliciesTabContent } from "./manage-policies-sheet";
 interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
-	tenantSlug: string;
+	tenantId: string;
 	role?: Role | null;
 }
 
-export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
+export function RoleSheet({ open, onOpenChange, tenantId, role }: Props) {
 	const isEdit = !!role;
 	const [activeTab, setActiveTab] = useState("details");
 
@@ -49,7 +49,7 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 							className="flex-1 overflow-y-auto data-[state=inactive]:hidden"
 						>
 							<EditRoleForm
-								tenantSlug={tenantSlug}
+							tenantId={tenantId}
 								role={role}
 								onSuccess={() => onOpenChange(false)}
 							/>
@@ -60,7 +60,7 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 							className="flex-1 flex flex-col overflow-hidden data-[state=inactive]:hidden"
 						>
 							<PoliciesTabContent
-								tenantSlug={tenantSlug}
+							tenantId={tenantId}
 								role={role}
 								open={open}
 								active={activeTab === "policies"}
@@ -79,8 +79,7 @@ export function RoleSheet({ open, onOpenChange, tenantSlug, role }: Props) {
 					<SheetTitle>New Role</SheetTitle>
 				</SheetHeader>
 				<CreateRoleForm
-					tenantSlug={tenantSlug}
-					tenantId={null}
+					tenantId={tenantId}
 					onSuccess={() => onOpenChange(false)}
 				/>
 			</SheetContent>

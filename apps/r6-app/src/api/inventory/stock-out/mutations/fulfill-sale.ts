@@ -3,17 +3,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
 export interface FulfillSaleParams {
-	tenantSlug: string;
+	tenantId: string;
 	body: FulfillSaleInput;
 }
 
 export async function fulfillSaleFn({
-	tenantSlug,
+	tenantId,
 	body,
 }: FulfillSaleParams): Promise<unknown> {
 	const validated = FulfillSaleSchema.parse(body);
 	const { data } = await inventoryApi.post<unknown>(
-		`/tenants/${tenantSlug}/stock-out/fulfill`,
+		`/tenants/${tenantId}/stock-out/fulfill`,
 		validated,
 	);
 	return data;
@@ -23,15 +23,15 @@ export function useFulfillSaleMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: fulfillSaleFn,
-		onSuccess: (_data, { tenantSlug }) => {
+		onSuccess: (_data, { tenantId }) => {
 			queryClient.invalidateQueries({
-				queryKey: ["inventory-items", tenantSlug],
+				queryKey: ["inventory-items", tenantId],
 			});
 			queryClient.invalidateQueries({
-				queryKey: ["reservations", tenantSlug],
+				queryKey: ["reservations", tenantId],
 			});
 			queryClient.invalidateQueries({
-				queryKey: ["stock-movements", tenantSlug],
+				queryKey: ["stock-movements", tenantId],
 			});
 		},
 	});

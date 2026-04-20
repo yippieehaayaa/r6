@@ -5,23 +5,23 @@ import { inventoryApi } from "@/api/_app";
 export type { StockCountDetail };
 
 export async function getStockCountFn(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 ): Promise<StockCountDetail> {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/stock-counts/${id}`,
+		`/tenants/${tenantId}/stock-counts/${id}`,
 	);
 	return StockCountDetailSchema.parse(data);
 }
 
 export function useGetStockCountQuery(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["stock-counts", tenantSlug, id],
-		queryFn: () => getStockCountFn(tenantSlug, id),
-		enabled: (options?.enabled ?? true) && !!tenantSlug && !!id,
+		queryKey: ["stock-counts", tenantId, id],
+		queryFn: () => getStockCountFn(tenantId, id),
+		enabled: (options?.enabled ?? true) && !!tenantId && !!id,
 	});
 }

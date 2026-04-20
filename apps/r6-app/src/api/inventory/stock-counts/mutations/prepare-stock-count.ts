@@ -6,17 +6,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
 export interface PrepareStockCountParams {
-	tenantSlug: string;
+	tenantId: string;
 	body: PrepareStockCountInput;
 }
 
 export async function prepareStockCountFn({
-	tenantSlug,
+	tenantId,
 	body,
 }: PrepareStockCountParams): Promise<unknown> {
 	const validated = PrepareStockCountSchema.parse(body);
 	const { data } = await inventoryApi.post<unknown>(
-		`/tenants/${tenantSlug}/stock-counts/prepare`,
+		`/tenants/${tenantId}/stock-counts/prepare`,
 		validated,
 	);
 	return data;
@@ -26,9 +26,9 @@ export function usePrepareStockCountMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: prepareStockCountFn,
-		onSuccess: (_data, { tenantSlug }) => {
+		onSuccess: (_data, { tenantId }) => {
 			queryClient.invalidateQueries({
-				queryKey: ["stock-counts", tenantSlug],
+				queryKey: ["stock-counts", tenantId],
 			});
 		},
 	});

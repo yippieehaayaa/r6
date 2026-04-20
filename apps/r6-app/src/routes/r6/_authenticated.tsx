@@ -26,12 +26,12 @@ export const Route = createFileRoute("/r6/_authenticated")({
 		if (!context.auth.isAuthenticated) {
 			throw redirect({ to: "/r6/login" });
 		}
-		const slug = context.auth.claims?.tenantSlug;
-		if (slug) {
+		const tenantId = context.auth.claims?.tenantId;
+		if (tenantId) {
 			try {
 				const status = await context.queryClient.fetchQuery({
-					queryKey: ["setup-status", slug],
-					queryFn: () => getSetupStatusFn(slug),
+					queryKey: ["setup-status", tenantId],
+					queryFn: () => getSetupStatusFn(tenantId),
 					staleTime: 5 * 60 * 1000,
 				});
 				if (!isSetupComplete(status)) {

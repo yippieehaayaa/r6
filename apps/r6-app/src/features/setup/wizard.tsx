@@ -94,14 +94,14 @@ interface CollectedOnboard {
 }
 
 interface Props {
-	tenantSlug: string;
+	tenantId: string;
 	status: SetupStatus;
 	onComplete: () => void;
 }
 
 // ── Component ────────────────────────────────────────────────
 
-export function SetupWizard({ tenantSlug, status, onComplete }: Props) {
+export function SetupWizard({ tenantId, status, onComplete }: Props) {
 	const queryClient = useQueryClient();
 	const [activeStep, setActiveStep] = useState<number>(() =>
 		deriveStep(status),
@@ -158,7 +158,7 @@ export function SetupWizard({ tenantSlug, status, onComplete }: Props) {
 
 		try {
 			await onboardMutation.mutateAsync({
-				tenantSlug,
+				tenantId,
 				body: {
 					config: collected.current.config,
 					baseUom: collected.current.baseUom,
@@ -182,7 +182,7 @@ export function SetupWizard({ tenantSlug, status, onComplete }: Props) {
 				},
 			});
 			await queryClient.invalidateQueries({
-				queryKey: ["setup-status", tenantSlug],
+				queryKey: ["setup-status", tenantId],
 			});
 			setActiveStep(4);
 		} catch (err) {
@@ -199,11 +199,11 @@ export function SetupWizard({ tenantSlug, status, onComplete }: Props) {
 	}) {
 		try {
 			await catalogMutation.mutateAsync({
-				tenantSlug,
+				tenantId,
 				body: { uoms: data.uoms },
 			});
 			await queryClient.invalidateQueries({
-				queryKey: ["setup-status", tenantSlug],
+				queryKey: ["setup-status", tenantId],
 			});
 			setActiveStep(5);
 		} catch (err) {
@@ -217,11 +217,11 @@ export function SetupWizard({ tenantSlug, status, onComplete }: Props) {
 	}) {
 		try {
 			await categoriesBrandsMutation.mutateAsync({
-				tenantSlug,
+				tenantId,
 				body: data,
 			});
 			await queryClient.invalidateQueries({
-				queryKey: ["setup-status", tenantSlug],
+				queryKey: ["setup-status", tenantId],
 			});
 			setActiveStep(6);
 		} catch (err) {
@@ -248,7 +248,7 @@ export function SetupWizard({ tenantSlug, status, onComplete }: Props) {
 		}>;
 	}) {
 		try {
-			await productMutation.mutateAsync({ tenantSlug, body: data });
+			await productMutation.mutateAsync({ tenantId, body: data });
 			toast.success("Setup complete! Welcome aboard.");
 			onComplete();
 		} catch (err) {

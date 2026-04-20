@@ -3,9 +3,10 @@ import type {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 
-type TransactionClient = Parameters<
-  Parameters<PrismaClient["$transaction"]>[0]
->[0];
+type TransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 type WriteAuditLogParams = {
   tenantId: string;

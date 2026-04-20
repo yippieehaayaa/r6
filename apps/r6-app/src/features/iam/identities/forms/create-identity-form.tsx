@@ -19,11 +19,11 @@ import { getApiErrorMessage } from "@/lib/api-error";
 type CreateIdentityFormValues = z.input<typeof CreateIdentitySchema>;
 
 interface Props {
-	tenantSlug: string;
+	tenantId: string;
 	onSuccess: () => void;
 }
 
-export function CreateIdentityForm({ tenantSlug, onSuccess }: Props) {
+export function CreateIdentityForm({ tenantId, onSuccess }: Props) {
 	const queryClient = useQueryClient();
 	const mutation = useCreateIdentityMutation();
 
@@ -46,11 +46,11 @@ export function CreateIdentityForm({ tenantSlug, onSuccess }: Props) {
 
 	function onSubmit(values: CreateIdentityFormValues) {
 		mutation.mutate(
-			{ tenantSlug, body: values as CreateIdentityInput },
+			{ tenantId, body: values as CreateIdentityInput },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({
-						queryKey: ["identities", tenantSlug],
+						queryKey: ["identities", tenantId],
 					});
 					toast.success("Identity created.");
 					onSuccess();

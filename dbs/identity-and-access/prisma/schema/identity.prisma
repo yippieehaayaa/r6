@@ -1,59 +1,86 @@
 // ============================================================
 //  IDENTITY
-//  Represents a human user, service account, or platform admin.
+//  Represents a human user or service account within a tenant.
 //
 //  Multi-tenancy:
-//    tenantId is null for ADMIN identities (platform-level).
-//    All USER and SERVICE identities must have a tenantId.
-//    This is the same tenantId stamped on every record across
-//    all other microservices (Inventory, Procurement, etc.).
+//    tenantId is null for:
+//      • Unaffiliated users — registered but have not yet created
+//        or joined a tenant. They can log in but cannot access
+//        any tenant-scoped resource until they have a tenantId.
+//    A user can only belong to one tenant at a time.
 //
-//  Removed from original:
-//    • Session       — handled externally (JWT / refresh tokens
-//                      managed at the API Gateway layer)
-//    • PasswordHistory, EmailHistory, IpAddress — audit detail
-//                      not needed for a demo; can be added later
+//  Within each tenant, there are three tiers of users:
+//    • Owner        — the tenant creator; has full access to all resources
+//                     within their tenant (iam:*:* stamped at creation).
+//                     Identified by Tenant.ownerId.
+//    • Tenant Admin — a USER promoted by the owner via role / policy
+//                     assignment; has a curated subset of permissions.
+//    • User         — a regular member of the tenant with standard access.
+//
+//  Registration flow:
+//    1. User registers → tenantId = null, status = PENDING_VERIFICATION.
+//    2. User verifies email → isEmailVerified = true, status = ACTIVE.
+//       If they own a tenant, tenant.isActive is also set to true.
+//    3. User creates a tenant → tenantId is set; they become owner.
+//       OR user accepts an invitation → tenantId is set to that tenant.
+//
+//  status (lifecycle — replaces the former isActive boolean):
+//    PENDING_VERIFICATION — registered but email not yet verified
+//    ACTIVE               — email verified; can log in and act
+//    INACTIVE             — disabled by an admin
+//    SUSPENDED            — locked due to policy (e.g. too many failed logins)
 //
 //  Cross-service usage:
-//    Identity.id (identityId) is the value stored as
-//    performedBy on StockMovement, AuditLog, StockCount, etc.
-//    across all services. No cross-DB FK — services store the
-//    UUID string and call IAM to resolve display names if needed.
+//    Identity.id (identityId) is the value stored as performedBy on
+//    StockMovement, AuditLog, StockCount, etc. across all services.
+//    No cross-DB FK — services store the UUID string and call IAM
+//    to resolve display names if needed.
 // ============================================================
 
 model Identity {
-    id                  String         @id @default(uuid()) @db.Uuid
-    // tenantId: null = platform ADMIN, required for USER and SERVICE
-    tenantId            String?        @db.Uuid
-    username            String
-    email               String?
-    hash                String // bcrypt hash of password
-    salt                String // per-identity salt
-    failedLoginAttempts Int            @default(0)
+    // ── Core ─────────────────────────────────────────────────
+    id       String  @id @default(uuid()) @db.Uuid
+    tenantId String? @db.Uuid
+
+    // ── Personal info ────────────────────────────────────────
+    firstName  String
+    middleName String?
+    lastName   String
+    country    String  @db.Char(2) // ISO 3166-1 alpha-2 (e.g. PH, US, GB)
+
+    // ── Account ──────────────────────────────────────────────
+    username        String  @unique
+    email           String  @unique // globally unique — one account per email
+    isEmailVerified Boolean @default(false)
+
+    // ── Security ─────────────────────────────────────────────
+    hash                String    // bcrypt hash of password
+    salt                String    // per-identity salt
+    failedLoginAttempts Int       @default(0)
     lockedUntil         DateTime? // set when SUSPENDED due to failed logins
-    mustChangePassword  Boolean        @default(true) // force reset on first login
-    kind                IdentityKind   @default(USER)
-    status              IdentityStatus @default(PENDING_VERIFICATION)
+    mustChangePassword  Boolean   @default(false)
 
-    // TOTP (optional authenticator-app based 2FA)
-    totpSecret         String? // AES-256-GCM encrypted TOTP secret; null when TOTP not set up
-    totpEnabled        Boolean        @default(false)
-    totpVerifiedAt     DateTime? // when the secret was first confirmed by the identity
+    // ── Classification ───────────────────────────────────────
+    kind   IdentityKind   @default(USER)
+    status IdentityStatus @default(PENDING_VERIFICATION)
 
-    // Relations
-    roles          Role[]         // many-to-many via implicit join table
-    refreshTokens  RefreshToken[]
+    // ── TOTP (optional authenticator-app 2FA) ────────────────
+    totpSecret     String?   // AES-256-GCM encrypted TOTP secret; null when not set up
+    totpEnabled    Boolean   @default(false)
+    totpVerifiedAt DateTime? // when the secret was first confirmed by the identity
 
-    // Timestamps
+    // ── Timestamps ───────────────────────────────────────────
     createdAt DateTime  @default(now())
     updatedAt DateTime  @updatedAt
     deletedAt DateTime?
 
-    // Indexes
-    // username unique per tenant (two tenants can have the same username)
-    @@unique([tenantId, username])
-    // email unique per tenant
-    @@unique([tenantId, email])
+    // ── Relations ────────────────────────────────────────────
+    tenant              Tenant?              @relation("TenantIdentities", fields: [tenantId], references: [id], onDelete: SetNull)
+    ownedTenants        Tenant[]             @relation("TenantOwner")
+    identityPermissions IdentityPermission[] @relation("IdentityPermissionOverrides")
+    issuedInvitations   Invitation[]         @relation("IssuedInvitations")
+    refreshTokens       RefreshToken[]
+
     @@index([tenantId])
     @@index([tenantId, status])
     @@index([tenantId, kind])

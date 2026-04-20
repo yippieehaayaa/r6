@@ -1,0 +1,55 @@
+// ============================================================
+//  INVITATION
+//  Represents a pending email invitation sent to a user to join
+//  a tenant. The invitation is single-use and time-limited.
+//
+//  tokenHash:
+//    SHA-256 hash of the raw invitation token (sent in the email
+//    link). Never store the raw token — only the hash.
+//
+//  roleId (optional):
+//    When set, the invited identity is automatically assigned
+//    this role on acceptance. Role is tenant-scoped.
+//
+//  invitedById:
+//    The ADMIN or tenant-owner identity that issued the invite.
+//    Named relation "IssuedInvitations" to avoid ambiguity with
+//    the single primary FK (no other Identity relationship here).
+//
+//  No soft-delete: invitations are hard-deleted on acceptance
+//  or expiry cleanup.
+// ============================================================
+
+model Invitation {
+    // ── Core ─────────────────────────────────────────────────
+    id       String @id @default(uuid()) @db.Uuid
+    tenantId String @db.Uuid
+
+    // ── Recipient ────────────────────────────────────────────
+    email String
+
+    // ── Token ────────────────────────────────────────────────
+    // SHA-256 hash of the raw email token — raw token is never stored.
+    tokenHash String @unique
+
+    // ── Issuer ───────────────────────────────────────────────
+    invitedById String @db.Uuid
+
+    // ── Lifecycle ────────────────────────────────────────────
+    expiresAt  DateTime
+    acceptedAt DateTime?
+
+    // ── Timestamps ───────────────────────────────────────────
+    // No soft-delete — invitations are hard-deleted on acceptance or expiry cleanup.
+    createdAt DateTime @default(now())
+
+    // ── Relations ────────────────────────────────────────────
+    tenant             Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    invitedBy          Identity           @relation("IssuedInvitations", fields: [invitedById], references: [id], onDelete: Cascade)
+    invitationPolicies InvitationPolicy[] // policies stamped onto the identity on accept
+
+    @@index([tenantId])
+    @@index([tenantId, email])
+    @@index([expiresAt])
+    @@map("invitations")
+}

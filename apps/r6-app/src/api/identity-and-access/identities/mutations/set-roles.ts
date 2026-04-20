@@ -3,18 +3,18 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface SetRolesParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 	roleIds: string[];
 }
 
 export async function setRolesFn({
-	tenantSlug,
+	tenantId,
 	id,
 	roleIds,
 }: SetRolesParams): Promise<IdentitySafe> {
 	const { data } = await identityApi.put<unknown>(
-		`/tenants/${tenantSlug}/identities/${id}/roles`,
+		`/tenants/${tenantId}/identities/${id}/roles`,
 		{ roleIds },
 	);
 	return IdentitySafeSchema.parse(data);

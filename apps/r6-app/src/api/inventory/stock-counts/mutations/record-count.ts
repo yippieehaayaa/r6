@@ -3,19 +3,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
 export interface RecordCountParams {
-	tenantSlug: string;
+	tenantId: string;
 	stockCountId: string;
 	body: RecordCountInput;
 }
 
 export async function recordCountFn({
-	tenantSlug,
+	tenantId,
 	stockCountId,
 	body,
 }: RecordCountParams): Promise<unknown> {
 	const validated = RecordCountSchema.parse(body);
 	const { data } = await inventoryApi.post<unknown>(
-		`/tenants/${tenantSlug}/stock-counts/${stockCountId}/record`,
+		`/tenants/${tenantId}/stock-counts/${stockCountId}/record`,
 		validated,
 	);
 	return data;
@@ -25,12 +25,12 @@ export function useRecordCountMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: recordCountFn,
-		onSuccess: (_data, { tenantSlug, stockCountId }) => {
+		onSuccess: (_data, { tenantId, stockCountId }) => {
 			queryClient.invalidateQueries({
-				queryKey: ["stock-counts", tenantSlug],
+				queryKey: ["stock-counts", tenantId],
 			});
 			queryClient.invalidateQueries({
-				queryKey: ["stock-counts", tenantSlug, stockCountId],
+				queryKey: ["stock-counts", tenantId, stockCountId],
 			});
 		},
 	});

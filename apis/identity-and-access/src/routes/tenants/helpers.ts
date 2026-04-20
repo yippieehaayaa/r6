@@ -1,57 +1,35 @@
-import { randomInt } from "node:crypto";
-import { getTenantById, getTenantBySlug } from "@r6/db-identity-and-access";
+import type { Invitation } from "@r6/db-identity-and-access";
+import type { Request } from "express";
 import { AppError } from "../../lib/errors";
+import type { AuthJwtPayload } from "../../middleware/auth";
 
-// ── Password utilities ────────────────────────────────────────────────────────
-
-const UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-const LOWER = "abcdefghijklmnopqrstuvwxyz";
-const DIGITS = "0123456789";
-const SPECIAL = "!@#$%^&*()_+-=[]{}|;:,.<>?";
-const ALL = UPPER + LOWER + DIGITS + SPECIAL;
-
-/**
- * Returns a single cryptographically random character from the given alphabet.
- */
-export function randomChar(alphabet: string): string {
-  return alphabet[randomInt(alphabet.length)] as string;
+// Asserts the caller belongs to the target tenant.
+// Throws AppError(403) so callers can rely on the surrounding try/catch.
+export function assertTenantAccess(
+  payload: AuthJwtPayload,
+  tenantId: string,
+): void {
+  if (payload.tenantId !== tenantId) {
+    throw new AppError(
+      403,
+      "forbidden",
+      "You do not have access to this tenant",
+    );
+  }
 }
 
-/**
- * Generates a cryptographically random 16-character password that satisfies
- * complexity requirements (upper, lower, digit, special).
- * Uses Node's built-in crypto.randomInt — no external dependencies.
- */
-export function generatePassword(): string {
-  const chars: string[] = [
-    randomChar(UPPER),
-    randomChar(LOWER),
-    randomChar(DIGITS),
-    randomChar(SPECIAL),
-  ];
-  for (let i = 4; i < 16; i++) {
-    chars.push(randomChar(ALL));
-  }
-  // Fisher-Yates shuffle
-  for (let i = chars.length - 1; i > 0; i--) {
-    const j = randomInt(i + 1);
-    const tmp = chars[i] as string;
-    chars[i] = chars[j] as string;
-    chars[j] = tmp;
-  }
-  return chars.join("");
+// Resolves a route parameter to a plain string.
+// Express 5 types req.params values as string | string[] — path parameters are
+// always a single string; this helper normalises the type for type-safe usage.
+export function resolveParam(req: Request, name: string): string | undefined {
+  const val = req.params[name];
+  return Array.isArray(val) ? val[0] : val;
 }
 
-// ── Tenant lookups ────────────────────────────────────────────────────────────
-
-export const ensureTenantExists = async (tenantId: string) => {
-  const tenant = await getTenantById(tenantId);
-  if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
-  return tenant;
-};
-
-export const ensureTenantExistsBySlug = async (slug: string) => {
-  const tenant = await getTenantBySlug(slug);
-  if (!tenant) throw new AppError(404, "not_found", "Tenant not found");
-  return tenant;
-};
+// Strips the internal tokenHash field before sending an invitation to a client.
+export function toSafeInvitation<T extends Pick<Invitation, "tokenHash">>(
+  invitation: T,
+): Omit<T, "tokenHash"> {
+  const { tokenHash: _stripped, ...safe } = invitation;
+  return safe;
+}

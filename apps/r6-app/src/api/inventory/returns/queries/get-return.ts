@@ -8,23 +8,23 @@ import { inventoryApi } from "@/api/_app";
 export type { ReturnRequestDetail };
 
 export async function getReturnFn(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 ): Promise<ReturnRequestDetail> {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/returns/${id}`,
+		`/tenants/${tenantId}/returns/${id}`,
 	);
 	return ReturnRequestDetailSchema.parse(data);
 }
 
 export function useGetReturnQuery(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["return", tenantSlug, id],
-		queryFn: () => getReturnFn(tenantSlug, id),
-		enabled: (options?.enabled ?? true) && !!tenantSlug && !!id,
+		queryKey: ["return", tenantId, id],
+		queryFn: () => getReturnFn(tenantId, id),
+		enabled: (options?.enabled ?? true) && !!tenantId && !!id,
 	});
 }

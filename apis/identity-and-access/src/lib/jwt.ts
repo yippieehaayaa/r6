@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { hmac } from "@r6/crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import {
   calculateJwkThumbprint,
   exportJWK,
@@ -24,36 +23,26 @@ const loadKeys = async (): Promise<void> => {
 
 // ─── Token payload ───────────────────────────────────────────
 //
-// kind, tenantId, and tenantSlug are signed into the token so
-// guards can authorize requests without a DB round-trip.
+// kind and tenantId are signed into the token so guards can
+// authorize requests without a DB round-trip.
 //
 // kind:
-//   "ADMIN"   — platform super-admin, tenantId/tenantSlug will be null
-//   "USER"    — human user belonging to a tenant
+//   "USER"    — human user belonging to a tenant (owner, admin, or regular
+//               user — distinguished by the permissions array)
 //   "SERVICE" — machine/service account belonging to a tenant
 //
 // tenantId:
-//   null for ADMIN identities.
 //   UUID primary key of the Tenant record.
 //   Downstream microservices (Inventory, Procurement, etc.) use this
 //   directly — no slug-to-UUID resolution needed.
-//
-// tenantSlug:
-//   null for ADMIN identities.
-//   URL-safe slug string for USER and SERVICE identities.
-//   Used by requireTenantScope guard for URL routing checks.
 
 export type AccessTokenPayload = {
   /** Identity primary key (maps to JWT `sub`) */
   sub: string;
-  /** IdentityKind: ADMIN | USER | SERVICE */
+  /** IdentityKind: USER | SERVICE */
   kind: string;
-  /** null for ADMIN identities; Tenant UUID for USER / SERVICE */
+  /** Tenant UUID for USER / SERVICE */
   tenantId: string | null;
-  /** null for ADMIN identities; slug string for USER / SERVICE */
-  tenantSlug: string | null;
-  /** Role names assigned to this identity */
-  roles: string[];
   /** Flattened permission strings from all attached policies */
   permissions: string[];
 };
@@ -71,8 +60,6 @@ export const signAccessToken = async (
   return new SignJWT({
     kind: payload.kind,
     tenantId: payload.tenantId,
-    tenantSlug: payload.tenantSlug,
-    roles: payload.roles,
     permissions: payload.permissions,
   })
     .setProtectedHeader({ alg: "RS256" })
@@ -192,7 +179,10 @@ export const verifyTotpChallengeToken = async (
 export const generateDeviceFingerprint = (
   userAgent: string,
   ip: string,
-): string => hmac(`${userAgent}::${ip}`);
+): string =>
+  createHmac("sha256", env.DEVICE_FINGERPRINT_SECRET)
+    .update(`${userAgent}::${ip}`)
+    .digest("hex");
 
 // Checks whether a required permission string is satisfied by the
 // set of granted permission strings. Supports wildcard * segments.

@@ -1,12 +1,13 @@
 import type { Prisma } from "../../../generated/prisma/client.js";
 import { prisma } from "../../client.js";
+import type { TransactionClient } from "../_shared/audit.js";
 import { writeAuditLog } from "../_shared/audit.js";
 import type { Category, UpdateCategoryInput } from "./types.js";
 
 const updateCategory = async (
   input: UpdateCategoryInput,
 ): Promise<Category> => {
-  return prisma.$transaction(async (tx) => {
+  return prisma.$transaction(async (tx: TransactionClient) => {
     const existing = await tx.category.findFirst({
       where: { id: input.id, tenantId: input.tenantId, deletedAt: null },
     });
@@ -55,7 +56,7 @@ const updateCategory = async (
       const descendants = await tx.category.findMany({
         where: {
           tenantId: input.tenantId,
-          path: { startsWith: existing.path + "/" },
+          path: { startsWith: `${existing.path}/` },
           deletedAt: null,
         },
       });

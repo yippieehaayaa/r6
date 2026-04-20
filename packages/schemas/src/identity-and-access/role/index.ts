@@ -24,6 +24,14 @@ export const RoleSchema = TenantScopedSchema.extend({
     .max(100, "Role name must not exceed 100 characters")
     .trim(),
 
+  /** Optional human-readable label shown in the UI */
+  displayName: z
+    .string()
+    .max(100, "Display name must not exceed 100 characters")
+    .trim()
+    .nullable()
+    .optional(),
+
   /** Optional human-readable description of the role's purpose */
   description: z
     .string()
@@ -33,6 +41,12 @@ export const RoleSchema = TenantScopedSchema.extend({
 
   /** Whether this role is currently active and can be assigned */
   isActive: z.boolean().default(true),
+
+  /**
+   * Whether this role is platform-managed (seeded by the platform).
+   * Managed roles cannot be edited or deleted by tenants.
+   */
+  isManaged: z.boolean().default(false),
 });
 
 export type Role = z.infer<typeof RoleSchema>;
@@ -45,6 +59,7 @@ export const CreateRoleSchema = RoleSchema.omit({
   updatedAt: true,
   deletedAt: true,
   isActive: true, // defaults to true
+  isManaged: true, // set only by platform seed, not by API callers
 });
 
 export type CreateRoleInput = z.infer<typeof CreateRoleSchema>;
@@ -57,6 +72,7 @@ export const UpdateRoleSchema = RoleSchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  isManaged: true, // not patchable via API
 }).partial();
 
 export type UpdateRoleInput = z.infer<typeof UpdateRoleSchema>;

@@ -110,7 +110,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	function hasPermission(permission: string): boolean {
 		if (!claims) return false;
-		if (claims.kind === "ADMIN") return true;
 		const required = permission.split(":");
 		return claims.permissions.some((granted) => {
 			const segments = granted.split(":");

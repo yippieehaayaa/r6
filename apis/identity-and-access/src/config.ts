@@ -27,10 +27,14 @@ const envSchema = z.object({
     ),
   HASH_SECRET: z.string(),
   REDIS_URL: z.string(),
+  AZURE_COMMUNICATION_CONNECTION_STRING: z.string(),
+  AZURE_COMMUNICATION_SENDER_ADDRESS: z.string(),
   CORS_ORIGIN: z.string().transform((v) => v.split(",").map((s) => s.trim())),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  COOKIE_PATH: z.string().optional().default("/auth"),
+  DEVICE_FINGERPRINT_SECRET: z.string(),
 });
 
 const env = envSchema.parse({
@@ -44,8 +48,14 @@ const env = envSchema.parse({
   TOTP_ENCRYPTION_KEY: process.env.TOTP_ENCRYPTION_KEY,
   HASH_SECRET: process.env.HASH_SECRET,
   REDIS_URL: process.env.REDIS_URL,
+  AZURE_COMMUNICATION_CONNECTION_STRING:
+    process.env.AZURE_COMMUNICATION_CONNECTION_STRING,
+  AZURE_COMMUNICATION_SENDER_ADDRESS:
+    process.env.AZURE_COMMUNICATION_SENDER_ADDRESS,
   CORS_ORIGIN: process.env.CORS_ORIGIN,
   NODE_ENV: process.env.NODE_ENV,
+  COOKIE_PATH: process.env.COOKIE_PATH,
+  DEVICE_FINGERPRINT_SECRET: process.env.DEVICE_FINGERPRINT_SECRET,
 });
 
 export { env };

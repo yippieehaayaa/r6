@@ -1,0 +1,34 @@
+// ============================================================
+//  IDENTITY PERMISSION  (per-user permission grant)
+//  Grants a single permission directly to one identity, independently
+//  of any role-derived permissions.
+//
+//  The system is deny-by-default: every permission not present in this
+//  table is implicitly denied. Removing a row revokes the permission.
+//
+//  All grants are tenant-scoped and tied to a single identity.
+// ============================================================
+
+model IdentityPermission {
+    // ── Core ─────────────────────────────────────────────────
+    id         String @id @default(uuid()) @db.Uuid
+    tenantId   String @db.Uuid
+    identityId String @db.Uuid
+
+    // ── Grant ────────────────────────────────────────────────
+    permission String // "service:resource:action" — no wildcards
+
+    // ── Timestamps ───────────────────────────────────────────
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    // ── Relations ────────────────────────────────────────────
+    tenant   Tenant   @relation("TenantIdentityPermissions", fields: [tenantId], references: [id], onDelete: Cascade)
+    identity Identity @relation("IdentityPermissionOverrides", fields: [identityId], references: [id], onDelete: Cascade)
+
+    // One override row per permission per identity
+    @@unique([identityId, permission])
+    @@index([tenantId])
+    @@index([identityId])
+    @@map("identity_permissions")
+}

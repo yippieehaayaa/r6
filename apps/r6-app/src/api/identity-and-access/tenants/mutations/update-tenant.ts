@@ -3,16 +3,16 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface UpdateTenantParams {
-	tenantSlug: string;
+	tenantId: string;
 	body: UpdateTenantInput;
 }
 
 export async function updateTenantFn({
-	tenantSlug,
+	tenantId,
 	body,
 }: UpdateTenantParams): Promise<Tenant> {
 	const { data } = await identityApi.patch<unknown>(
-		`/tenants/${tenantSlug}`,
+		`/tenants/${tenantId}`,
 		body,
 	);
 	return TenantSchema.parse(data);

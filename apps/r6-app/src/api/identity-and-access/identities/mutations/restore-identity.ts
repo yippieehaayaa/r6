@@ -3,16 +3,16 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface RestoreIdentityParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 }
 
 export async function restoreIdentityFn({
-	tenantSlug,
+	tenantId,
 	id,
 }: RestoreIdentityParams): Promise<IdentitySafe> {
 	const { data } = await identityApi.post<unknown>(
-		`/tenants/${tenantSlug}/identities/${id}/restore`,
+		`/tenants/${tenantId}/identities/${id}/restore`,
 	);
 	return IdentitySafeSchema.parse(data);
 }

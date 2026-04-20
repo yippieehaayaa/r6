@@ -18,15 +18,24 @@
 // ============================================================
 
 model RefreshToken {
-    jti               String    @id          // JWT jti claim (UUID)
-    identityId        String    @db.Uuid
-    identity          Identity  @relation(fields: [identityId], references: [id])
-    deviceFingerprint String                 // HMAC(userAgent::ip)
+    // ── Core ─────────────────────────────────────────────────
+    jti        String @id       // JWT jti claim (UUID)
+    identityId String @db.Uuid
+
+    // ── Device binding ───────────────────────────────────────
+    deviceFingerprint String  // HMAC(userAgent::ip)
     userAgent         String?
     ipAddress         String?
-    expiresAt         DateTime
-    revokedAt         DateTime?              // null = active
-    createdAt         DateTime  @default(now())
+
+    // ── Lifecycle ────────────────────────────────────────────
+    expiresAt DateTime
+    revokedAt DateTime? // null = still active
+
+    // ── Timestamps ───────────────────────────────────────────
+    createdAt DateTime @default(now())
+
+    // ── Relations ────────────────────────────────────────────
+    identity Identity @relation(fields: [identityId], references: [id])
 
     @@index([identityId])
     @@index([expiresAt])

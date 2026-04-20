@@ -3,22 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { inventoryApi } from "@/api/_app";
 
 export async function getSetupStatusFn(
-	tenantSlug: string,
+	tenantId: string,
 ): Promise<SetupStatus> {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/setup/status`,
+		`/tenants/${tenantId}/setup/status`,
 	);
 	return SetupStatusSchema.parse(data);
 }
 
 export function useSetupStatusQuery(
-	tenantSlug: string,
+	tenantId: string,
 	options?: { staleTime?: number },
 ) {
 	return useQuery({
-		queryKey: ["setup-status", tenantSlug],
-		queryFn: () => getSetupStatusFn(tenantSlug),
-		enabled: !!tenantSlug,
+		queryKey: ["setup-status", tenantId],
+		queryFn: () => getSetupStatusFn(tenantId),
+		enabled: !!tenantId,
 		...options,
 	});
 }

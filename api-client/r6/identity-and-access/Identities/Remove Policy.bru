@@ -1,0 +1,15 @@
+meta {
+  name: Remove Policy
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{iamURL}}/tenants/{{tenantId}}/identities/{{identityId}}/roles/{{policyId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

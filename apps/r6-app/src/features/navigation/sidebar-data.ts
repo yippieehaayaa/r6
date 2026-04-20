@@ -161,7 +161,7 @@ export const data = {
 				{
 					title: "Tenants",
 					url: "/r6/iam/tenants",
-					adminOnly: true,
+					permission: "iam:tenant:read",
 				},
 			],
 		},

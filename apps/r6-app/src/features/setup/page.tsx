@@ -8,9 +8,9 @@ import { SetupWizard } from "./wizard";
 export default function SetupPage() {
 	const { claims } = useAuth();
 	const navigate = useNavigate();
-	const tenantSlug = claims?.tenantSlug ?? "";
+	const tenantId = claims?.tenantId ?? "";
 
-	const { data: status, isPending } = useSetupStatusQuery(tenantSlug, {
+	const { data: status, isPending } = useSetupStatusQuery(tenantId, {
 		staleTime: 0,
 	});
 
@@ -37,7 +37,7 @@ export default function SetupPage() {
 					</div>
 				) : status ? (
 					<SetupWizard
-						tenantSlug={tenantSlug}
+					tenantId={tenantId}
 						status={status}
 						onComplete={onComplete}
 					/>

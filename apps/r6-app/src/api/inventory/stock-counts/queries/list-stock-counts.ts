@@ -12,25 +12,25 @@ export type { StockCount };
 const ListStockCountsResponseSchema = PaginatedResponseSchema(StockCountSchema);
 
 export async function listStockCountsFn(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListStockCountsQuery = {},
 ) {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/stock-counts`,
+		`/tenants/${tenantId}/stock-counts`,
 		{ params },
 	);
 	return ListStockCountsResponseSchema.parse(data);
 }
 
 export function useListStockCountsQuery(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListStockCountsQuery = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
-		queryKey: ["stock-counts", tenantSlug, params],
-		queryFn: () => listStockCountsFn(tenantSlug, params),
-		enabled: !!tenantSlug,
+		queryKey: ["stock-counts", tenantId, params],
+		queryFn: () => listStockCountsFn(tenantId, params),
+		enabled: !!tenantId,
 		placeholderData: keepPreviousData,
 		staleTime: options?.staleTime ?? 30 * 1000,
 		gcTime: options?.gcTime,

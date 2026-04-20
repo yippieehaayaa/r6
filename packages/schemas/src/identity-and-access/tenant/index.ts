@@ -2,9 +2,14 @@ import { z } from "zod";
 import {
   BaseRecordSchema,
   ListQuerySchema,
-  serviceNameRegex,
+  NullableUuidSchema,
   slugRegex,
+  UuidSchema,
 } from "../base.schema";
+import type { TenantModule } from "../enums.schema";
+import { TenantModuleEnum, TenantModuleSchema } from "../enums.schema";
+export type { TenantModule };
+export { TenantModuleEnum, TenantModuleSchema };
 
 // ============================================================
 //  TENANT SCHEMA
@@ -12,18 +17,6 @@ import {
 //  The Tenant record owns the tenantId stamped across ALL
 //  microservices (Inventory, Procurement, Transaction, etc.).
 // ============================================================
-
-/**
- * Recognised microservice / module names.
- * Validated individually inside moduleAccess arrays.
- */
-export const ModuleNameSchema = z
-  .string()
-  .regex(
-    serviceNameRegex,
-    "Module name must be lowercase alphanumeric with hyphens",
-  )
-  .min(1, "Module name cannot be empty");
 
 // ── Full read model (as returned from the DB) ───────────────
 
@@ -52,12 +45,21 @@ export const TenantSchema = BaseRecordSchema.extend({
   isActive: z.boolean(),
 
   /**
-   * List of enabled microservice names.
-   * e.g. ["inventory", "procurement", "pos", "financial"]
+   * True for the single platform tenant that owns all ADMIN identities
+   * and platform-level roles/policies. There is exactly one platform
+   * tenant per deployment; it cannot be created via the public API.
    */
-  moduleAccess: z
-    .array(ModuleNameSchema)
-    .min(1, "At least one module must be enabled"),
+  isPlatform: z.boolean(),
+
+  /** Primary owner identity ID — required; the owner Identity must exist before the Tenant is created */
+  ownerId: UuidSchema,
+
+  /**
+   * List of enabled paid microservice module names.
+   * Empty array is valid — new tenants start with no paid modules.
+   * IAM access is always implicit and is never listed here.
+   */
+  moduleAccess: z.array(TenantModuleSchema),
 });
 
 export type Tenant = z.infer<typeof TenantSchema>;
@@ -69,7 +71,9 @@ export const CreateTenantSchema = TenantSchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
-  isActive: true, // defaulted to true on creation
+  isActive: true, // defaulted to false on creation; set to true once the owner verifies email
+  isPlatform: true, // server-managed — cannot be set via API
+  ownerId: true, // injected from the caller's JWT identity (req.auth.sub)
 });
 
 export type CreateTenantInput = z.infer<typeof CreateTenantSchema>;
@@ -81,6 +85,8 @@ export const UpdateTenantSchema = TenantSchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  isPlatform: true, // server-managed — cannot be changed via API
+  ownerId: true, // set internally
 }).partial();
 
 export type UpdateTenantInput = z.infer<typeof UpdateTenantSchema>;
@@ -88,15 +94,10 @@ export type UpdateTenantInput = z.infer<typeof UpdateTenantSchema>;
 // ── Create response (tenant + one-time owner credentials) ──────────────────
 
 /**
- * Returned by POST /tenants (ADMIN-only).
- * ownerCredentials is shown exactly once — the caller must persist it.
+ * Returned by POST /tenants.
+ * The caller (already an Identity) created the tenant — no owner credentials needed.
  */
-export const CreateTenantResponseSchema = TenantSchema.extend({
-  ownerCredentials: z.object({
-    username: z.string(),
-    password: z.string(),
-  }),
-});
+export const CreateTenantResponseSchema = TenantSchema;
 
 export type CreateTenantResponse = z.infer<typeof CreateTenantResponseSchema>;
 

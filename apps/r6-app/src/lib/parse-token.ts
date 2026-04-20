@@ -1,7 +1,7 @@
 export interface TokenClaims {
 	sub: string;
 	kind: string;
-	tenantSlug: string | null;
+	tenantId: string | null;
 	roles: string[];
 	permissions: string[];
 }
@@ -21,8 +21,8 @@ export function parseTokenClaims(token: string): TokenClaims {
 	return {
 		sub: typeof payload.sub === "string" ? payload.sub : "",
 		kind: typeof payload.kind === "string" ? payload.kind : "",
-		tenantSlug:
-			typeof payload.tenantSlug === "string" ? payload.tenantSlug : null,
+		tenantId:
+			typeof payload.tenantId === "string" ? payload.tenantId : null,
 		roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
 		permissions: Array.isArray(payload.permissions)
 			? (payload.permissions as string[])

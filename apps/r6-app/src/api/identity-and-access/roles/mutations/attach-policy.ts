@@ -3,18 +3,18 @@ import { useMutation } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface AttachPolicyParams {
-	tenantSlug: string;
+	tenantId: string;
 	id: string;
 	policyId: string;
 }
 
 export async function attachPolicyFn({
-	tenantSlug,
+	tenantId,
 	id,
 	policyId,
 }: AttachPolicyParams): Promise<Role> {
 	const { data } = await identityApi.post<unknown>(
-		`/tenants/${tenantSlug}/roles/${id}/policies`,
+		`/tenants/${tenantId}/roles/${id}/policies`,
 		{ policyId },
 	);
 	return RoleSchema.parse(data);

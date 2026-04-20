@@ -1,23 +1,32 @@
 import { z } from "zod";
 import {
+  BaseRecordSchema,
   emailRegex,
   ListQuerySchema,
   NullableTimestampSchema,
-  TenantScopedSchema,
+  NullableUuidSchema,
 } from "../base.schema";
 import { IdentityKindSchema, IdentityStatusSchema } from "../enums.schema";
 
 // ============================================================
 //  IDENTITY SCHEMA
-//  Represents a human user, service account, or platform admin.
+//  Represents a human user or service account.
 //
 //  Multi-tenancy rules:
-//    • tenantId is null  → ADMIN identity (platform-level)
-//    • tenantId is uuid  → USER or SERVICE identity (tenant-owned)
+//    • tenantId is null  → unaffiliated user (registered, no tenant yet)
+//    • tenantId is uuid  → USER or SERVICE identity belonging to a tenant
+//
+//  A user may only belong to one tenant at a time.
+//  tenantId is set when the user creates a tenant or accepts an invitation.
+//
+//  status (lifecycle):
+//    PENDING_VERIFICATION → ACTIVE once email is verified.
+//    INACTIVE             → disabled by an admin.
+//    SUSPENDED            → locked due to policy (e.g. too many failed logins).
 //
 //  Security note:
 //    `hash` and `salt` are NEVER returned to clients. Use
-//    IdentityPublicSchema / IdentitySafeSchema for API responses.
+//    IdentitySafeSchema for API responses.
 // ============================================================
 
 /**
@@ -37,10 +46,53 @@ const usernameRegex = /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/;
 
 // ── Full model (internal / DB shape) ───────────────────────
 
-export const IdentitySchema = TenantScopedSchema.extend({
+export const IdentitySchema = BaseRecordSchema.extend({
+  /**
+   * FK → Tenant.id — null for unaffiliated users (registered, no tenant yet).
+   * Set once the user creates a tenant or accepts an invitation.
+   */
+  tenantId: NullableUuidSchema,
+
+  // ── Personal info ──────────────────────────────────────────
+
+  /** Legal first name */
+  firstName: z
+    .string()
+    .trim()
+    .min(1, "First name cannot be empty")
+    .max(100, "First name must not exceed 100 characters"),
+
+  /** Legal middle name — optional */
+  middleName: z
+    .string()
+    .trim()
+    .min(1, "Middle name cannot be empty")
+    .max(100, "Middle name must not exceed 100 characters")
+    .nullable()
+    .optional(),
+
+  /** Legal last name */
+  lastName: z
+    .string()
+    .trim()
+    .min(1, "Last name cannot be empty")
+    .max(100, "Last name must not exceed 100 characters"),
+
+  /**
+   * ISO 3166-1 alpha-2 country code — 2 uppercase letters.
+   * e.g. "PH" (Philippines), "US" (United States), "GB" (United Kingdom)
+   */
+  country: z
+    .string()
+    .length(2, "Country must be a 2-letter ISO 3166-1 alpha-2 code")
+    .regex(/^[A-Z]{2}$/, "Country must be uppercase letters (e.g. PH, US, GB)")
+    .toUpperCase(),
+
+  // ── Account ────────────────────────────────────────────────
+
   /**
    * Human-readable login name.
-   * Unique per tenant: two tenants may share the same username.
+   * Globally unique across all tenants.
    */
   username: z
     .string()
@@ -52,16 +104,17 @@ export const IdentitySchema = TenantScopedSchema.extend({
     .max(64, "Username must not exceed 64 characters"),
 
   /**
-   * Optional e-mail address.
-   * Unique per tenant when present.
-   * null for SERVICE accounts that don't have an inbox.
+   * E-mail address. Required for all identities.
+   * Globally unique — one account per email address across the entire system.
    */
   email: z
     .string()
     .regex(emailRegex, "Must be a valid e-mail address")
     .max(254, "E-mail must not exceed 254 characters")
-    .toLowerCase()
-    .nullable(),
+    .toLowerCase(),
+
+  /** Whether the identity has verified ownership of the email address */
+  isEmailVerified: z.boolean().default(false),
 
   /** bcrypt hash of the password — NEVER expose to clients */
   hash: z
@@ -85,7 +138,7 @@ export const IdentitySchema = TenantScopedSchema.extend({
   lockedUntil: NullableTimestampSchema,
 
   /** When true, the identity must set a new password on next login */
-  mustChangePassword: z.boolean().default(true),
+  mustChangePassword: z.boolean().default(false),
 
   kind: IdentityKindSchema.default("USER"),
   status: IdentityStatusSchema.default("PENDING_VERIFICATION"),
@@ -179,6 +232,14 @@ export const UpdateIdentitySchema = IdentitySchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  // Immutable after creation — re-classifying USER ↔ SERVICE ↔ ADMIN
+  // must go through a dedicated privileged operation, not a PATCH.
+  kind: true,
+  // TOTP fields are managed exclusively via dedicated /totp/* endpoints;
+  // exposing them through a general PATCH is a security gap.
+  totpEnabled: true,
+  totpSecret: true,
+  totpVerifiedAt: true,
 }).partial();
 
 export type UpdateIdentityInput = z.infer<typeof UpdateIdentitySchema>;
@@ -219,7 +280,7 @@ export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
  */
 export const ProvisionIdentitySchema = z.object({
   username: IdentitySchema.shape.username,
-  email: IdentitySchema.shape.email.optional(),
+  email: IdentitySchema.shape.email,
   plainPassword: z
     .string()
     .min(8, "Password must be at least 8 characters")
@@ -238,33 +299,9 @@ export type ProvisionIdentityInput = z.infer<typeof ProvisionIdentitySchema>;
 
 // ── List query params ───────────────────────────────────────
 
-export const ListIdentitiesQuerySchema = ListQuerySchema;
+export const ListIdentitiesQuerySchema = ListQuerySchema.extend({
+  status: IdentityStatusSchema.optional(),
+  kind: IdentityKindSchema.optional(),
+});
 
 export type ListIdentitiesQuery = z.input<typeof ListIdentitiesQuerySchema>;
-
-// ── TOTP setup / management ─────────────────────────────────
-
-/**
- * Returned by GET /me/totp/setup.
- * Contains everything the identity needs to register in their authenticator app.
- */
-export const TotpSetupResponseSchema = z.object({
-  qrCodeDataUrl: z.string().min(1),
-  manualEntryKey: z.string().min(1),
-});
-
-export type TotpSetupResponse = z.infer<typeof TotpSetupResponseSchema>;
-
-/**
- * Body for POST /me/totp/enable.
- * The identity submits the 6-digit code from their authenticator app
- * to confirm they have successfully enrolled.
- */
-export const TotpEnableRequestSchema = z.object({
-  code: z
-    .string()
-    .length(6, "TOTP code must be exactly 6 digits")
-    .regex(/^\d{6}$/, "TOTP code must be 6 digits"),
-});
-
-export type TotpEnableRequestInput = z.infer<typeof TotpEnableRequestSchema>;

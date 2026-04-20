@@ -8,23 +8,23 @@ import { inventoryApi } from "@/api/_app";
 export type { StockTransferDetail };
 
 export async function getTransferFn(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 ): Promise<StockTransferDetail> {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/transfers/${id}`,
+		`/tenants/${tenantId}/transfers/${id}`,
 	);
 	return StockTransferDetailSchema.parse(data);
 }
 
 export function useGetTransferQuery(
-	tenantSlug: string,
+	tenantId: string,
 	id: string,
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["transfers", tenantSlug, id],
-		queryFn: () => getTransferFn(tenantSlug, id),
-		enabled: (options?.enabled ?? true) && !!tenantSlug && !!id,
+		queryKey: ["transfers", tenantId, id],
+		queryFn: () => getTransferFn(tenantId, id),
+		enabled: (options?.enabled ?? true) && !!tenantId && !!id,
 	});
 }

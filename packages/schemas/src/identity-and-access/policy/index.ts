@@ -2,24 +2,18 @@ import { z } from "zod";
 import {
   ListQuerySchema,
   permissionRegex,
-  serviceNameRegex,
   TenantScopedSchema,
 } from "../base.schema";
-import { PolicyEffectSchema } from "../enums.schema";
 
 // ============================================================
-//  POLICY SCHEMA
-//  Defines what actions are allowed or denied on which resources.
-//  Attached to Roles and evaluated by the API Gateway on every
-//  request. DENY always takes precedence over ALLOW.
+//  POLICY SCHEMA  (Permission Set)
+//  Defines a named set of permissions that can be attached to Roles.
+//  All policies are implicitly ALLOW — the system is deny-by-default,
+//  so any permission not granted is already denied.
 //
 //  Permission string convention:  "service:resource:action"
 //    e.g. "inventory:stock:read"
 //         "procurement:purchase-order:approve"
-//         "inventory:*:*"   ← wildcard
-//
-//  Audience: which microservices this policy applies to.
-//    e.g. ["inventory", "procurement", "pos"]
 // ============================================================
 
 /** Single validated permission string */
@@ -31,21 +25,12 @@ export const PermissionSchema = z
   )
   .min(1, "Permission string cannot be empty");
 
-/** Single validated audience / service name */
-export const AudienceSchema = z
-  .string()
-  .regex(
-    serviceNameRegex,
-    "Audience entry must be a lowercase alphanumeric service name (hyphens allowed)",
-  )
-  .min(1, "Audience entry cannot be empty");
-
 // ── Full model ──────────────────────────────────────────────
 
 export const PolicySchema = TenantScopedSchema.extend({
   /**
    * Unique policy name within a tenant.
-   * e.g. "inventory-full-access", "pos-cashier", "deny-warehouse-delete"
+   * e.g. "inventory-stock-read", "pos-cashier"
    */
   name: z
     .string()
@@ -53,15 +38,20 @@ export const PolicySchema = TenantScopedSchema.extend({
     .max(100, "Policy name must not exceed 100 characters")
     .trim(),
 
+  /** Optional human-readable label shown in the UI */
+  displayName: z
+    .string()
+    .max(100, "Display name must not exceed 100 characters")
+    .trim()
+    .nullable()
+    .optional(),
+
   /** Optional human-readable description of what the policy does */
   description: z
     .string()
     .max(500, "Description must not exceed 500 characters")
     .trim()
     .nullable(),
-
-  /** ALLOW or DENY — DENY always wins when both effects match */
-  effect: PolicyEffectSchema,
 
   /**
    * List of permission strings this policy covers.
@@ -73,20 +63,10 @@ export const PolicySchema = TenantScopedSchema.extend({
     .min(1, "At least one permission must be specified"),
 
   /**
-   * Microservices this policy applies to.
-   * Used by the API Gateway to scope enforcement.
-   * e.g. ["inventory", "procurement"]
+   * Whether this policy is platform-managed (seeded by the platform).
+   * Managed policies cannot be edited or deleted by tenants.
    */
-  audience: z
-    .array(AudienceSchema)
-    .min(1, "At least one audience service must be specified"),
-
-  /**
-   * Optional attribute-based conditions (JSON).
-   * Evaluated at the application layer per service.
-   * e.g. { "warehouseId": "uuid-of-warehouse" }
-   */
-  conditions: z.record(z.string(), z.unknown()).nullable(),
+  isManaged: z.boolean().default(false),
 });
 
 export type Policy = z.infer<typeof PolicySchema>;
@@ -153,6 +133,7 @@ export const CreatePolicySchema = PolicySchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  isManaged: true, // set only by platform seed, not by API callers
 }).superRefine((data, ctx) => {
   enforceReadBaseline(data.permissions, ctx);
 });
@@ -167,6 +148,7 @@ export const UpdatePolicySchema = PolicySchema.omit({
   createdAt: true,
   updatedAt: true,
   deletedAt: true,
+  isManaged: true, // not patchable via API
 })
   .partial()
   .superRefine((data, ctx) => {
@@ -178,6 +160,11 @@ export type UpdatePolicyInput = z.infer<typeof UpdatePolicySchema>;
 
 // ── List query params ───────────────────────────────────────
 
-export const ListPoliciesQuerySchema = ListQuerySchema;
+export const ListPoliciesQuerySchema = ListQuerySchema.extend({
+  isManaged: z
+    .union([z.literal("true"), z.literal("false")])
+    .transform((v) => v === "true")
+    .optional(),
+});
 
 export type ListPoliciesQuery = z.input<typeof ListPoliciesQuerySchema>;

@@ -1,0 +1,21 @@
+meta {
+  name: Set Policies
+  type: http
+  seq: 9
+}
+
+put {
+  url: {{iamURL}}/tenants/{{tenantId}}/identities/{{identityId}}/roles
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "policyIds": ["{{policyId}}"]
+  }
+}

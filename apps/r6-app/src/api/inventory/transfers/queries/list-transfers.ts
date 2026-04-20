@@ -13,25 +13,25 @@ const ListTransfersResponseSchema =
 	PaginatedResponseSchema(StockTransferSchema);
 
 export async function listTransfersFn(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListStockTransfersQuery = {},
 ) {
 	const { data } = await inventoryApi.get<unknown>(
-		`/tenants/${tenantSlug}/transfers`,
+		`/tenants/${tenantId}/transfers`,
 		{ params },
 	);
 	return ListTransfersResponseSchema.parse(data);
 }
 
 export function useListTransfersQuery(
-	tenantSlug: string,
+	tenantId: string,
 	params: ListStockTransfersQuery = {},
 	options?: { staleTime?: number; gcTime?: number },
 ) {
 	return useQuery({
-		queryKey: ["transfers", tenantSlug, params],
-		queryFn: () => listTransfersFn(tenantSlug, params),
-		enabled: !!tenantSlug,
+		queryKey: ["transfers", tenantId, params],
+		queryFn: () => listTransfersFn(tenantId, params),
+		enabled: !!tenantId,
 		placeholderData: keepPreviousData,
 		staleTime: options?.staleTime ?? 30 * 1000,
 		gcTime: options?.gcTime,

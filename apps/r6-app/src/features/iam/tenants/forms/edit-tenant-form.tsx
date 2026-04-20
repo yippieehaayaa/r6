@@ -69,7 +69,7 @@ export function EditTenantForm({ tenant, onSuccess }: Props) {
 			}),
 		};
 		mutation.mutate(
-			{ tenantSlug: tenant.slug, body },
+			{ tenantId: tenant.id, body },
 			{
 				onSuccess: () => {
 					queryClient.invalidateQueries({ queryKey: ["tenants"] });
