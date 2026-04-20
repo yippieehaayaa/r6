@@ -492,7 +492,8 @@ const R6AuthenticatedRouteChildren: R6AuthenticatedRouteChildren = {
   R6AuthenticatedInventoryStockRoute: R6AuthenticatedInventoryStockRoute,
   R6AuthenticatedIamIndexRoute: R6AuthenticatedIamIndexRoute,
   R6AuthenticatedInventoryIndexRoute: R6AuthenticatedInventoryIndexRoute,
-  R6AuthenticatedIamTenantsTenantIdRoute: R6AuthenticatedIamTenantsTenantIdRoute,
+  R6AuthenticatedIamTenantsTenantIdRoute:
+    R6AuthenticatedIamTenantsTenantIdRoute,
 }
 
 const R6AuthenticatedRouteWithChildren = R6AuthenticatedRoute._addFileChildren(

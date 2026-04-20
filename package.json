@@ -27,6 +27,7 @@
 		"apis/identity-and-access",
 		"apis/api-gateway",
 		"apis/inventory",
+		"apps/*",
 		"dbs/identity-and-access",
 		"dbs/inventory",
 		"dbs/hris",
