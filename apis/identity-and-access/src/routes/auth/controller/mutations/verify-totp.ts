@@ -2,6 +2,7 @@ import {
   createRefreshToken,
   getIdentityWithPermissions,
 } from "@r6/db-identity-and-access";
+import { redis } from "@r6/redis";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../../config";
 import { AppError } from "../../../../lib/errors";
@@ -56,6 +57,17 @@ export async function verifyTotp(
       );
     }
 
+    // Guard against code replay within the same 30-60 second window.
+    const replayKey = `totp:used:${sub}:${code}`;
+    const alreadyUsed = await redis.exists(replayKey);
+    if (alreadyUsed) {
+      throw new AppError(
+        401,
+        "invalid_totp_code",
+        "TOTP code is incorrect or expired",
+      );
+    }
+
     // Verify the 6-digit code against the encrypted secret.
     const valid = verifyTotpCode(identity.totpSecret, code);
     if (!valid) {
@@ -65,6 +77,9 @@ export async function verifyTotp(
         "TOTP code is incorrect or expired",
       );
     }
+
+    // Mark the code as used for 90 s (covers the ±1 TOTP window).
+    await redis.set(replayKey, "1", { EX: 90 });
 
     const claims = buildTokenClaims(identity);
 
