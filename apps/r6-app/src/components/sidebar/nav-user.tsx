@@ -104,9 +104,9 @@ export function NavUser() {
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator /> */}
 						<DropdownMenuItem asChild>
-							<Link to="/r6/account-security">
+							<Link to="/r6/profile">
 								<ShieldCheck />
-								Account Security
+								Account &amp; Security
 							</Link>
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />

@@ -1,10 +1,6 @@
-export * from "./mutations/assign-role";
 export * from "./mutations/create-identity";
 export * from "./mutations/remove-identity";
-export * from "./mutations/remove-role";
 export * from "./mutations/restore-identity";
-export * from "./mutations/set-roles";
 export * from "./mutations/update-identity";
 export * from "./queries/get-identity";
 export * from "./queries/list-identities";
-

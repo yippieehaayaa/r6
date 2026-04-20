@@ -1,8 +1,4 @@
-import {
-	type CreatePolicyInput,
-	type Policy,
-	PolicySchema,
-} from "@r6/schemas";
+import { type CreatePolicyInput, type Policy, PolicySchema } from "@r6/schemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
@@ -23,8 +19,10 @@ export function useCreatePolicyMutation() {
 		mutationFn: ({
 			tenantId,
 			body,
-		}: { tenantId: string; body: CreatePolicyInput }) =>
-			createPolicyFn(tenantId, body),
+		}: {
+			tenantId: string;
+			body: CreatePolicyInput;
+		}) => createPolicyFn(tenantId, body),
 		onSuccess: (_data, { tenantId }) => {
 			queryClient.invalidateQueries({ queryKey: ["policies", tenantId] });
 		},

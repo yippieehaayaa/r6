@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { type LoginRequestInput, LoginRequestSchema } from "@r6/schemas";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeftIcon, Loader2Icon, ShieldIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -227,23 +227,25 @@ export function LoginForm({
 					<CardContent className="px-8 pb-8 pt-5">
 						<form onSubmit={handleSubmit(onSubmit)}>
 							<FieldGroup className="gap-4">
-								<Field data-invalid={!!errors.login}>
+								<Field data-invalid={!!errors.username}>
 									<FieldLabel
-										htmlFor="login"
+										htmlFor="username"
 										className="text-[13px] font-medium text-[var(--text-primary)]"
 									>
 										Username
 									</FieldLabel>
 									<Input
-										id="login"
+										id="username"
 										type="text"
 										placeholder="john@acme-corp"
 										autoComplete="username"
-										aria-invalid={!!errors.login}
+										aria-invalid={!!errors.username}
 										className="h-10 rounded-xl text-[15px] px-3.5"
-										{...register("login")}
+										{...register("username")}
 									/>
-									<FieldError errors={errors.login ? [errors.login] : []} />
+									<FieldError
+										errors={errors.username ? [errors.username] : []}
+									/>
 								</Field>
 								<Field data-invalid={!!errors.password}>
 									<div className="flex items-center justify-between">
@@ -286,8 +288,8 @@ export function LoginForm({
 					</CardContent>
 				</Card>
 			</div>
-			<FieldDescription className="text-center text-[12px] text-[var(--text-secondary)] leading-relaxed">
-				By signing in, you agree to our{" "}
+			<FieldDescription className="text-center text-[12px] text-[var(--text-secondary)]">
+				By signing in, you agree to our{" "}
 				<a
 					href="/"
 					className="text-[var(--accent)] hover:opacity-75 transition-opacity underline-offset-2 hover:underline"
@@ -303,6 +305,15 @@ export function LoginForm({
 				</a>
 				.
 			</FieldDescription>
+			<p className="text-center text-[13px] text-[var(--text-secondary)]">
+				Don't have an account?{" "}
+				<Link
+					to="/r6/register"
+					className="text-[var(--accent)] hover:opacity-75 transition-opacity font-medium"
+				>
+					Create one
+				</Link>
+			</p>
 		</div>
 	);
 }
