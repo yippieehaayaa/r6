@@ -29,6 +29,7 @@ import type {
 } from "../../generated/prisma/client.js";
 import { prisma } from "../client.js";
 import { LOGIN_LOCK_MS, LOGIN_MAX_ATTEMPTS } from "./constants.js";
+import { revokeAllRefreshTokensForIdentity } from "./session.js";
 import type { PaginatedResult } from "./shared.js";
 import { buildPaginationQuery } from "./shared.js";
 import type {
@@ -213,10 +214,14 @@ const changePassword = async (
 
   const { hash, salt } = await encryptPassword(hmac(input.newPassword));
 
-  return prisma.identity.update({
+  const updated = await prisma.identity.update({
     where: { id },
     data: { hash, salt, mustChangePassword: false },
   });
+
+  await revokeAllRefreshTokensForIdentity(id);
+
+  return updated;
 };
 
 // ─── Verify (login) ─────────────────────────────────────────
