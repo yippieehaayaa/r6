@@ -30,6 +30,7 @@ export async function logout(
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
+      path: "/auth",
     });
 
     res.status(200).json({ message: "Logged out successfully" });

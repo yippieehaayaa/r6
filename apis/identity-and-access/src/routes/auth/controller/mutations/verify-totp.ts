@@ -114,6 +114,7 @@ export async function verifyTotp(
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       maxAge: env.JWT_REFRESH_TTL_MS,
+      path: "/auth",
     });
 
     res.status(200).json({ accessToken });
