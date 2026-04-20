@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 
-export const generateSalt = async (rounds: number | undefined = 10) => {
+export const generateSalt = async (rounds: number | undefined = 12) => {
   return await bcrypt.genSalt(rounds);
 };
 

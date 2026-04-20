@@ -34,6 +34,7 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   COOKIE_PATH: z.string().optional().default("/auth"),
+  DEVICE_FINGERPRINT_SECRET: z.string(),
 });
 
 const env = envSchema.parse({
@@ -54,6 +55,7 @@ const env = envSchema.parse({
   CORS_ORIGIN: process.env.CORS_ORIGIN,
   NODE_ENV: process.env.NODE_ENV,
   COOKIE_PATH: process.env.COOKIE_PATH,
+  DEVICE_FINGERPRINT_SECRET: process.env.DEVICE_FINGERPRINT_SECRET,
 });
 
 export { env };

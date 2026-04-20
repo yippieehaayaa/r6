@@ -1,5 +1,4 @@
-import { randomUUID } from "node:crypto";
-import { hmac } from "@r6/crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import {
   calculateJwkThumbprint,
   exportJWK,
@@ -180,7 +179,10 @@ export const verifyTotpChallengeToken = async (
 export const generateDeviceFingerprint = (
   userAgent: string,
   ip: string,
-): string => hmac(`${userAgent}::${ip}`);
+): string =>
+  createHmac("sha256", env.DEVICE_FINGERPRINT_SECRET)
+    .update(`${userAgent}::${ip}`)
+    .digest("hex");
 
 // Checks whether a required permission string is satisfied by the
 // set of granted permission strings. Supports wildcard * segments.
