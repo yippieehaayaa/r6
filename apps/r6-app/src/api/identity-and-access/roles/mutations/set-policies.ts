@@ -2,33 +2,34 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { identityApi } from "@/api/_app";
 
-export interface SetIdentityPoliciesParams {
+export interface SetRolePoliciesParams {
 	tenantId: string;
-	id: string;
+	roleId: string;
 	policyIds: string[];
 }
 
 const SetPoliciesResponseSchema = z.object({ message: z.string() });
 
-export async function setIdentityPoliciesFn({
+export async function setRolePoliciesFn({
 	tenantId,
-	id,
+	roleId,
 	policyIds,
-}: SetIdentityPoliciesParams): Promise<{ message: string }> {
+}: SetRolePoliciesParams): Promise<{ message: string }> {
 	const { data } = await identityApi.put<unknown>(
-		`/tenants/${tenantId}/identities/${id}/roles`,
+		`/tenants/${tenantId}/roles/${roleId}/policies/set`,
 		{ policyIds },
 	);
 	return SetPoliciesResponseSchema.parse(data);
 }
 
-export function useSetIdentityPoliciesMutation() {
+export function useSetPoliciesMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: setIdentityPoliciesFn,
-		onSuccess: (_data, { tenantId, id }) => {
-			queryClient.invalidateQueries({ queryKey: ["identities", tenantId, id] });
+		mutationFn: setRolePoliciesFn,
+		onSuccess: (_data, { tenantId, roleId }) => {
+			queryClient.invalidateQueries({
+				queryKey: ["roles", tenantId, roleId, "policies"],
+			});
 		},
 	});
 }
-

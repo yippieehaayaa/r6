@@ -11,10 +11,11 @@ import { EditPolicyForm } from "./forms/edit-policy-form";
 interface Props {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	tenantId: string;
 	policy?: Policy | null;
 }
 
-export function PolicySheet({ open, onOpenChange, policy }: Props) {
+export function PolicySheet({ open, onOpenChange, tenantId, policy }: Props) {
 	const isEdit = !!policy;
 
 	return (
@@ -25,11 +26,12 @@ export function PolicySheet({ open, onOpenChange, policy }: Props) {
 				</SheetHeader>
 				{isEdit && policy ? (
 					<EditPolicyForm
+						tenantId={tenantId}
 						policy={policy}
 						onSuccess={() => onOpenChange(false)}
 					/>
 				) : (
-					<CreatePolicyForm onSuccess={() => onOpenChange(false)} />
+					<CreatePolicyForm tenantId={tenantId} onSuccess={() => onOpenChange(false)} />
 				)}
 			</SheetContent>
 		</Sheet>

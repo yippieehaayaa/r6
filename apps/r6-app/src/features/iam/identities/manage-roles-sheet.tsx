@@ -1,18 +1,141 @@
-import type { IdentitySafe, Role } from "@r6/schemas";
-import { useQueryClient } from "@tanstack/react-query";
-import { Search, X } from "lucide-react";
+import type { IdentitySafe, Policy } from "@r6/schemas";
+import { Search } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import {
-	useGetIdentityWithRolesQuery,
-	useSetRolesMutation,
-} from "@/api/identity-and-access/identities";
-import { useListRolesQuery } from "@/api/identity-and-access/roles";
+import { useAssignIdentityPolicyMutation } from "@/api/identity-and-access/identities";
+import { useListPoliciesQuery } from "@/api/identity-and-access/policies";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorMessage } from "@/lib/api-error";
+
+interface Props {
+	tenantId: string;
+	identity: IdentitySafe;
+	open: boolean;
+	active: boolean;
+}
+
+export function PoliciesTabContent({ tenantId, identity, open, active }: Props) {
+	const mutation = useAssignIdentityPolicyMutation();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedQuery, setDebouncedQuery] = useState("");
+
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), 300);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	const { data: policiesData, isLoading } = useListPoliciesQuery(
+		tenantId,
+		{ limit: 100 },
+		{ staleTime: 30 * 1000, enabled: open && active },
+	);
+
+	// Reset search on close or tab switch
+	useEffect(() => {
+		if (!open || !active) {
+			setSearchQuery("");
+			setDebouncedQuery("");
+		}
+	}, [open, active]);
+
+	const filteredPolicies = useMemo(() => {
+		const q = debouncedQuery.toLowerCase();
+		return (policiesData?.data ?? []).filter(
+			(p) =>
+				!q ||
+				p.name.toLowerCase().includes(q) ||
+				(p.description ?? "").toLowerCase().includes(q),
+		);
+	}, [policiesData, debouncedQuery]);
+
+	function handleAssign(policy: Policy) {
+		mutation.mutate(
+			{ tenantId, id: identity.id, policyId: policy.id },
+			{
+				onSuccess: () => toast.success(`"${policy.name}" assigned.`),
+				onError: (err) => toast.error(getApiErrorMessage(err)),
+			},
+		);
+	}
+
+	return (
+		<div className="flex flex-col flex-1 overflow-hidden">
+			<div className="flex flex-col gap-3 px-4 flex-1 overflow-hidden pt-2">
+				<p className="text-xs text-muted-foreground">
+					Assigning a policy stamps its permissions directly onto this identity.
+				</p>
+
+				<div className="relative">
+					<Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+					<Input
+						placeholder="Search policies…"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						className="pl-9"
+					/>
+				</div>
+
+				<div className="flex flex-col gap-1 overflow-y-auto flex-1 -mx-1 px-1">
+					{isLoading ? (
+						Array.from({ length: 3 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+							<Skeleton key={i} className="h-14 w-full rounded-lg" />
+						))
+					) : filteredPolicies.length === 0 ? (
+						<p className="text-sm text-muted-foreground py-4 text-center">
+							No policies found.
+						</p>
+					) : (
+						filteredPolicies.map((policy) => (
+							<div
+								key={policy.id}
+								className="flex items-center justify-between gap-3 rounded-lg px-3 py-2.5 hover:bg-muted/50 transition-colors"
+							>
+								<div className="flex flex-col gap-0.5 min-w-0">
+									<div className="flex items-center gap-1.5">
+										<span className="text-sm font-medium leading-tight truncate">
+											{policy.name}
+										</span>
+										{policy.isManaged && (
+											<Badge
+												variant="secondary"
+												className="shrink-0 text-[10px] px-1 py-0 h-4"
+											>
+												Platform
+											</Badge>
+										)}
+									</div>
+									{policy.description && (
+										<span className="text-xs text-muted-foreground truncate">
+											{policy.description}
+										</span>
+									)}
+									<span className="text-xs text-muted-foreground">
+										{policy.permissions.length} permission
+										{policy.permissions.length !== 1 ? "s" : ""}
+									</span>
+								</div>
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => handleAssign(policy)}
+									disabled={mutation.isPending}
+									className="shrink-0"
+								>
+									Assign
+								</Button>
+							</div>
+						))
+					)}
+				</div>
+			</div>
+		</div>
+	);
+}
+
 
 interface Props {
 	tenantId: string;

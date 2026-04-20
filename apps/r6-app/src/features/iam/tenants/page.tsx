@@ -109,7 +109,7 @@ export default function TenantsPage() {
 				</Button>
 			</div>
 
-			<div className="rounded-xl border bg-card p-4">
+			<div className="rounded-xl border-default bg-surface p-4">
 				<TenantsTable
 					data={data?.data ?? []}
 					isLoading={isLoading}

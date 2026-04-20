@@ -58,7 +58,7 @@ export default function AccountSecurityPage() {
 	const { data: sessions, isLoading: sessionsLoading } = useGetSessionsQuery();
 
 	return (
-		<div className="flex flex-1 flex-col gap-6 p-4 pt-0 max-w-2xl">
+		<div className="flex flex-1 flex-col gap-6 p-4 pt-0 max-w-2xl animate-stagger-children">
 			<div>
 				<h1 className="text-2xl font-semibold tracking-tight">
 					Account Security
@@ -69,7 +69,7 @@ export default function AccountSecurityPage() {
 			</div>
 
 			{/* Settings-style grouped list */}
-			<div className="rounded-2xl border border-border bg-card overflow-hidden divide-y divide-border">
+			<div className="rounded-2xl border border-default bg-surface overflow-hidden divide-y divide-border">
 				{/* Password row */}
 				<button
 					type="button"
@@ -133,7 +133,7 @@ export default function AccountSecurityPage() {
 				<p className="text-sm text-muted-foreground mb-3">
 					Devices currently signed in to your account.
 				</p>
-				<div className="rounded-2xl border border-border bg-card overflow-hidden divide-y divide-border">
+				<div className="rounded-2xl border border-default bg-surface overflow-hidden divide-y divide-border">
 					{sessionsLoading ? (
 						<>
 							<div className="px-4 py-3.5">

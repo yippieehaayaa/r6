@@ -128,7 +128,7 @@ export default function IdentitiesPage() {
 				)}
 			</div>
 
-			<div className="rounded-xl border bg-card p-4">
+			<div className="rounded-xl border-default bg-surface p-4">
 				<IdentitiesTable
 					key={activeTenantId}
 					data={data?.data ?? []}

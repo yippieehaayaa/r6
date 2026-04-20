@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	PROTECTED_ROLES,
 	type ProvisionIdentityInput,
 	ProvisionIdentitySchema,
 } from "@r6/schemas";
@@ -32,17 +31,8 @@ import {
 } from "@/components/ui/sheet";
 import { getApiErrorMessage } from "@/lib/api-error";
 
-// tenant-owner is bootstrapped automatically at tenant creation time and
-// cannot be re-assigned via this endpoint. Only tenant-admin is provisionable.
-const ROLE_OPTIONS = PROTECTED_ROLES.filter((r) => r !== "tenant-owner").map(
-	(r) => ({
-		value: r,
-		label: r
-			.split("-")
-			.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-			.join(" "),
-	}),
-);
+// Only tenant-admin is provisionable via this endpoint (tenant-owner is bootstrapped at creation time).
+const ROLE_OPTIONS = [{ value: "tenant-admin", label: "Tenant Admin" }];
 
 interface Props {
 	open: boolean;

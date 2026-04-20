@@ -2,5 +2,6 @@ export * from "./mutations/disable-totp";
 export * from "./mutations/enable-totp";
 export * from "./mutations/update-password";
 export * from "./queries/get-me";
+export * from "./queries/get-sessions";
 export * from "./queries/get-totp-setup";
 export * from "./queries/list-permissions";

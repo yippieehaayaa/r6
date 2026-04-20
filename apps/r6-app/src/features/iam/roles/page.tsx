@@ -130,7 +130,7 @@ export default function RolesPage() {
 				)}
 			</div>
 
-			<div className="rounded-xl border bg-card p-4">
+			<div className="rounded-xl border-default bg-surface p-4">
 				<RolesTable
 					key={activeTenantId}
 					data={data?.data ?? []}

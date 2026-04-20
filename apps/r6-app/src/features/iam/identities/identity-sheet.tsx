@@ -9,7 +9,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CreateIdentityForm } from "./forms/create-identity-form";
 import { EditIdentityForm } from "./forms/edit-identity-form";
-import { RolesTabContent } from "./manage-roles-sheet";
+import { RolesTabContent as PoliciesTabContent } from "./manage-roles-sheet";
 
 interface Props {
 	open: boolean;
@@ -46,7 +46,7 @@ export function IdentitySheet({
 					>
 						<TabsList className="mx-4 w-fit">
 							<TabsTrigger value="details">Details</TabsTrigger>
-							<TabsTrigger value="roles">Roles</TabsTrigger>
+							<TabsTrigger value="roles">Policies</TabsTrigger>
 						</TabsList>
 						<TabsContent
 							value="details"
@@ -64,7 +64,7 @@ export function IdentitySheet({
 							forceMount
 							className="flex-1 flex flex-col overflow-hidden data-[state=inactive]:hidden"
 						>
-							<RolesTabContent
+							<PoliciesTabContent
 								tenantId={tenantId}
 								identity={identity}
 								open={open}

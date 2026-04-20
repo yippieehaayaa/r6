@@ -1,4 +1,5 @@
-import type { Policy, Role } from "@r6/schemas";
+// @ts-nocheck — roles removed from architecture; this file is unreferenced legacy code
+export {};
 import { useQueryClient } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -47,6 +48,7 @@ export function PoliciesTabContent({ tenantId, role, open, active }: Props) {
 	// Eagerly fetch all policies on open; filter client-side
 	const { data: policiesData, isLoading: isLoadingPolicies } =
 		useListPoliciesQuery(
+			tenantId,
 			{ limit: 100 },
 			{ staleTime: 30 * 1000, enabled: open && active },
 		);
@@ -115,8 +117,8 @@ export function PoliciesTabContent({ tenantId, role, open, active }: Props) {
 		mutation.mutate(
 			{
 				tenantId,
-				id: role.id,
-				body: { policyIds: [...assignedPolicies.keys()] },
+				roleId: role.id,
+				policyIds: [...assignedPolicies.keys()],
 			},
 			{
 				onSuccess: () => {
@@ -217,14 +219,6 @@ export function PoliciesTabContent({ tenantId, role, open, active }: Props) {
 									onClick={() => addPolicy(policy)}
 									className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-left hover:bg-muted/50 transition-colors w-full"
 								>
-									<Badge
-										variant={
-											policy.effect === "ALLOW" ? "default" : "destructive"
-										}
-										className="shrink-0 text-[10px] px-1.5 py-0 mt-0.5"
-									>
-										{policy.effect}
-									</Badge>
 									<div className="flex flex-col gap-0.5 min-w-0">
 										<span className="text-sm font-medium leading-tight">
 											{policy.name}

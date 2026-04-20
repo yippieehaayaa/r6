@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Building2, KeyRound, ShieldCheck, Users } from "lucide-react";
+import { Building2, KeyRound, Users } from "lucide-react";
 import {
 	Card,
 	CardContent,
@@ -17,15 +17,8 @@ const stats = [
 		href: "/iam/identities",
 	},
 	{
-		title: "Roles",
-		description: "Permission groups assigned to identities",
-		value: 14,
-		icon: ShieldCheck,
-		href: "/iam/roles",
-	},
-	{
 		title: "Policies",
-		description: "Allow / Deny rules attached to roles",
+		description: "Permission sets assigned to identities",
 		value: 42,
 		icon: KeyRound,
 		href: "/iam/policies",
@@ -45,14 +38,14 @@ export default function IamOverviewPage() {
 			<div>
 				<h1 className="text-xl font-semibold">Identity & Access</h1>
 				<p className="text-sm text-muted-foreground">
-					Manage identities, roles, policies, and tenants.
+					Manage identities, policies, and tenants.
 				</p>
 			</div>
 
 			<div className="animate-stagger-children grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
 				{stats.map((stat) => (
 					<Link key={stat.href} to={stat.href}>
-						<Card className="transition-shadow hover:shadow-md cursor-pointer h-full">
+						<Card className="transition-shadow hover:shadow-md cursor-pointer h-full bg-surface border-default">
 							<CardHeader>
 								<div className="flex items-center justify-between">
 									<CardTitle className="text-sm font-medium text-muted-foreground">

@@ -1,13 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	type Policy,
-	PolicySchema,
 	permissionRegex,
-	serviceNameRegex,
 	type UpdatePolicyInput,
 } from "@r6/schemas";
-import { useQueryClient } from "@tanstack/react-query";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useUpdatePolicyMutation } from "@/api/identity-and-access/policies";
@@ -19,13 +16,6 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { SheetFooter } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorMessage } from "@/lib/api-error";
@@ -37,67 +27,49 @@ function linesToArray(text: string): string[] {
 		.filter(Boolean);
 }
 
-const EditPolicyFormSchema = PolicySchema.omit({
-	id: true,
-	tenantId: true,
-	createdAt: true,
-	updatedAt: true,
-	deletedAt: true,
-	permissions: true,
-	audience: true,
-})
-	.partial()
-	.extend({
-		permissionsText: z
-			.string()
-			.optional()
-			.superRefine((val, ctx) => {
-				if (!val) return;
-				const invalid = val
-					.split("\n")
-					.map((l) => l.trim())
-					.filter(Boolean)
-					.filter((l) => !permissionRegex.test(l));
-				if (invalid.length > 0) {
-					ctx.addIssue({
-						code: "custom",
-						message: `Invalid: ${invalid.map((l) => `"${l}"`).join(", ")} — must follow service:resource:action format (wildcards * allowed)`,
-					});
-				}
-			}),
-		audienceText: z
-			.string()
-			.optional()
-			.superRefine((val, ctx) => {
-				if (!val) return;
-				const invalid = val
-					.split("\n")
-					.map((l) => l.trim())
-					.filter(Boolean)
-					.filter((l) => !serviceNameRegex.test(l));
-				if (invalid.length > 0) {
-					ctx.addIssue({
-						code: "custom",
-						message: `Invalid: ${invalid.map((l) => `"${l}"`).join(", ")} — must be a lowercase slug (e.g. inventory)`,
-					});
-				}
-			}),
-	});
+const EditPolicyFormSchema = z.object({
+	name: z
+		.string()
+		.min(1, "Name is required")
+		.max(100, "Name must not exceed 100 characters")
+		.trim(),
+	description: z
+		.string()
+		.max(500, "Description must not exceed 500 characters")
+		.trim()
+		.nullable()
+		.optional(),
+	permissionsText: z
+		.string()
+		.min(1, "At least one permission must be listed")
+		.superRefine((val, ctx) => {
+			const invalid = val
+				.split("\n")
+				.map((l) => l.trim())
+				.filter(Boolean)
+				.filter((l) => !permissionRegex.test(l));
+			if (invalid.length > 0) {
+				ctx.addIssue({
+					code: "custom",
+					message: `Invalid: ${invalid.map((l) => `"${l}"`).join(", ")} — must follow service:resource:action format (wildcards * allowed)`,
+				});
+			}
+		}),
+});
 type EditPolicyFormValues = z.infer<typeof EditPolicyFormSchema>;
 
 interface Props {
+	tenantId: string;
 	policy: Policy;
 	onSuccess: () => void;
 }
 
-export function EditPolicyForm({ policy, onSuccess }: Props) {
-	const queryClient = useQueryClient();
+export function EditPolicyForm({ tenantId, policy, onSuccess }: Props) {
 	const mutation = useUpdatePolicyMutation();
 
 	const {
 		register,
 		handleSubmit,
-		control,
 		formState: { errors, isSubmitting },
 	} = useForm<EditPolicyFormValues>({
 		resolver: zodResolver(EditPolicyFormSchema),
@@ -105,29 +77,20 @@ export function EditPolicyForm({ policy, onSuccess }: Props) {
 		values: {
 			name: policy.name,
 			description: policy.description,
-			effect: policy.effect,
-			conditions: policy.conditions,
 			permissionsText: policy.permissions.join("\n"),
-			audienceText: policy.audience.join("\n"),
 		},
 	});
 
 	function onSubmit(values: EditPolicyFormValues) {
-		const { permissionsText, audienceText, ...rest } = values;
 		const body: UpdatePolicyInput = {
-			...rest,
-			...(permissionsText !== undefined && {
-				permissions: linesToArray(permissionsText),
-			}),
-			...(audienceText !== undefined && {
-				audience: linesToArray(audienceText),
-			}),
+			name: values.name,
+			description: values.description ?? null,
+			permissions: linesToArray(values.permissionsText),
 		};
 		mutation.mutate(
-			{ id: policy.id, body },
+			{ tenantId, id: policy.id, body },
 			{
 				onSuccess: () => {
-					queryClient.invalidateQueries({ queryKey: ["policies"] });
 					toast.success("Policy updated.");
 					onSuccess();
 				},
@@ -158,7 +121,7 @@ export function EditPolicyForm({ policy, onSuccess }: Props) {
 					<FieldLabel htmlFor="description">Description (optional)</FieldLabel>
 					<Textarea
 						id="description"
-						placeholder="What does this policy allow or deny?"
+						placeholder="What does this policy grant access to?"
 						rows={2}
 						aria-invalid={!!errors.description}
 						{...register("description", {
@@ -166,30 +129,6 @@ export function EditPolicyForm({ policy, onSuccess }: Props) {
 						})}
 					/>
 					<FieldError errors={errors.description ? [errors.description] : []} />
-				</Field>
-
-				<Field data-invalid={!!errors.effect}>
-					<FieldLabel htmlFor="effect">Effect</FieldLabel>
-					<Controller
-						name="effect"
-						control={control}
-						render={({ field }) => (
-							<Select value={field.value} onValueChange={field.onChange}>
-								<SelectTrigger
-									id="effect"
-									className="w-full"
-									aria-invalid={!!errors.effect}
-								>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="ALLOW">ALLOW</SelectItem>
-									<SelectItem value="DENY">DENY</SelectItem>
-								</SelectContent>
-							</Select>
-						)}
-					/>
-					<FieldError errors={errors.effect ? [errors.effect] : []} />
 				</Field>
 
 				<Field data-invalid={!!errors.permissionsText}>
@@ -201,34 +140,14 @@ export function EditPolicyForm({ policy, onSuccess }: Props) {
 					</FieldLabel>
 					<Textarea
 						id="permissionsText"
-						placeholder={"inventory:stock:read\ninventory:stock:write"}
-						rows={4}
-						className="font-mono"
+						placeholder={"iam:identity:read\ninventory:stock:read"}
+						rows={5}
+						className="font-mono text-xs"
 						aria-invalid={!!errors.permissionsText}
 						{...register("permissionsText")}
 					/>
 					<FieldError
 						errors={errors.permissionsText ? [errors.permissionsText] : []}
-					/>
-				</Field>
-
-				<Field data-invalid={!!errors.audienceText}>
-					<FieldLabel htmlFor="audienceText">
-						Audience{" "}
-						<span className="text-muted-foreground font-normal">
-							(one per line)
-						</span>
-					</FieldLabel>
-					<Textarea
-						id="audienceText"
-						placeholder={"inventory\nprocurement"}
-						rows={3}
-						className="font-mono"
-						aria-invalid={!!errors.audienceText}
-						{...register("audienceText")}
-					/>
-					<FieldError
-						errors={errors.audienceText ? [errors.audienceText] : []}
 					/>
 				</Field>
 			</FieldGroup>

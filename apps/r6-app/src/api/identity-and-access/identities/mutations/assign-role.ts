@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { identityApi } from "@/api/_app";
 
-export interface AssignPolicyToIdentityParams {
+export interface AssignIdentityPolicyParams {
 	tenantId: string;
 	id: string;
 	policyId: string;
@@ -10,11 +10,11 @@ export interface AssignPolicyToIdentityParams {
 
 const AssignPolicyResponseSchema = z.object({ message: z.string() });
 
-export async function assignPolicyToIdentityFn({
+export async function assignIdentityPolicyFn({
 	tenantId,
 	id,
 	policyId,
-}: AssignPolicyToIdentityParams): Promise<{ message: string }> {
+}: AssignIdentityPolicyParams): Promise<{ message: string }> {
 	const { data } = await identityApi.post<unknown>(
 		`/tenants/${tenantId}/identities/${id}/roles`,
 		{ policyId },
@@ -22,12 +22,13 @@ export async function assignPolicyToIdentityFn({
 	return AssignPolicyResponseSchema.parse(data);
 }
 
-export function useAssignPolicyToIdentityMutation() {
+export function useAssignIdentityPolicyMutation() {
 	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: assignPolicyToIdentityFn,
+		mutationFn: assignIdentityPolicyFn,
 		onSuccess: (_data, { tenantId, id }) => {
 			queryClient.invalidateQueries({ queryKey: ["identities", tenantId, id] });
 		},
 	});
 }
+

@@ -4,27 +4,13 @@ import type {
 	OnChangeFn,
 	PaginationState,
 } from "@tanstack/react-table";
-import { MoreHorizontal, Pencil, RotateCcw, Trash2 } from "lucide-react";
 import { useMemo } from "react";
 import { DataTable } from "@/components/table/data-table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface Props {
 	data: Policy[];
 	isLoading: boolean;
-	onEdit: (policy: Policy) => void;
-	onDelete: (policy: Policy) => void;
-	onRestore: (policy: Policy) => void;
-	canUpdate: boolean;
-	canDelete: boolean;
-	canRestore: boolean;
 	rowCount?: number;
 	paginationState?: PaginationState;
 	onPaginationChange?: OnChangeFn<PaginationState>;
@@ -35,12 +21,6 @@ interface Props {
 export function PoliciesTable({
 	data,
 	isLoading,
-	onEdit,
-	onDelete,
-	onRestore,
-	canUpdate,
-	canDelete,
-	canRestore,
 	rowCount,
 	paginationState,
 	onPaginationChange,
@@ -53,20 +33,14 @@ export function PoliciesTable({
 				accessorKey: "name",
 				header: "Name",
 				cell: ({ row }) => (
-					<span className="font-medium">{row.original.name}</span>
-				),
-			},
-			{
-				accessorKey: "effect",
-				header: "Effect",
-				cell: ({ row }) => (
-					<Badge
-						variant={
-							row.original.effect === "ALLOW" ? "default" : "destructive"
-						}
-					>
-						{row.original.effect}
-					</Badge>
+					<div className="min-w-0">
+						<p className="font-medium truncate">{row.original.name}</p>
+						{row.original.description && (
+							<p className="text-xs text-muted-foreground truncate mt-0.5">
+								{row.original.description}
+							</p>
+						)}
+					</div>
 				),
 			},
 			{
@@ -80,17 +54,22 @@ export function PoliciesTable({
 				),
 			},
 			{
-				accessorKey: "audience",
-				header: "Audience",
-				cell: ({ row }) => (
-					<div className="flex flex-wrap gap-1">
-						{row.original.audience.map((a) => (
-							<Badge key={a} variant="outline">
-								{a}
-							</Badge>
-						))}
-					</div>
-				),
+				accessorKey: "isManaged",
+				header: "Managed",
+				cell: ({ row }) =>
+					row.original.isManaged ? (
+						<Badge variant="secondary">Platform</Badge>
+					) : null,
+			},
+			{
+				accessorKey: "deletedAt",
+				header: "Status",
+				cell: ({ row }) =>
+					row.original.deletedAt ? (
+						<Badge variant="destructive">Deleted</Badge>
+					) : (
+						<Badge variant="default">Active</Badge>
+					),
 			},
 			{
 				accessorKey: "createdAt",
@@ -101,51 +80,8 @@ export function PoliciesTable({
 					</span>
 				),
 			},
-			{
-				id: "actions",
-				header: "",
-				enableHiding: false,
-				enableSorting: false,
-				cell: ({ row }) => {
-					const policy = row.original;
-					if (!canUpdate && !canDelete && !canRestore) return null;
-					return (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" size="icon-sm">
-									<MoreHorizontal />
-									<span className="sr-only">Open menu</span>
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								{canUpdate && (
-									<DropdownMenuItem onSelect={() => onEdit(policy)}>
-										<Pencil />
-										Edit
-									</DropdownMenuItem>
-								)}
-								{canDelete && !policy.deletedAt && (
-									<DropdownMenuItem
-										variant="destructive"
-										onSelect={() => onDelete(policy)}
-									>
-										<Trash2 />
-										Delete
-									</DropdownMenuItem>
-								)}
-								{canRestore && policy.deletedAt && (
-									<DropdownMenuItem onSelect={() => onRestore(policy)}>
-										<RotateCcw />
-										Restore
-									</DropdownMenuItem>
-								)}
-							</DropdownMenuContent>
-						</DropdownMenu>
-					);
-				},
-			},
 		],
-		[canUpdate, canDelete, canRestore, onEdit, onDelete, onRestore],
+		[],
 	);
 
 	return (
@@ -162,3 +98,5 @@ export function PoliciesTable({
 		/>
 	);
 }
+
+
