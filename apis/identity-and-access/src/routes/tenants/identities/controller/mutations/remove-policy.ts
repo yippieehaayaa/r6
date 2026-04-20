@@ -3,6 +3,7 @@ import {
   getIdentityWithPermissions,
   getPolicyById,
   getTenantById,
+  revokeAllRefreshTokensForIdentity,
 } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../../../lib/errors";
@@ -68,6 +69,8 @@ export const removePolicyHandler = async (
       tenantId,
       policy.permissions,
     );
+
+    await revokeAllRefreshTokensForIdentity(id);
 
     res.status(204).end();
   } catch (err) {

@@ -3,6 +3,7 @@ import {
   getIdentityWithPermissions,
   getPoliciesByIds,
   getTenantById,
+  revokeAllRefreshTokensForIdentity,
   setPoliciesForIdentity,
 } from "@r6/db-identity-and-access";
 import { UuidSchema } from "@r6/schemas";
@@ -88,6 +89,7 @@ export const setPoliciesHandler = async (
     // Empty policyIds — clear all permissions without fetching any policies.
     if (policyIds.length === 0) {
       await deleteAllIdentityPermissions(id, tenantId);
+      await revokeAllRefreshTokensForIdentity(id);
       res.status(200).json({ message: "All permissions cleared" });
       return;
     }
@@ -116,6 +118,8 @@ export const setPoliciesHandler = async (
     }
 
     await setPoliciesForIdentity(id, tenantId, allPermissions);
+
+    await revokeAllRefreshTokensForIdentity(id);
 
     res.status(200).json({ message: "Policies set successfully" });
   } catch (err) {

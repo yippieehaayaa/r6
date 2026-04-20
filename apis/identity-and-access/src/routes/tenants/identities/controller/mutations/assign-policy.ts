@@ -3,6 +3,7 @@ import {
   getIdentityWithPermissions,
   getPolicyById,
   getTenantById,
+  revokeAllRefreshTokensForIdentity,
 } from "@r6/db-identity-and-access";
 import { UuidSchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
@@ -106,6 +107,8 @@ export const assignPolicyHandler = async (
         permission,
       })),
     );
+
+    await revokeAllRefreshTokensForIdentity(id);
 
     res.status(200).json({ message: "Policy assigned successfully" });
   } catch (err) {
