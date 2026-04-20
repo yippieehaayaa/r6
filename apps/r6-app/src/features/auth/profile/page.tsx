@@ -53,7 +53,7 @@ function ProfileInfoCard() {
 		? profile.username
 				.split(/[\s._-]/)
 				.slice(0, 2)
-				.map((s) => s[0]?.toUpperCase() ?? "")
+				.map((s: string) => s[0]?.toUpperCase() ?? "")
 				.join("")
 		: "?";
 
@@ -545,7 +545,7 @@ function PermissionsCard() {
 					</p>
 				) : (
 					<div className="flex flex-wrap gap-1.5">
-						{permissions.map((p) => (
+						{permissions.map((p: { id: string; permission: string }) => (
 							<Badge
 								key={p.id}
 								variant="outline"

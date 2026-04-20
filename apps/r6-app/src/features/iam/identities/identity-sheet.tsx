@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+	type CreateIdentityFormInput,
 	type CreateIdentityInput,
 	CreateIdentitySchema,
 	type IdentitySafe,
@@ -57,7 +58,7 @@ export function CreateIdentitySheet({
 		handleSubmit,
 		reset,
 		formState: { errors, isSubmitting },
-	} = useForm<CreateIdentityInput>({
+	} = useForm<CreateIdentityFormInput, unknown, CreateIdentityInput>({
 		resolver: zodResolver(CreateIdentitySchema),
 		defaultValues: { kind: "USER", mustChangePassword: false },
 		mode: "onTouched",

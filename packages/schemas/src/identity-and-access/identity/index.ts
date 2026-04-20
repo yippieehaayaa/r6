@@ -221,6 +221,7 @@ export const CreateIdentitySchema = IdentitySchema.omit({
 });
 
 export type CreateIdentityInput = z.infer<typeof CreateIdentitySchema>;
+export type CreateIdentityFormInput = z.input<typeof CreateIdentitySchema>;
 
 // ── Update payload ──────────────────────────────────────────
 
