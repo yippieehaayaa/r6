@@ -54,7 +54,7 @@ export function IdentitySheet({
 							className="flex-1 overflow-y-auto data-[state=inactive]:hidden"
 						>
 							<EditIdentityForm
-							tenantId={tenantId}
+								tenantId={tenantId}
 								identity={identity}
 								onSuccess={() => onOpenChange(false)}
 							/>
@@ -65,7 +65,7 @@ export function IdentitySheet({
 							className="flex-1 flex flex-col overflow-hidden data-[state=inactive]:hidden"
 						>
 							<RolesTabContent
-							tenantId={tenantId}
+								tenantId={tenantId}
 								identity={identity}
 								open={open}
 								active={activeTab === "roles"}

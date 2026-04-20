@@ -21,8 +21,7 @@ export function parseTokenClaims(token: string): TokenClaims {
 	return {
 		sub: typeof payload.sub === "string" ? payload.sub : "",
 		kind: typeof payload.kind === "string" ? payload.kind : "",
-		tenantId:
-			typeof payload.tenantId === "string" ? payload.tenantId : null,
+		tenantId: typeof payload.tenantId === "string" ? payload.tenantId : null,
 		roles: Array.isArray(payload.roles) ? (payload.roles as string[]) : [],
 		permissions: Array.isArray(payload.permissions)
 			? (payload.permissions as string[])

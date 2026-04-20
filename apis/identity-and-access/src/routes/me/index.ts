@@ -1,6 +1,7 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authMiddleware } from "../../middleware/auth";
+import { changePassword } from "./controller/mutations/change-password";
 import { disableTotp } from "./controller/mutations/disable-totp";
 import { enableTotp } from "./controller/mutations/enable-totp";
 import { getProfile } from "./controller/queries/get-profile";
@@ -48,8 +49,14 @@ router.post("/totp/enable", totpLimiter, enableTotp);
 //   a stolen access token from silently downgrading 2FA.
 router.delete("/totp", totpLimiter, disableTotp);
 
+// ── Self-service password management ─────────────────────────────────────────
+
+// PATCH /me/password
+//   Changes the authenticated identity's password. Requires the current
+//   password in the body. On success all refresh tokens are revoked.
+router.patch("/password", totpLimiter, changePassword);
+
 // ── Future self-service profile routes ───────────────────────────────────────
 // PATCH /me         → updateProfile  (update own name, country, etc.)
-// PATCH /me/password → changePassword (change own password)
 
 export default router;

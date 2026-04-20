@@ -37,7 +37,7 @@ export default function SetupPage() {
 					</div>
 				) : status ? (
 					<SetupWizard
-					tenantId={tenantId}
+						tenantId={tenantId}
 						status={status}
 						onComplete={onComplete}
 					/>

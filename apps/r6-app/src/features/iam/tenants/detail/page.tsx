@@ -260,7 +260,7 @@ export default function TenantDetailPage() {
 			<IdentityDetailSheet
 				open={!!selectedIdentityId}
 				onOpenChange={(open) => !open && setSelectedIdentityId(null)}
-			tenantId={tenantId}
+				tenantId={tenantId}
 				identityId={selectedIdentityId}
 			/>
 

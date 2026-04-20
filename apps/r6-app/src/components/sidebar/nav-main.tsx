@@ -40,8 +40,7 @@ export function NavMain({
 		.map((item) => ({
 			...item,
 			items: item.items?.filter(
-				(sub) =>
-					(!sub.permission || hasPermission(sub.permission)),
+				(sub) => !sub.permission || hasPermission(sub.permission),
 			),
 		}))
 		.filter((item) => !item.items || item.items.length > 0);

@@ -49,7 +49,7 @@ export function RoleSheet({ open, onOpenChange, tenantId, role }: Props) {
 							className="flex-1 overflow-y-auto data-[state=inactive]:hidden"
 						>
 							<EditRoleForm
-							tenantId={tenantId}
+								tenantId={tenantId}
 								role={role}
 								onSuccess={() => onOpenChange(false)}
 							/>
@@ -60,7 +60,7 @@ export function RoleSheet({ open, onOpenChange, tenantId, role }: Props) {
 							className="flex-1 flex flex-col overflow-hidden data-[state=inactive]:hidden"
 						>
 							<PoliciesTabContent
-							tenantId={tenantId}
+								tenantId={tenantId}
 								role={role}
 								open={open}
 								active={activeTab === "policies"}
