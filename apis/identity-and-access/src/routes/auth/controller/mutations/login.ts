@@ -103,7 +103,7 @@ export async function login(
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
       maxAge: env.JWT_REFRESH_TTL_MS,
-      path: "/auth",
+      path: env.COOKIE_PATH,
     });
 
     res.status(200).json({ accessToken });

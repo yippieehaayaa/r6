@@ -17,6 +17,5 @@ auth:bearer {
 script:post-response {
   if (res.status === 200) {
     bru.setEnvVar("accessToken", "");
-    bru.setEnvVar("refreshToken", "");
   }
 }

@@ -1,5 +1,6 @@
 import { revokeRefreshToken } from "@r6/db-identity-and-access";
 import type { NextFunction, Request, Response } from "express";
+import { env } from "../../../../config";
 import { verifyRefreshToken } from "../../../../lib/jwt";
 import { revokeAccessToken } from "../../../../lib/token-denylist";
 
@@ -25,12 +26,12 @@ export async function logout(
       }
     }
 
-    const isProd = process.env.NODE_ENV === "production";
+    const isProd = env.NODE_ENV === "production";
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
-      path: "/auth",
+      path: env.COOKIE_PATH,
     });
 
     res.status(200).json({ message: "Logged out successfully" });

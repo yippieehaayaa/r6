@@ -6,19 +6,12 @@ meta {
 
 post {
   url: {{iamURL}}/auth/refresh
-  body: json
+  body: none
   auth: none
-}
-
-body:json {
-  {
-    "token": "{{refreshToken}}"
-  }
 }
 
 script:post-response {
   if (res.status === 200) {
     bru.setEnvVar("accessToken", res.body.accessToken);
-    bru.setEnvVar("refreshToken", res.body.refreshToken);
   }
 }

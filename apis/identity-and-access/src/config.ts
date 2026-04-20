@@ -33,6 +33,7 @@ const envSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  COOKIE_PATH: z.string().optional().default("/auth"),
 });
 
 const env = envSchema.parse({
@@ -52,6 +53,7 @@ const env = envSchema.parse({
     process.env.AZURE_COMMUNICATION_SENDER_ADDRESS,
   CORS_ORIGIN: process.env.CORS_ORIGIN,
   NODE_ENV: process.env.NODE_ENV,
+  COOKIE_PATH: process.env.COOKIE_PATH,
 });
 
 export { env };
