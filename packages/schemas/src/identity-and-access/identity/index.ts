@@ -269,6 +269,14 @@ export const ChangePasswordSchema = z
 
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
 
+export const ChangePasswordResponseSchema = z.object({
+  message: z.string(),
+});
+
+export type ChangePasswordResponse = z.infer<
+  typeof ChangePasswordResponseSchema
+>;
+
 // ── Provision payload (ADMIN-only, bootstrap tenant identities) ────────────
 
 /**

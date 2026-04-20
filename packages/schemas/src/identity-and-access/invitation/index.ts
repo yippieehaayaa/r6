@@ -6,6 +6,7 @@ import {
   TimestampSchema,
   UuidSchema,
 } from "../base.schema";
+import { IdentitySafeSchema } from "../identity/index";
 
 // ============================================================
 //  INVITATION SCHEMA
@@ -90,3 +91,14 @@ export const ListInvitationsQuerySchema = ListQuerySchema.extend({
   includeAccepted: z.coerce.boolean().optional(),
 });
 export type ListInvitationsQuery = z.input<typeof ListInvitationsQuerySchema>;
+
+// ── Accept response ───────────────────────────────────────────
+
+export const AcceptInvitationResponseSchema = z.object({
+  invitation: InvitationSafeSchema,
+  identity: IdentitySafeSchema,
+});
+
+export type AcceptInvitationResponse = z.infer<
+  typeof AcceptInvitationResponseSchema
+>;
