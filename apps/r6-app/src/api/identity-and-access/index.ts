@@ -4,5 +4,4 @@ export * from "./invitations";
 export * from "./me";
 export * from "./policies";
 export * from "./registration";
-export * from "./roles";
 export * from "./tenants";

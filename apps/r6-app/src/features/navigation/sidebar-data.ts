@@ -149,11 +149,6 @@ export const data = {
 					permission: "iam:identity:read",
 				},
 				{
-					title: "Roles",
-					url: "/r6/iam/roles",
-					permission: "iam:role:read",
-				},
-				{
 					title: "Policies",
 					url: "/r6/iam/policies",
 					permission: "iam:policy:read",

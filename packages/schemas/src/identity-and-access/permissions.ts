@@ -37,13 +37,6 @@ export const PERMISSION_CATALOG: PermissionCatalog = {
       delete: "Deactivate Users",
       restore: "Restore Deactivated Users",
     },
-    role: {
-      read: "View Roles",
-      create: "Create Roles",
-      update: "Edit Roles",
-      delete: "Delete Roles",
-      restore: "Restore Deleted Roles",
-    },
     policy: {
       read: "View Permission Sets",
       create: "Create Permission Sets",

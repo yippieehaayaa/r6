@@ -12,7 +12,7 @@ export default function LoginPage() {
 			</div>
 			<div className="flex w-full max-w-sm flex-col gap-6">
 				<Link
-					to="/login"
+					to="/r6/login"
 					className="flex items-center gap-2 self-center font-medium text-[var(--text-primary)]"
 				>
 					<div className="flex size-6 items-center justify-center rounded-md bg-[var(--accent)] text-white">
