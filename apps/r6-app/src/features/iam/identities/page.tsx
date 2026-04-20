@@ -1,0 +1,137 @@
+import type { IdentitySafe } from "@r6/schemas";
+import type { PaginationState } from "@tanstack/react-table";
+import { PlusIcon, UsersIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useRemoveIdentityMutation } from "@/api/identity-and-access/tenants/identities/mutations/remove";
+import { useRestoreIdentityMutation } from "@/api/identity-and-access/tenants/identities/mutations/restore";
+import { useListIdentitiesQuery } from "@/api/identity-and-access/tenants/identities/queries/list";
+import { useAuth } from "@/auth";
+import { Can } from "@/components/can";
+import { Button } from "@/components/ui/button";
+import { getApiErrorMessage } from "@/lib/api-error";
+import { IdentitiesTable } from "./identities-table";
+import { CreateIdentitySheet, EditIdentitySheet } from "./identity-sheet";
+import { ManagePoliciesSheet } from "./manage-policies-sheet";
+
+export default function IdentitiesPage() {
+	const { claims } = useAuth();
+	const tenantId = claims?.tenantId ?? "";
+
+	const [pagination, setPagination] = useState<PaginationState>({
+		pageIndex: 0,
+		pageSize: 20,
+	});
+	const [search, setSearch] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
+
+	const [createOpen, setCreateOpen] = useState(false);
+	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
+	const [policiesTarget, setPoliciesTarget] = useState<IdentitySafe | null>(
+		null,
+	);
+
+	const removeMutation = useRemoveIdentityMutation();
+	const restoreMutation = useRestoreIdentityMutation();
+
+	// Debounce search input and reset page together
+	useEffect(() => {
+		const id = setTimeout(() => {
+			setDebouncedSearch(search);
+			setPagination((p) => ({ ...p, pageIndex: 0 }));
+		}, 300);
+		return () => clearTimeout(id);
+	}, [search]);
+
+	const { data, isLoading } = useListIdentitiesQuery(tenantId, {
+		page: pagination.pageIndex + 1,
+		limit: pagination.pageSize,
+		search: debouncedSearch || undefined,
+	});
+
+	async function handleDelete(identity: IdentitySafe) {
+		try {
+			await removeMutation.mutateAsync({ tenantId, id: identity.id });
+			toast.success(`${identity.username} removed`);
+		} catch (err) {
+			toast.error(getApiErrorMessage(err));
+		}
+	}
+
+	async function handleRestore(identity: IdentitySafe) {
+		try {
+			await restoreMutation.mutateAsync({ tenantId, id: identity.id });
+			toast.success(`${identity.username} restored`);
+		} catch (err) {
+			toast.error(getApiErrorMessage(err));
+		}
+	}
+
+	return (
+		<div className="animate-apple-enter flex flex-col gap-6 p-6 md:p-8">
+			{/* Header */}
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+				<div className="flex items-center gap-2">
+					<div className="flex size-8 items-center justify-center rounded-lg bg-[var(--accent)] shadow-sm">
+						<UsersIcon className="size-4 text-white" />
+					</div>
+					<div>
+						<h1 className="text-2xl font-semibold tracking-tight text-[var(--text-primary)]">
+							Identities
+						</h1>
+						<p className="text-sm text-muted-foreground">
+							Manage users and service accounts
+						</p>
+					</div>
+				</div>
+				<Can permission="iam:identity:create">
+					<Button
+						onClick={() => setCreateOpen(true)}
+						className="rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white border-0 shadow-sm"
+					>
+						<PlusIcon className="size-4" />
+						Create Identity
+					</Button>
+				</Can>
+			</div>
+
+			{/* Table */}
+			<IdentitiesTable
+				data={data?.data ?? []}
+				isLoading={isLoading}
+				rowCount={data?.total}
+				paginationState={pagination}
+				onPaginationChange={setPagination}
+				globalFilterValue={search}
+				onGlobalFilterChange={setSearch}
+				onEdit={(row) => setEditTarget(row)}
+				onDelete={handleDelete}
+				onRestore={handleRestore}
+				onManagePolicies={(row) => setPoliciesTarget(row)}
+			/>
+
+			{/* Sheets */}
+			<CreateIdentitySheet
+				tenantId={tenantId}
+				open={createOpen}
+				onOpenChange={setCreateOpen}
+			/>
+			<EditIdentitySheet
+				tenantId={tenantId}
+				identity={editTarget}
+				open={!!editTarget}
+				onOpenChange={(open) => {
+					if (!open) setEditTarget(null);
+				}}
+			/>
+			<ManagePoliciesSheet
+				tenantId={tenantId}
+				identity={policiesTarget}
+				open={!!policiesTarget}
+				onOpenChange={(open) => {
+					if (!open) setPoliciesTarget(null);
+				}}
+			/>
+		</div>
+	);
+}
