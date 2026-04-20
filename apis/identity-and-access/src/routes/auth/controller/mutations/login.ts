@@ -1,4 +1,5 @@
 import { createRefreshToken, verifyIdentity } from "@r6/db-identity-and-access";
+import { LoginRequestSchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
 import { env } from "../../../../config";
 import { AppError } from "../../../../lib/errors";
@@ -16,15 +17,7 @@ export async function login(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const { username, password } = req.body as {
-      username?: string;
-      password?: string;
-    };
-
-    if (!password)
-      throw new AppError(400, "validation_error", "password is required");
-    if (!username)
-      throw new AppError(400, "validation_error", "username is required");
+    const { username, password } = LoginRequestSchema.parse(req.body);
 
     let full: Awaited<ReturnType<typeof verifyIdentity>>;
     try {
