@@ -170,7 +170,7 @@ const updateIdentity = async (
 ): Promise<Identity> => {
   const existing = await getIdentityById(id, tenantId);
   if (!existing) throw new Error("not_found");
-  return prisma.identity.update({
+  const updated = await prisma.identity.update({
     where: { id },
     data: {
       ...(input.tenantId !== undefined && { tenantId: input.tenantId }),
@@ -196,6 +196,10 @@ const updateIdentity = async (
       ...(input.status !== undefined && { status: input.status }),
     },
   });
+  if (input.status === "SUSPENDED" || input.status === "INACTIVE") {
+    await revokeAllRefreshTokensForIdentity(id);
+  }
+  return updated;
 };
 
 const changePassword = async (
@@ -319,10 +323,12 @@ const softDeleteIdentity = async (
 ): Promise<Identity> => {
   const existing = await getIdentityById(id, tenantId);
   if (!existing) throw new Error("not_found");
-  return prisma.identity.update({
+  const deleted = await prisma.identity.update({
     where: { id },
     data: { deletedAt: new Date(), status: "INACTIVE" },
   });
+  await revokeAllRefreshTokensForIdentity(id);
+  return deleted;
 };
 
 // Marks an identity as email-verified and activates it.
