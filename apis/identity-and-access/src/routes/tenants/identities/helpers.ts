@@ -56,7 +56,7 @@ export function resolveTargetTier(
 ): IdentityTier {
   if (target.id === tenant.ownerId) return IdentityTier.OWNER;
   const isAdmin = target.identityPermissions.some(
-    (p) => p.permission === "iam:*:*" && p.effect === "ALLOW",
+    (p) => p.permission === "iam:*:*",
   );
   if (isAdmin) return IdentityTier.ADMIN;
   return IdentityTier.USER;

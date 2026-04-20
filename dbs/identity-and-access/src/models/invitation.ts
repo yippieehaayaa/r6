@@ -134,7 +134,6 @@ const acceptInvitation = async (
         tenantId: invitation.tenantId,
         identityId: identity.id,
         permission,
-        effect: "ALLOW" as const,
       })),
     );
 

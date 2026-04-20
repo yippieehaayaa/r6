@@ -104,7 +104,6 @@ export const assignPolicyHandler = async (
         identityId: id,
         tenantId,
         permission,
-        effect: "ALLOW" as const,
       })),
     );
 

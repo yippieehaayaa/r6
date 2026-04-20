@@ -1,6 +1,6 @@
 // Structural types for token-claim building — avoids depending on
 // Prisma model types flowing through the package boundary.
-type PermissionClaim = { permission: string; effect: string };
+type PermissionClaim = { permission: string };
 export type IdentityForToken = {
   id: string;
   kind: string;
@@ -9,12 +9,6 @@ export type IdentityForToken = {
 };
 
 export const buildTokenClaims = (identity: IdentityForToken) => {
-  const allowSet = new Set<string>();
-  const denySet = new Set<string>();
-  for (const p of identity.identityPermissions) {
-    if (p.effect === "ALLOW") allowSet.add(p.permission);
-    else denySet.add(p.permission);
-  }
-  const permissions = [...allowSet].filter((p) => !denySet.has(p));
+  const permissions = identity.identityPermissions.map((p) => p.permission);
   return { permissions };
 };

@@ -22,13 +22,6 @@ enum IdentityKind {
     SERVICE
 }
 
-// Whether a policy grants or explicitly denies access.
-// DENY takes precedence over ALLOW when both match.
-enum PolicyEffect {
-    ALLOW
-    DENY
-}
-
 // Recognised microservice / module names.
 // Lowercase to match the audience string convention used in Policy.
 // e.g. policy.audience = ["inventory", "pos"]

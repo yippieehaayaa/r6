@@ -118,7 +118,6 @@ const createTenantWithDefaults = async (
           tenantId: tenant.id,
           identityId: input.ownerId,
           permission,
-          effect: "ALLOW",
         })),
         skipDuplicates: true,
       });

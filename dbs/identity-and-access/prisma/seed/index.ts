@@ -17,7 +17,7 @@
  *
  * Tier derivation (no role/tier column in DB):
  *   OWNER — Tenant.ownerId === identity.id
- *   ADMIN — identity has an IdentityPermission row { permission: "iam:*:*", effect: ALLOW }
+ *   ADMIN — identity has an IdentityPermission row { permission: "iam:*:*" }
  *   USER  — everyone else
  *
  * Seeded identities
@@ -153,27 +153,27 @@ async function main() {
 
 	// Owner — full access to all modules.
 	console.log("\n── Identity permissions (owner) ──────────────");
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "iam:*:*",  effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "hris:*:*", effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "iam:*:*"  });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: ownerIdentity.id, permission: "hris:*:*" });
 
 	// Tenant Admin — curated management access (no wildcard).
 	// Can manage all identities below ADMIN tier, assign policies, send invitations,
 	// and read policies. Cannot manage other admins or the owner.
 	console.log("\n── Identity permissions (tenant admin) ───────");
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:create",     effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:read",       effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:update",     effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:delete",     effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:restore",    effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:invitation:create",   effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:invitation:read",     effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:role:assign",         effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:policy:read",         effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:create"   });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:read"     });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:update"   });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:delete"   });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:identity:restore"  });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:invitation:create" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:invitation:read"   });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:role:assign"       });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: adminIdentity.id, permission: "iam:policy:read"       });
 
 	// Regular User — read-only access.
 	console.log("\n── Identity permissions (regular user) ───────");
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:identity:read", effect: "ALLOW" });
-	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:policy:read",   effect: "ALLOW" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:identity:read" });
+	await upsertIdentityPermission({ tenantId: r6Tenant.id, identityId: regularUser.id, permission: "iam:policy:read"   });
 
 	console.log("\n── Done ──────────────────────────────────────\n");
 	console.log("Tenant: r6");

@@ -33,14 +33,6 @@ export const IdentityKindSchema = z.enum(["USER", "SERVICE"]);
 export type IdentityKind = z.infer<typeof IdentityKindSchema>;
 
 /**
- * Whether a policy grants or explicitly denies access.
- * DENY always takes precedence over ALLOW when both match.
- */
-export const PolicyEffectSchema = z.enum(["ALLOW", "DENY"]);
-
-export type PolicyEffect = z.infer<typeof PolicyEffectSchema>;
-
-/**
  * Recognised microservice / module names.
  * Mirrors the TenantModule Prisma enum.
  * Lowercase values match the audience string convention used in permission

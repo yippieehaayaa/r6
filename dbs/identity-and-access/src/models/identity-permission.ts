@@ -1,21 +1,15 @@
 // ============================================================
 //  identity-permission.ts
-//  Use cases for the IdentityPermission model (per-user overrides).
+//  Use cases for the IdentityPermission model (per-user permission grants).
 //
 //  Constraints enforced here (from schema):
-//    @@unique([identityId, permission]) — one override row per permission
+//    @@unique([identityId, permission]) — one row per permission per identity
 //    @@index([tenantId])
 //    @@index([identityId])
-//    tenantId non-nullable — all overrides are tenant-scoped
-//    effect PolicyEffect  — ALLOW to add, DENY to remove
+//    tenantId non-nullable — all grants are tenant-scoped
 //
-//  Resolution order (applied in buildTokenClaims after migration):
-//    1. Collect permissions from all active roles.
-//    2. Add identity ALLOW overrides.
-//    3. Remove identity DENY overrides (DENY always wins).
-//
-//  NOTE: Requires `prisma migrate dev` to be run first to generate
-//  the IdentityPermission model in the Prisma client.
+//  The system is deny-by-default. A row in this table grants the permission;
+//  removing the row revokes it.
 // ============================================================
 
 import type { IdentityPermission } from "../../generated/prisma/client.js";
@@ -24,14 +18,13 @@ import { buildPaginationQuery, type PaginatedResult } from "./shared.js";
 import type {
   CreateIdentityPermissionInput,
   ListIdentityPermissionsInput,
-  UpdateIdentityPermissionInput,
 } from "./types.js";
 
 // ─── Create / upsert ─────────────────────────────────────────
 
-// Creates or updates a permission override for an identity.
+// Creates a permission grant for an identity.
 // Uses upsert on @@unique([identityId, permission]) — safe to call
-// repeatedly; only the effect changes if the row already exists.
+// repeatedly; a no-op if the row already exists (update has no fields to change).
 const upsertIdentityPermission = async (
   input: CreateIdentityPermissionInput,
 ): Promise<IdentityPermission> => {
@@ -46,18 +39,14 @@ const upsertIdentityPermission = async (
       tenantId: input.tenantId,
       identityId: input.identityId,
       permission: input.permission,
-      effect: input.effect,
     },
-    update: {
-      effect: input.effect,
-    },
+    update: {},
   });
 };
 
 // ─── Read ────────────────────────────────────────────────────
 
-// Finds a single override by identity + exact permission string, scoped to tenant.
-// Uses @@index([identityId]) and tenantId for safe cross-verification.
+// Finds a single grant by identity + exact permission string, scoped to tenant.
 const getIdentityPermission = async (
   identityId: string,
   tenantId: string,
@@ -70,7 +59,7 @@ const getIdentityPermission = async (
 
 // ─── Paginated list ──────────────────────────────────────────
 
-// Returns all permission overrides for a specific identity, paginated.
+// Returns all permission grants for a specific identity, paginated.
 // @@index([identityId]) backs this query.
 const listIdentityPermissions = async (
   input: ListIdentityPermissionsInput,
@@ -91,33 +80,9 @@ const listIdentityPermissions = async (
   return { data, total, page: input.page, limit: input.limit };
 };
 
-// ─── Update ──────────────────────────────────────────────────
-
-// Updates the effect of an existing override.
-// Verifies the override belongs to tenantId before writing.
-// Throws if no override row exists for [identityId, tenantId, permission].
-const updateIdentityPermission = async (
-  identityId: string,
-  tenantId: string,
-  permission: string,
-  input: UpdateIdentityPermissionInput,
-): Promise<IdentityPermission> => {
-  const existing = await getIdentityPermission(
-    identityId,
-    tenantId,
-    permission,
-  );
-  if (!existing) throw new Error("not_found");
-  return prisma.identityPermission.update({
-    where: { identityId_permission: { identityId, permission } },
-    data: { effect: input.effect },
-  });
-};
-
 // ─── Delete ──────────────────────────────────────────────────
 
-// Removes a specific permission override, returning the identity to
-// their role-derived baseline for that permission.
+// Removes a specific permission grant.
 // Uses deleteMany with tenantId to prevent cross-tenant deletion.
 const deleteIdentityPermission = async (
   identityId: string,
@@ -129,7 +94,7 @@ const deleteIdentityPermission = async (
   });
 };
 
-// Removes all overrides for an identity (e.g. on role reassignment).
+// Removes all permission grants for an identity (e.g. on role reassignment).
 const deleteAllIdentityPermissions = async (
   identityId: string,
   tenantId: string,
@@ -141,7 +106,7 @@ const deleteAllIdentityPermissions = async (
 
 // ─── Bulk create ─────────────────────────────────────────────
 
-// Stamps multiple permission ALLOW rows for an identity from a Policy's
+// Stamps multiple permission rows for an identity from a Policy's
 // permissions array. Skips duplicates via skipDuplicates — safe to call
 // repeatedly (idempotent on the unique index).
 const createManyIdentityPermissions = async (
@@ -149,7 +114,6 @@ const createManyIdentityPermissions = async (
     identityId: string;
     tenantId: string;
     permission: string;
-    effect: import("../../generated/prisma/client.js").PolicyEffect;
   }>,
 ): Promise<void> => {
   await prisma.identityPermission.createMany({
@@ -158,7 +122,7 @@ const createManyIdentityPermissions = async (
   });
 };
 
-// Removes all overrides for the given specific permission strings.
+// Removes all grants for the given specific permission strings.
 // Called when a policy is un-assigned from an identity.
 const deleteIdentityPermissionsByPermissions = async (
   identityId: string,
@@ -170,7 +134,7 @@ const deleteIdentityPermissionsByPermissions = async (
   });
 };
 
-// Atomically replaces ALL permission overrides for an identity.
+// Atomically replaces ALL permission grants for an identity.
 // Called by the "set-policies" route which treats the provided policyIds
 // as the canonical full list — any permissions not covered are removed.
 const setPoliciesForIdentity = async (
@@ -186,7 +150,6 @@ const setPoliciesForIdentity = async (
           identityId,
           tenantId,
           permission,
-          effect: "ALLOW" as const,
         })),
         skipDuplicates: true,
       });
@@ -198,7 +161,6 @@ export {
   upsertIdentityPermission,
   getIdentityPermission,
   listIdentityPermissions,
-  updateIdentityPermission,
   deleteIdentityPermission,
   deleteAllIdentityPermissions,
   createManyIdentityPermissions,

@@ -14,7 +14,6 @@ import type {
   IdentityStatus,
   Invitation,
   Policy,
-  PolicyEffect,
   Tenant,
   TenantModule,
 } from "../../generated/prisma/client.js";
@@ -22,7 +21,7 @@ import type {
 // ─── Re-exports for consumers ───────────────────────────────────────────
 
 export type { Tenant, Identity, IdentityPermission, Invitation, Policy };
-export type { IdentityKind, IdentityStatus, PolicyEffect, TenantModule };
+export type { IdentityKind, IdentityStatus, TenantModule };
 
 // Pagination primitives live in shared.ts — re-exported here for consumers.
 import type { PaginatedResult, PaginationInput } from "./shared.js";
@@ -159,17 +158,12 @@ export type AttachPolicyToInvitationInput = {
 };
 // ─── Identity Permission ──────────────────────────────────────
 
-// Per-user permission override — grants or explicitly denies a single
-// permission for one identity on top of their role-derived permissions.
+// Per-user permission grant — stamps a single permission directly onto an
+// identity. The system is deny-by-default; removing the row revokes access.
 export type CreateIdentityPermissionInput = {
   tenantId: string;
   identityId: string;
   permission: string; // "service:resource:action" — no wildcards
-  effect: PolicyEffect; // ALLOW to add, DENY to remove
-};
-
-export type UpdateIdentityPermissionInput = {
-  effect: PolicyEffect;
 };
 
 export type ListIdentityPermissionsInput = PaginationInput & {
