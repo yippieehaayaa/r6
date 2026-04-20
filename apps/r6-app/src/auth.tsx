@@ -11,7 +11,6 @@ import { loginFn } from "@/api/identity-and-access/auth/mutations/login";
 import { logoutFn } from "@/api/identity-and-access/auth/mutations/logout";
 import { refreshFn } from "@/api/identity-and-access/auth/mutations/refresh";
 import { verifyTotpFn } from "@/api/identity-and-access/auth/mutations/verify-totp";
-import { getMeFn } from "@/api/identity-and-access/me/queries/get-me";
 import { getToken, setToken } from "@/api/token";
 import { parseTokenClaims, type TokenClaims } from "@/lib/parse-token";
 
@@ -50,16 +49,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		async (accessToken: string): Promise<void> => {
 			setToken(accessToken);
 			setClaims(parseTokenClaims(accessToken));
-			// Profile fetch is best-effort — auth still succeeds if /me fails.
-			getMeFn()
-				.then((me) =>
-					setProfile({
-						username: me.username,
-						email: me.email,
-						totpEnabled: me.totpEnabled ?? false,
-					}),
-				)
-				.catch(() => null);
 			setStatus("authenticated");
 		},
 		[],
