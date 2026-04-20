@@ -1,6 +1,8 @@
 import {
+	type IdentityKind,
 	type IdentitySafe,
 	IdentitySafeSchema,
+	type IdentityStatus,
 	PaginatedResponseSchema,
 } from "@r6/schemas";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +12,8 @@ export interface ListIdentitiesParams {
 	page?: number;
 	limit?: number;
 	search?: string;
+	status?: IdentityStatus;
+	kind?: IdentityKind;
 }
 
 const ListIdentitiesResponseSchema =

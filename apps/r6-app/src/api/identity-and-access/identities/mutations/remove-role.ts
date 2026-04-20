@@ -1,26 +1,28 @@
-import { type IdentitySafe, IdentitySafeSchema } from "@r6/schemas";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
-export interface RemoveIdentityRoleParams {
+export interface RemoveIdentityPolicyParams {
 	tenantId: string;
 	id: string;
-	roleId: string;
+	policyId: string;
 }
 
-export async function removeIdentityRoleFn({
+export async function removeIdentityPolicyFn({
 	tenantId,
 	id,
-	roleId,
-}: RemoveIdentityRoleParams): Promise<IdentitySafe> {
-	const { data } = await identityApi.delete<unknown>(
-		`/tenants/${tenantId}/identities/${id}/roles/${roleId}`,
+	policyId,
+}: RemoveIdentityPolicyParams): Promise<void> {
+	await identityApi.delete(
+		`/tenants/${tenantId}/identities/${id}/roles/${policyId}`,
 	);
-	return IdentitySafeSchema.parse(data);
 }
 
-export function useRemoveIdentityRoleMutation() {
+export function useRemoveIdentityPolicyMutation() {
+	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: removeIdentityRoleFn,
+		mutationFn: removeIdentityPolicyFn,
+		onSuccess: (_data, { tenantId, id }) => {
+			queryClient.invalidateQueries({ queryKey: ["identities", tenantId, id] });
+		},
 	});
 }

@@ -3,7 +3,7 @@ import {
 	IdentitySafeSchema,
 	type UpdateIdentityInput,
 } from "@r6/schemas";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface UpdateIdentityParams {
@@ -25,7 +25,12 @@ export async function updateIdentityFn({
 }
 
 export function useUpdateIdentityMutation() {
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: updateIdentityFn,
+		onSuccess: (_data, { tenantId, id }) => {
+			queryClient.invalidateQueries({ queryKey: ["identities", tenantId] });
+			queryClient.invalidateQueries({ queryKey: ["identities", tenantId, id] });
+		},
 	});
 }

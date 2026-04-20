@@ -1,27 +1,33 @@
-import { type IdentitySafe, IdentitySafeSchema } from "@r6/schemas";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 import { identityApi } from "@/api/_app";
 
-export interface SetRolesParams {
+export interface SetIdentityPoliciesParams {
 	tenantId: string;
 	id: string;
-	roleIds: string[];
+	policyIds: string[];
 }
 
-export async function setRolesFn({
+const SetPoliciesResponseSchema = z.object({ message: z.string() });
+
+export async function setIdentityPoliciesFn({
 	tenantId,
 	id,
-	roleIds,
-}: SetRolesParams): Promise<IdentitySafe> {
+	policyIds,
+}: SetIdentityPoliciesParams): Promise<{ message: string }> {
 	const { data } = await identityApi.put<unknown>(
 		`/tenants/${tenantId}/identities/${id}/roles`,
-		{ roleIds },
+		{ policyIds },
 	);
-	return IdentitySafeSchema.parse(data);
+	return SetPoliciesResponseSchema.parse(data);
 }
 
-export function useSetRolesMutation() {
+export function useSetIdentityPoliciesMutation() {
+	const queryClient = useQueryClient();
 	return useMutation({
-		mutationFn: setRolesFn,
+		mutationFn: setIdentityPoliciesFn,
+		onSuccess: (_data, { tenantId, id }) => {
+			queryClient.invalidateQueries({ queryKey: ["identities", tenantId, id] });
+		},
 	});
 }

@@ -1,32 +1,25 @@
-import { IdentitySafeSchema, RoleSchema } from "@r6/schemas";
+import { type IdentitySafe, IdentitySafeSchema } from "@r6/schemas";
 import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
 import { identityApi } from "@/api/_app";
 
-const IdentitySafeWithRolesSchema = IdentitySafeSchema.extend({
-	roles: z.array(RoleSchema),
-});
-
-export type IdentitySafeWithRoles = z.infer<typeof IdentitySafeWithRolesSchema>;
-
-export async function getIdentityWithRolesFn(
-	tenantSlug: string,
+export async function getIdentityFn(
+	tenantId: string,
 	id: string,
-): Promise<IdentitySafeWithRoles> {
+): Promise<IdentitySafe> {
 	const { data } = await identityApi.get<unknown>(
 		`/tenants/${tenantId}/identities/${id}`,
 	);
-	return IdentitySafeWithRolesSchema.parse(data);
+	return IdentitySafeSchema.parse(data);
 }
 
-export function useGetIdentityWithRolesQuery(
+export function useGetIdentityQuery(
 	tenantId: string,
 	id: string,
 	options?: { enabled?: boolean },
 ) {
 	return useQuery({
 		queryKey: ["identities", tenantId, id],
-		queryFn: () => getIdentityWithRolesFn(tenantId, id),
+		queryFn: () => getIdentityFn(tenantId, id),
 		enabled: (options?.enabled ?? true) && !!tenantId && !!id,
 	});
 }

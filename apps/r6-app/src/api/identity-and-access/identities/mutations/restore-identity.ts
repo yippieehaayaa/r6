@@ -1,5 +1,5 @@
 import { type IdentitySafe, IdentitySafeSchema } from "@r6/schemas";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface RestoreIdentityParams {
@@ -18,7 +18,11 @@ export async function restoreIdentityFn({
 }
 
 export function useRestoreIdentityMutation() {
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: restoreIdentityFn,
+		onSuccess: (_data, { tenantId }) => {
+			queryClient.invalidateQueries({ queryKey: ["identities", tenantId] });
+		},
 	});
 }

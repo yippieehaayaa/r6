@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { identityApi } from "@/api/_app";
 
 export interface RemoveIdentityParams {
@@ -14,7 +14,11 @@ export async function removeIdentityFn({
 }
 
 export function useRemoveIdentityMutation() {
+	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: removeIdentityFn,
+		onSuccess: (_data, { tenantId }) => {
+			queryClient.invalidateQueries({ queryKey: ["identities", tenantId] });
+		},
 	});
 }

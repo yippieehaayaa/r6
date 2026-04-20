@@ -1,9 +1,2 @@
-export * from "./mutations/attach-policy";
-export * from "./mutations/create-role";
-export * from "./mutations/detach-policy";
-export * from "./mutations/remove-role";
-export * from "./mutations/restore-role";
-export * from "./mutations/set-policies";
-export * from "./mutations/update-role";
-export * from "./queries/get-role";
-export * from "./queries/list-roles";
+// Role management endpoints are not yet implemented in the backend.
+// This file will be populated once the backend routes are available.

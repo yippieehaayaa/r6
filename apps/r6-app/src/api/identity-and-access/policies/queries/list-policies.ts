@@ -10,24 +10,31 @@ export interface ListPoliciesParams {
 	page?: number;
 	limit?: number;
 	search?: string;
+	isManaged?: boolean;
 }
 
 const ListPoliciesResponseSchema = PaginatedResponseSchema(PolicySchema);
 
 export async function listPoliciesFn(
+	tenantId: string,
 	params: ListPoliciesParams = {},
 ): Promise<{ data: Policy[]; page: number; limit: number; total: number }> {
-	const { data } = await identityApi.get<unknown>("/policies", { params });
+	const { data } = await identityApi.get<unknown>(
+		`/tenants/${tenantId}/policies`,
+		{ params },
+	);
 	return ListPoliciesResponseSchema.parse(data);
 }
 
 export function useListPoliciesQuery(
+	tenantId: string,
 	params: ListPoliciesParams = {},
 	options?: { staleTime?: number; gcTime?: number; enabled?: boolean },
 ) {
 	return useQuery({
-		queryKey: ["policies", params],
-		queryFn: () => listPoliciesFn(params),
+		queryKey: ["policies", tenantId, params],
+		queryFn: () => listPoliciesFn(tenantId, params),
+		enabled: (options?.enabled ?? true) && !!tenantId,
 		...options,
 	});
 }
