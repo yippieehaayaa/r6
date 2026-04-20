@@ -5,8 +5,8 @@ import { AppError } from "../../../../lib/errors";
 import type { AuthJwtPayload } from "../../../../middleware/auth";
 
 // GET /me/permissions
-// Returns a paginated list of the raw IdentityPermission override rows
-// (ALLOW / DENY) stamped on the authenticated identity.
+// Returns a paginated list of IdentityPermission rows (granted permissions)
+// for the authenticated identity.
 // Requires the caller to belong to a tenant (tenantId non-null in JWT).
 export const listPermissions = async (
   req: Request,

@@ -80,7 +80,7 @@ const createTenant = async (input: CreateTenantInput): Promise<Tenant> => {
 //   2. Create the Tenant with ownerId set immediately; isActive mirrors the
 //      owner's isEmailVerified so unverified owners start with an inactive tenant.
 //   3. Update the owner identity's tenantId to the new tenant's id.
-//   4. Stamp ownerPermissions as IdentityPermission ALLOW rows.
+//   4. Stamp ownerPermissions as direct IdentityPermission rows.
 //
 // ownerPermissions — permission strings to stamp. Defaults to ["iam:*:*"].
 //

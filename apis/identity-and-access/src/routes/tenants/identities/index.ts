@@ -94,7 +94,7 @@ router.post(
 
 // ── Policy assignment (replaces role routes) ─────────────────────────────────
 // Routes are named /:id/roles for URL compatibility but operate on policies.
-// Assigning a policy stamps its permissions[] as IdentityPermission ALLOW rows.
+// Assigning a policy stamps its permissions[] as direct IdentityPermission rows.
 
 // POST /tenants/:tenantId/identities/:id/roles
 //   Assigns a policy to an identity by policyId in the request body.

@@ -11,7 +11,7 @@ import { AppError } from "../../../../lib/errors";
 //
 // The invitee must already have an r6 account (registered + email verified).
 // On acceptance, their identity is bound to the invitation's tenant and the
-// attached policies are expanded into IdentityPermission ALLOW rows.
+// attached policies are expanded into IdentityPermission rows.
 //
 // Security notes:
 //   - The raw token is hashed with SHA-256 before the DB lookup — the stored

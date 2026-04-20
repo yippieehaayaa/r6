@@ -132,7 +132,6 @@ export type UpdateIdentityInput = {
 // @@unique([tenantId, name])
 // All policies belong to a tenant.
 // All policies are implicitly ALLOW — the system is deny-by-default.
-// Per-user DENY overrides live on IdentityPermission, not here.
 export type CreatePolicyInput = {
   tenantId: string; // required — always tenant-scoped
   name: string; // unique per tenantId
@@ -182,7 +181,7 @@ export type CreateInvitationInput = {
   /** Raw invitation token (server-generated); stored only as SHA-256 hash */
   tokenHash: string;
   expiresAt: Date;
-  /** Policy IDs to stamp as IdentityPermission ALLOW rows on accept */
+  /** Policy IDs to stamp as IdentityPermission rows on accept */
   policyIds?: string[];
 };
 

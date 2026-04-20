@@ -11,8 +11,6 @@ import {
 //  All policies are implicitly ALLOW — the system is deny-by-default,
 //  so any permission not granted is already denied.
 //
-//  Per-user DENY overrides are handled by IdentityPermission, not here.
-//
 //  Permission string convention:  "service:resource:action"
 //    e.g. "inventory:stock:read"
 //         "procurement:purchase-order:approve"

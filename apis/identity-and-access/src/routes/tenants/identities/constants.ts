@@ -8,7 +8,7 @@
 //  OWNER (3) — the tenant.ownerId identity; has iam:*:* stamped
 //              at tenant creation.
 //  ADMIN (2) — a USER identity that has been granted iam:*:*
-//              via an IdentityPermission ALLOW row.
+//              via a direct IdentityPermission grant.
 //  USER  (1) — everyone else; limited permission set.
 // ============================================================
 

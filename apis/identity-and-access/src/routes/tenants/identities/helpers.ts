@@ -48,7 +48,7 @@ export function resolveCallerTier(
 
 // Determines the tier of a target identity from its DB permission rows.
 // 1. OWNER — target.id matches the tenant owner.
-// 2. ADMIN — target has an ALLOW row with permission = "iam:*:*".
+// 2. ADMIN — target has a direct IdentityPermission grant for "iam:*:*".
 // 3. USER  — everything else.
 export function resolveTargetTier(
   target: Identity & { identityPermissions: IdentityPermission[] },

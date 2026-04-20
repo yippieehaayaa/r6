@@ -1,7 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middleware/auth";
 import auth from "./auth";
-import email from "./email";
 import invitations from "./invitations";
 import main from "./main";
 import me from "./me";
@@ -15,7 +14,6 @@ const router: Router = Router();
 router.use("/", main);
 router.use("/auth", auth);
 router.use("/.well-known", wellKnown);
-router.use("/email", email);
 router.use("/registration", registration);
 router.use("/invitations", invitations);
 

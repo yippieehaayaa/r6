@@ -24,7 +24,7 @@ const AssignPolicyBodySchema = z.object({
 
 // POST /tenants/:tenantId/identities/:id/roles
 // Assigns a policy to an identity by stamping its permissions[] as
-// IdentityPermission ALLOW rows. The route param name (:roles) is kept
+// direct IdentityPermission rows. The route param name (:roles) is kept
 // for URL compatibility — the operation is policy-based.
 //
 // Escalation guard: only the tenant OWNER may assign policies that

@@ -21,7 +21,7 @@
 //    2. The token is hashed and looked up to find the invitation.
 //    3. Credentials are verified, email matched, and tenant membership checked.
 //    4. Caller's tenantId is bound and attached policies are expanded into
-//       IdentityPermission ALLOW rows in a single transaction.
+//       IdentityPermission rows in a single transaction.
 // ============================================================
 
 import { verifyPassword } from "@r6/bcrypt";
@@ -72,7 +72,7 @@ const createInvitation = async (
 //   4. Confirms the identity does not already belong to a tenant.
 //   5. Confirms the identity status is ACTIVE (email must be verified).
 //   6. Binds the identity's tenantId to the invitation's tenantId.
-//   7. Expands the invitation's linked policies into IdentityPermission ALLOW rows.
+//   7. Expands the invitation's linked policies into IdentityPermission rows.
 //      Policy changes after acceptance do NOT affect existing permissions.
 //   8. Marks the invitation as accepted (sets acceptedAt).
 //
@@ -126,7 +126,7 @@ const acceptInvitation = async (
       data: { tenantId: invitation.tenantId },
     });
 
-    // 7. Expand linked policies into flat IdentityPermission ALLOW rows.
+    // 7. Expand linked policies into IdentityPermission rows.
     //    Policy snapshots are taken at accept time — future policy edits
     //    do not retroactively change this identity's permissions.
     const permissionRows = invitation.invitationPolicies.flatMap(({ policy }) =>
