@@ -114,7 +114,7 @@ export default function RegisterPage() {
 					to="/r6/login"
 					className="flex items-center gap-2 self-center font-medium text-[var(--text-primary)]"
 				>
-					<div className="flex size-6 items-center justify-center rounded-md bg-[var(--accent)] text-white">
+					<div className="flex size-6 items-center justify-center rounded-md bg-foreground text-background">
 						<GalleryVerticalEnd className="size-4" />
 					</div>
 					R6 Inc.
@@ -145,7 +145,7 @@ export default function RegisterPage() {
 						Already have an account?{" "}
 						<Link
 							to="/r6/login"
-							className="text-[var(--accent)] hover:opacity-75 transition-opacity font-medium"
+							className="font-medium underline underline-offset-4 hover:opacity-70 transition-opacity"
 						>
 							Sign in
 						</Link>
@@ -176,7 +176,7 @@ function RegisterCard({
 			<div className="absolute inset-0 translate-y-2 translate-x-2 rounded-2xl bg-foreground/[0.04] dark:bg-foreground/[0.06] ring-1 ring-foreground/8 dark:ring-foreground/10" />
 			<Card className="relative border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
 				<CardHeader className="text-center pb-2 pt-8 px-8">
-					<div className="mx-auto mb-4 size-12 rounded-2xl bg-[var(--accent)] shadow-lg shadow-[var(--accent)]/30 flex items-center justify-center">
+					<div className="mx-auto mb-4 size-12 rounded-2xl bg-foreground shadow-lg flex items-center justify-center">
 						<svg
 							width="24"
 							height="24"
@@ -186,7 +186,7 @@ function RegisterCard({
 						>
 							<path
 								d="M12 11.5C13.933 11.5 15.5 9.933 15.5 8S13.933 4.5 12 4.5 8.5 6.067 8.5 8 10.067 11.5 12 11.5ZM12 13C9.515 13 5 14.253 5 16.75V18.5h14v-1.75C19 14.253 14.485 13 12 13Z"
-								fill="white"
+								className="fill-background"
 							/>
 						</svg>
 					</div>
@@ -358,7 +358,7 @@ function RegisterCard({
 							<Button
 								type="submit"
 								disabled={isSubmitting}
-								className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:brightness-110 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/25 transition-all duration-150 active:scale-[0.97] border-0"
+								className="w-full h-10 mt-1 rounded-xl text-[15px] font-medium transition-all duration-150 active:scale-[0.97]"
 							>
 								{isSubmitting ? (
 									<>
@@ -400,8 +400,8 @@ function VerifyEmailCard({
 				<div className="absolute inset-0 translate-y-2 translate-x-2 rounded-2xl bg-foreground/[0.04] dark:bg-foreground/[0.06] ring-1 ring-foreground/8 dark:ring-foreground/10" />
 				<Card className="relative border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
 					<CardHeader className="text-center pb-2 pt-8 px-8">
-						<div className="mx-auto mb-4 size-12 rounded-2xl bg-[var(--accent)] shadow-lg shadow-[var(--accent)]/30 flex items-center justify-center">
-							<MailIcon className="size-5 text-white" />
+					<div className="mx-auto mb-4 size-12 rounded-2xl bg-foreground shadow-lg flex items-center justify-center">
+						<MailIcon className="size-5 text-background" />
 						</div>
 						<CardTitle className="text-[22px] font-semibold tracking-tight text-[var(--text-primary)]">
 							Verify your email
@@ -437,7 +437,7 @@ function VerifyEmailCard({
 								type="button"
 								disabled={isVerifying || otpCode.length !== 6}
 								onClick={() => onOtpComplete(otpCode)}
-								className="w-full h-10 rounded-xl bg-[var(--accent)] hover:brightness-110 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/25 transition-all duration-150 active:scale-[0.97] border-0"
+							className="w-full h-10 rounded-xl text-[15px] font-medium transition-all duration-150 active:scale-[0.97]"
 							>
 								{isVerifying ? (
 									<>

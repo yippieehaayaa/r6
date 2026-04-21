@@ -15,7 +15,7 @@ export default function ProfilePage() {
 				</p>
 			</div>
 
-			<div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+			<div className="animate-stagger-children grid grid-cols-1 gap-6 lg:grid-cols-2">
 				<ProfileInfoCard />
 				<TwoFactorCard />
 				<ChangePasswordCard />

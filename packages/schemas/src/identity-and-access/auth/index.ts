@@ -100,13 +100,15 @@ export const RegisterSchema = z.object({
     .min(1, "First name cannot be empty")
     .max(100, "First name must not exceed 100 characters"),
 
-  /** Legal middle name — optional */
-  middleName: z
-    .string()
-    .trim()
-    .min(1, "Middle name cannot be empty")
-    .max(100, "Middle name must not exceed 100 characters")
-    .optional(),
+  /** Legal middle name — optional; empty strings are coerced to undefined */
+  middleName: z.preprocess(
+    (val) => (val === "" ? undefined : val),
+    z
+      .string()
+      .trim()
+      .max(100, "Middle name must not exceed 100 characters")
+      .optional(),
+  ),
 
   /** Legal last name */
   lastName: z
