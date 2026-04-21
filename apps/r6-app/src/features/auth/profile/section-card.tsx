@@ -24,7 +24,7 @@ export function SectionCard({
 		<Card className="border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
 			<CardHeader className="pb-4">
 				<div className="flex items-center gap-2">
-					<div className="flex size-8 items-center justify-center rounded-lg bg-foreground shadow-sm">
+					<div className="flex size-8 items-center justify-center rounded-lg bg-accent shadow-sm">
 						{icon}
 					</div>
 					<div>

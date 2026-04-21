@@ -20,7 +20,7 @@ export function ProfileInfoCard() {
 
 	return (
 		<SectionCard
-			icon={<UserIcon className="size-4 text-background" />}
+			icon={<UserIcon className="size-4 text-white" />}
 			title="Account Info"
 			description="Your identity details"
 		>
