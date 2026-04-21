@@ -37,9 +37,10 @@ export function NavUser() {
 	const middleInitial = profile?.middleName
 		? `${profile.middleName[0]?.toUpperCase()}.`
 		: null;
-	const fullName = [profile?.firstName, middleInitial, profile?.lastName]
-		.filter(Boolean)
-		.join(" ") || "…";
+	const fullName =
+		[profile?.firstName, middleInitial, profile?.lastName]
+			.filter(Boolean)
+			.join(" ") || "…";
 	const email = authProfile?.email ?? "";
 	const initials = [profile?.firstName, profile?.lastName]
 		.filter(Boolean)
@@ -61,7 +62,7 @@ export function NavUser() {
 								</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
-							<span className="truncate font-medium">{fullName}</span>
+								<span className="truncate font-medium">{fullName}</span>
 								<span className="truncate text-xs">{email}</span>
 							</div>
 							<ChevronsUpDown className="ml-auto size-4" />
@@ -81,7 +82,7 @@ export function NavUser() {
 									</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-medium">{fullName}</span>
+									<span className="truncate font-medium">{fullName}</span>
 									<span className="truncate text-xs">{email}</span>
 								</div>
 							</div>
