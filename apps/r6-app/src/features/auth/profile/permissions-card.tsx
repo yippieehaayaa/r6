@@ -1,12 +1,12 @@
+import { getPermissionLabel } from "@r6/schemas";
 import { KeyRoundIcon } from "lucide-react";
-import { useListPermissionsQuery } from "@/api/identity-and-access/me/queries/list-permissions";
+import { useGetAllPermissionsQuery } from "@/api/identity-and-access/me/queries/get-all-permissions";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SectionCard } from "./section-card";
 
 export function PermissionsCard() {
-	const { data, isLoading } = useListPermissionsQuery({ page: 1, limit: 100 });
-	const permissions = data?.data ?? [];
+	const { data: permissions = [], isLoading } = useGetAllPermissionsQuery();
 
 	return (
 		<SectionCard
@@ -32,7 +32,7 @@ export function PermissionsCard() {
 							variant="outline"
 							className="h-5 px-2 font-mono text-[10px]"
 						>
-							{p.permission}
+							{getPermissionLabel(p.permission)}
 						</Badge>
 					))}
 				</div>

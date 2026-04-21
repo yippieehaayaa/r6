@@ -39,16 +39,6 @@ export function PoliciesTable({
 				),
 			},
 			{
-				accessorKey: "displayName",
-				header: "Display Name",
-				cell: ({ row }) =>
-					row.original.displayName ? (
-						<span className="text-sm">{row.original.displayName}</span>
-					) : (
-						<span className="text-xs text-muted-foreground">—</span>
-					),
-			},
-			{
 				accessorKey: "description",
 				header: "Description",
 				cell: ({ row }) =>

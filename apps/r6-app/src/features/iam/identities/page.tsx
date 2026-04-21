@@ -90,7 +90,6 @@ export default function IdentitiesPage() {
 				onPaginationChange={setPagination}
 				globalFilterValue={search}
 				onGlobalFilterChange={setSearch}
-
 				onDelete={handleDelete}
 				onRestore={handleRestore}
 				onManagePolicies={(row) => setPoliciesTarget(row)}

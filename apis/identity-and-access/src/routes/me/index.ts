@@ -2,9 +2,10 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { authMiddleware } from "../../middleware/auth";
 import { changePassword } from "./controller/mutations/change-password";
-import { updateProfile } from "./controller/mutations/update-profile";
 import { disableTotp } from "./controller/mutations/disable-totp";
 import { enableTotp } from "./controller/mutations/enable-totp";
+import { updateProfile } from "./controller/mutations/update-profile";
+import { getAllPermissions } from "./controller/queries/get-all-permissions";
 import { getProfile } from "./controller/queries/get-profile";
 import { getTotpSetup } from "./controller/queries/get-totp-setup";
 import { listPermissions } from "./controller/queries/list-permissions";
@@ -32,6 +33,11 @@ router.get("/", getProfile);
 //   Returns the authenticated identity's raw IdentityPermission override rows
 //   (paginated). Requires the caller to belong to a tenant.
 router.get("/permissions", listPermissions);
+
+// GET /me/permissions/all
+//   Returns all IdentityPermission rows for the authenticated identity (no pagination).
+//   Requires the caller to belong to a tenant.
+router.get("/permissions/all", getAllPermissions);
 
 // ── TOTP management ──────────────────────────────────────────────────────────
 // These routes let a user set up, activate, and remove 2FA on their own account.

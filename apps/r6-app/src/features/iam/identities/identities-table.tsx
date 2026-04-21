@@ -125,7 +125,6 @@ export function IdentitiesTable({
 							<DropdownMenuContent align="end" className="w-44">
 								{!isDeleted && (
 									<>
-
 										<Can permission="iam:role:assign">
 											<DropdownMenuItem
 												onClick={() => onManagePolicies(row.original)}

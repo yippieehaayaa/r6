@@ -5,3 +5,4 @@ export * from "./mutations/restore";
 export * from "./mutations/set-policies";
 export * from "./queries/get";
 export * from "./queries/list";
+export * from "./queries/list-permissions";

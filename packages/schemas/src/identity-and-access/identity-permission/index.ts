@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { TenantScopedSchema, UuidSchema } from "../base.schema";
+import {
+  permissionRegex,
+  TenantScopedSchema,
+  UuidSchema,
+} from "../base.schema";
 
 // ============================================================
 //  IDENTITY PERMISSION SCHEMA  (per-user permission grant)
@@ -26,11 +30,16 @@ export const IdentityPermissionSchema = TenantScopedSchema.omit({
   identityId: UuidSchema,
 
   /**
-   * The exact permission string being granted.
-   * No wildcards — grants must be precise.
-   * e.g. "inventory:stock:delete"
+   * The permission string stored on this grant.
+   * Wildcards are allowed here to match DB reality (e.g. "iam:*:*").
+   * Use CreateIdentityPermissionSchema for write payloads, which is strict.
    */
-  permission: ConcretePermissionSchema,
+  permission: z
+    .string()
+    .regex(
+      permissionRegex,
+      'Permission must follow "service:resource:action" convention',
+    ),
 });
 
 export type IdentityPermission = z.infer<typeof IdentityPermissionSchema>;
@@ -42,6 +51,9 @@ export const CreateIdentityPermissionSchema = IdentityPermissionSchema.omit({
   tenantId: true, // inferred from route context
   createdAt: true,
   updatedAt: true,
+}).extend({
+  // Restrict to concrete (non-wildcard) permissions on new grants
+  permission: ConcretePermissionSchema,
 });
 
 export type CreateIdentityPermissionInput = z.infer<

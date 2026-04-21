@@ -3,6 +3,7 @@ import { CheckIcon, Loader2Icon, ShieldIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSetPoliciesMutation } from "@/api/identity-and-access/tenants/identities/mutations/set-policies";
+import { useGetAllIdentityPermissionsQuery } from "@/api/identity-and-access/tenants/identities/queries/list-permissions";
 import { useListPoliciesQuery } from "@/api/identity-and-access/tenants/policies/queries/list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -38,13 +39,34 @@ export function ManagePoliciesSheet({
 		limit: 100,
 	});
 
+	const permissionsQuery = useGetAllIdentityPermissionsQuery(
+		tenantId,
+		identity?.id,
+	);
+
 	const setPoliciesMutation = useSetPoliciesMutation();
 
-	// Reset selection when identity changes
+	// Pre-select policies whose entire permission set is covered by the identity's
+	// current permissions. Runs whenever the identity or the fetched data changes.
 	// biome-ignore lint/correctness/useExhaustiveDependencies: identity?.id is an intentional trigger
 	useEffect(() => {
-		setSelectedIds(new Set());
-	}, [identity?.id]);
+		if (!permissionsQuery.data || !policiesQuery.data) {
+			setSelectedIds(new Set());
+			return;
+		}
+
+		const granted = new Set(permissionsQuery.data.map((p) => p.permission));
+
+		const preselected = policiesQuery.data.data
+			.filter(
+				(policy: Policy) =>
+					policy.permissions.length > 0 &&
+					policy.permissions.every((p) => granted.has(p)),
+			)
+			.map((policy: Policy) => policy.id);
+
+		setSelectedIds(new Set(preselected));
+	}, [identity?.id, permissionsQuery.data, policiesQuery.data]);
 
 	function togglePolicy(policyId: string) {
 		setSelectedIds((prev) => {

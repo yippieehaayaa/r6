@@ -9,6 +9,7 @@ import { restoreIdentityHandler } from "./controller/mutations/restore";
 import { setPoliciesHandler } from "./controller/mutations/set-policies";
 import { getIdentityHandler } from "./controller/queries/get";
 import { listIdentitiesHandler } from "./controller/queries/list";
+import { listIdentityPermissionsHandler } from "./controller/queries/list-permissions";
 
 // Sub-router mounted at /tenants/:tenantId/identities via the tenants router.
 // mergeParams: true is required so that :tenantId from the parent route is
@@ -49,6 +50,15 @@ router.get("/", requirePermission("iam:identity:read"), listIdentitiesHandler);
 //   Fetches a single identity by ID within this tenant.
 //   Requires: iam:identity:read
 router.get("/:id", requirePermission("iam:identity:read"), getIdentityHandler);
+
+// GET /tenants/:tenantId/identities/:id/permissions
+//   Returns a paginated list of permission grants for a single identity.
+//   Requires: iam:identity:read
+router.get(
+  "/:id/permissions",
+  requirePermission("iam:identity:read"),
+  listIdentityPermissionsHandler,
+);
 
 // ── Mutations (POST / PATCH / DELETE) ────────────────────────────────────────
 

@@ -80,6 +80,19 @@ const listIdentityPermissions = async (
   return { data, total, page: input.page, limit: input.limit };
 };
 
+// Returns every permission grant for a specific identity without pagination.
+// Use this when you need the full set (e.g. building a permission matrix UI).
+// @@index([identityId]) backs this query.
+const getAllIdentityPermissions = async (
+  identityId: string,
+  tenantId: string,
+): Promise<IdentityPermission[]> => {
+  return prisma.identityPermission.findMany({
+    where: { identityId, tenantId },
+    orderBy: { permission: "asc" },
+  });
+};
+
 // ─── Delete ──────────────────────────────────────────────────
 
 // Removes a specific permission grant.
@@ -161,6 +174,7 @@ export {
   upsertIdentityPermission,
   getIdentityPermission,
   listIdentityPermissions,
+  getAllIdentityPermissions,
   deleteIdentityPermission,
   deleteAllIdentityPermissions,
   createManyIdentityPermissions,
