@@ -24,7 +24,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorMessage } from "@/lib/api-error";
-import { SectionCard } from "./section-card";
 
 // ── TOTP Enable ─────────────────────────────────────────────
 
@@ -84,21 +83,23 @@ function TotpEnableFlow({ onDone }: { onDone: () => void }) {
 	return (
 		<div className="flex flex-col gap-5">
 			<div className="flex flex-col gap-3">
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-(--text-secondary)">
 					Scan the QR code with your authenticator app (e.g. Google
 					Authenticator, Authy), then enter the 6-digit code to confirm.
 				</p>
-				<div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-5">
-					<img
-						src={setup.qrDataUrl}
-						alt="TOTP QR code"
-						className="size-36 rounded-xl border p-1"
-					/>
-					<div className="flex flex-col gap-1.5">
-						<p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+				<div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+					<div className="rounded-2xl border border-(--border) bg-surface p-2 shadow-sm">
+						<img
+							src={setup.qrDataUrl}
+							alt="TOTP QR code"
+							className="size-36 rounded-xl"
+						/>
+					</div>
+					<div className="flex flex-col gap-2">
+						<p className="text-[10px] font-semibold uppercase tracking-widest text-(--text-secondary)">
 							Manual entry key
 						</p>
-						<code className="rounded-lg bg-muted px-2.5 py-1.5 font-mono text-sm break-all">
+						<code className="rounded-xl bg-(--bg) px-3 py-2 font-mono text-sm break-all text-(--text-primary) ring-1 ring-border">
 							{setup.secret}
 						</code>
 					</div>
@@ -115,7 +116,7 @@ function TotpEnableFlow({ onDone }: { onDone: () => void }) {
 							maxLength={6}
 							inputMode="numeric"
 							autoComplete="one-time-code"
-							className="h-10 rounded-xl font-mono tracking-widest"
+							className="h-10 rounded-xl bg-(--bg) font-mono tracking-widest"
 							{...register("code")}
 						/>
 						<FieldError errors={errors.code ? [errors.code] : []} />
@@ -198,7 +199,7 @@ function TotpDisableFlow({ onDone }: { onDone: () => void }) {
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-			<p className="text-sm text-muted-foreground">
+			<p className="text-sm text-(--text-secondary)">
 				Enter your current password to confirm disabling two-factor
 				authentication.
 			</p>
@@ -212,7 +213,7 @@ function TotpDisableFlow({ onDone }: { onDone: () => void }) {
 						type="password"
 						placeholder="••••••••"
 						autoComplete="current-password"
-						className="h-10 rounded-xl"
+						className="h-10 rounded-xl bg-(--bg)"
 						{...register("password")}
 					/>
 					<FieldError errors={errors.password ? [errors.password] : []} />
@@ -257,38 +258,50 @@ export function TwoFactorCard() {
 	const { data: profile, isLoading, refetch } = useGetProfileQuery();
 
 	return (
-		<SectionCard
-			icon={<ShieldCheckIcon className="size-4 text-white" />}
-			title="Two-Factor Authentication"
-			description="Add an extra layer of security to your account"
-		>
+		<>
 			{isLoading ? (
 				<div className="flex flex-col gap-3">
-					<Skeleton className="h-4 w-64" />
+					<Skeleton className="h-14 w-full rounded-xl" />
 					<Skeleton className="h-9 w-28 rounded-xl" />
 				</div>
 			) : profile?.totpEnabled ? (
-				<div className="flex flex-col gap-3">
-					<div className="flex items-center gap-2">
-						<Badge variant="default" className="gap-1">
-							<ShieldCheckIcon className="size-3" />
-							Enabled
+				<div className="flex flex-col gap-4">
+					<div className="flex items-center gap-3 rounded-xl bg-(--bg) px-4 py-3">
+						<span className="size-2 shrink-0 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.5)]" />
+						<div className="flex flex-col gap-0.5">
+							<span className="text-sm font-medium text-(--text-primary)">
+								Two-factor authentication is on
+							</span>
+							<span className="text-xs text-(--text-secondary)">
+								Your account is protected with TOTP.
+							</span>
+						</div>
+						<Badge
+							variant="default"
+							className="ml-auto gap-1 text-[10px] shrink-0"
+						>
+							<ShieldCheckIcon className="size-2.5" />
+							Active
 						</Badge>
-						<span className="text-sm text-muted-foreground">
-							Your account is protected with TOTP authentication.
-						</span>
 					</div>
 					<TotpDisableFlow onDone={() => refetch()} />
 				</div>
 			) : (
-				<div className="flex flex-col gap-3">
-					<p className="text-sm text-muted-foreground">
-						Two-factor authentication is not enabled. Enable it to secure your
-						account with a time-based one-time password.
-					</p>
+				<div className="flex flex-col gap-4">
+					<div className="flex items-center gap-3 rounded-xl bg-(--bg) px-4 py-3">
+						<span className="size-2 shrink-0 rounded-full bg-orange-400" />
+						<div className="flex flex-col gap-0.5">
+							<span className="text-sm font-medium text-(--text-primary)">
+								Two-factor authentication is off
+							</span>
+							<span className="text-xs text-(--text-secondary)">
+								Enable TOTP to add an extra layer of protection.
+							</span>
+						</div>
+					</div>
 					<TotpEnableFlow onDone={() => refetch()} />
 				</div>
 			)}
-		</SectionCard>
+		</>
 	);
 }

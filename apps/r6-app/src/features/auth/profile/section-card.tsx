@@ -1,11 +1,4 @@
 import type { ReactNode } from "react";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
 
 interface SectionCardProps {
 	icon: ReactNode;
@@ -21,19 +14,21 @@ export function SectionCard({
 	children,
 }: SectionCardProps) {
 	return (
-		<Card className="border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
-			<CardHeader className="pb-4">
-				<div className="flex items-center gap-2">
-					<div className="flex size-8 items-center justify-center rounded-lg bg-accent shadow-sm">
-						{icon}
-					</div>
-					<div>
-						<CardTitle className="text-base">{title}</CardTitle>
-						<CardDescription className="text-xs">{description}</CardDescription>
-					</div>
+		<div className="overflow-hidden rounded-2xl bg-surface ring-1 ring-border">
+			<div className="flex items-center gap-3 border-b border-(--border) px-5 py-4">
+				<div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-accent shadow-sm">
+					{icon}
 				</div>
-			</CardHeader>
-			<CardContent>{children}</CardContent>
-		</Card>
+				<div className="min-w-0 flex-1">
+					<p className="text-sm font-semibold leading-tight text-(--text-primary)">
+						{title}
+					</p>
+					<p className="mt-0.5 text-xs text-(--text-secondary)">
+						{description}
+					</p>
+				</div>
+			</div>
+			<div className="px-5 py-5">{children}</div>
+		</div>
 	);
 }
