@@ -4,6 +4,7 @@ import {
 	type CreateIdentityInput,
 	CreateIdentitySchema,
 	type IdentitySafe,
+	type UpdateIdentityFormInput,
 	type UpdateIdentityInput,
 	UpdateIdentitySchema,
 } from "@r6/schemas";
@@ -248,7 +249,7 @@ export function EditIdentitySheet({
 		reset,
 		setValue,
 		formState: { errors, isSubmitting },
-	} = useForm<UpdateIdentityInput>({
+	} = useForm<UpdateIdentityFormInput, unknown, UpdateIdentityInput>({
 		resolver: zodResolver(UpdateIdentitySchema),
 		mode: "onTouched",
 	});

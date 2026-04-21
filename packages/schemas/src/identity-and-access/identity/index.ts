@@ -244,6 +244,7 @@ export const UpdateIdentitySchema = IdentitySchema.omit({
 }).partial();
 
 export type UpdateIdentityInput = z.infer<typeof UpdateIdentitySchema>;
+export type UpdateIdentityFormInput = z.input<typeof UpdateIdentitySchema>;
 
 // ── Password-change payload ─────────────────────────────────
 
