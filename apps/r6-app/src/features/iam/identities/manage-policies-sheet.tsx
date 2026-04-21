@@ -168,20 +168,12 @@ export function ManagePoliciesSheet({
 					)}
 				</div>
 
-				<SheetFooter className="sticky bottom-0 bg-popover border-t px-4 py-3">
-					<Button
-						type="button"
-						variant="outline"
-						className="flex-1 h-11 rounded-xl text-[15px] font-medium"
-						onClick={() => onOpenChange(false)}
-					>
-						Cancel
-					</Button>
+				<SheetFooter className="sticky bottom-0 bg-popover border-t px-4 py-3 flex-col gap-2">
 					<Button
 						type="button"
 						disabled={isSaving}
 						onClick={handleSave}
-						className="flex-1 h-11 rounded-xl text-[15px] font-medium bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white border-0 shadow-sm active:scale-[0.98]"
+						className="w-full h-11 rounded-xl text-[15px] font-medium bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white border-0 shadow-sm active:scale-[0.98]"
 					>
 						{isSaving ? (
 							<>
@@ -191,6 +183,14 @@ export function ManagePoliciesSheet({
 						) : (
 							`Apply (${selectedIds.size})`
 						)}
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						className="w-full h-11 rounded-xl text-[15px] font-medium"
+						onClick={() => onOpenChange(false)}
+					>
+						Cancel
 					</Button>
 				</SheetFooter>
 			</SheetContent>

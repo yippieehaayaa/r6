@@ -66,8 +66,8 @@ export const IdentitySchema = BaseRecordSchema.extend({
   middleName: z
     .string()
     .trim()
-    .min(1, "Middle name cannot be empty")
     .max(100, "Middle name must not exceed 100 characters")
+    .transform((v) => (v === "" ? null : v))
     .nullable()
     .optional(),
 
