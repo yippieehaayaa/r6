@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as R6RegisterRouteImport } from './routes/r6/register'
 import { Route as R6LoginRouteImport } from './routes/r6/login'
+import { Route as R6AcceptInvitationRouteImport } from './routes/r6/accept-invitation'
 import { Route as R6AuthenticatedRouteImport } from './routes/r6/_authenticated'
 import { Route as R6AuthenticatedProfileRouteImport } from './routes/r6/_authenticated/profile'
 import { Route as R6AuthenticatedForbiddenRouteImport } from './routes/r6/_authenticated/forbidden'
@@ -33,6 +34,11 @@ const R6RegisterRoute = R6RegisterRouteImport.update({
 const R6LoginRoute = R6LoginRouteImport.update({
   id: '/r6/login',
   path: '/r6/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const R6AcceptInvitationRoute = R6AcceptInvitationRouteImport.update({
+  id: '/r6/accept-invitation',
+  path: '/r6/accept-invitation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const R6AuthenticatedRoute = R6AuthenticatedRouteImport.update({
@@ -78,6 +84,7 @@ const R6AuthenticatedIamIdentitiesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/r6': typeof R6AuthenticatedRouteWithChildren
+  '/r6/accept-invitation': typeof R6AcceptInvitationRoute
   '/r6/login': typeof R6LoginRoute
   '/r6/register': typeof R6RegisterRoute
   '/r6/forbidden': typeof R6AuthenticatedForbiddenRoute
@@ -90,6 +97,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/r6': typeof R6AuthenticatedRouteWithChildren
+  '/r6/accept-invitation': typeof R6AcceptInvitationRoute
   '/r6/login': typeof R6LoginRoute
   '/r6/register': typeof R6RegisterRoute
   '/r6/forbidden': typeof R6AuthenticatedForbiddenRoute
@@ -103,6 +111,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/r6/_authenticated': typeof R6AuthenticatedRouteWithChildren
+  '/r6/accept-invitation': typeof R6AcceptInvitationRoute
   '/r6/login': typeof R6LoginRoute
   '/r6/register': typeof R6RegisterRoute
   '/r6/_authenticated/forbidden': typeof R6AuthenticatedForbiddenRoute
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/r6'
+    | '/r6/accept-invitation'
     | '/r6/login'
     | '/r6/register'
     | '/r6/forbidden'
@@ -129,6 +139,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/r6'
+    | '/r6/accept-invitation'
     | '/r6/login'
     | '/r6/register'
     | '/r6/forbidden'
@@ -141,6 +152,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/r6/_authenticated'
+    | '/r6/accept-invitation'
     | '/r6/login'
     | '/r6/register'
     | '/r6/_authenticated/forbidden'
@@ -154,6 +166,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R6AuthenticatedRoute: typeof R6AuthenticatedRouteWithChildren
+  R6AcceptInvitationRoute: typeof R6AcceptInvitationRoute
   R6LoginRoute: typeof R6LoginRoute
   R6RegisterRoute: typeof R6RegisterRoute
 }
@@ -179,6 +192,13 @@ declare module '@tanstack/react-router' {
       path: '/r6/login'
       fullPath: '/r6/login'
       preLoaderRoute: typeof R6LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r6/accept-invitation': {
+      id: '/r6/accept-invitation'
+      path: '/r6/accept-invitation'
+      fullPath: '/r6/accept-invitation'
+      preLoaderRoute: typeof R6AcceptInvitationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/r6/_authenticated': {
@@ -258,6 +278,7 @@ const R6AuthenticatedRouteWithChildren = R6AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R6AuthenticatedRoute: R6AuthenticatedRouteWithChildren,
+  R6AcceptInvitationRoute: R6AcceptInvitationRoute,
   R6LoginRoute: R6LoginRoute,
   R6RegisterRoute: R6RegisterRoute,
 }
