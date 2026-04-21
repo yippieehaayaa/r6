@@ -100,7 +100,7 @@ export function InviteSheet({
 						<Button
 							type="button"
 							variant="outline"
-							className="flex-1 rounded-xl"
+							className="flex-1 h-11 rounded-xl text-[15px] font-medium"
 							onClick={() => onOpenChange(false)}
 						>
 							Cancel
@@ -108,7 +108,7 @@ export function InviteSheet({
 						<Button
 							type="submit"
 							disabled={isSubmitting}
-							className="flex-1 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white border-0"
+							className="flex-1 h-11 rounded-xl text-[15px] font-medium bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white border-0 shadow-sm active:scale-[0.98]"
 						>
 							{isSubmitting ? (
 								<>

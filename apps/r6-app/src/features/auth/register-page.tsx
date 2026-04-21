@@ -140,6 +140,17 @@ export default function RegisterPage() {
 						isSubmitting={isSubmitting}
 					/>
 				)}
+				{!pendingEmail && (
+					<p className="text-center text-[13px] text-[var(--text-secondary)]">
+						Already have an account?{" "}
+						<Link
+							to="/r6/login"
+							className="text-[var(--accent)] hover:opacity-75 transition-opacity font-medium"
+						>
+							Sign in
+						</Link>
+					</p>
+				)}
 			</div>
 		</div>
 	);
@@ -188,7 +199,7 @@ function RegisterCard({
 				</CardHeader>
 				<CardContent className="px-8 pb-8 pt-5">
 					<form onSubmit={onSubmit}>
-						<FieldGroup className="gap-4">
+						<FieldGroup className="animate-stagger-children gap-4">
 							<div className="grid grid-cols-2 gap-3">
 								<Field data-invalid={!!errors.firstName}>
 									<FieldLabel
@@ -347,7 +358,7 @@ function RegisterCard({
 							<Button
 								type="submit"
 								disabled={isSubmitting}
-								className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
+								className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:brightness-110 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/25 transition-all duration-150 active:scale-[0.97] border-0"
 							>
 								{isSubmitting ? (
 									<>
@@ -403,7 +414,7 @@ function VerifyEmailCard({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="px-8 pb-8 pt-5">
-						<FieldGroup className="gap-6 items-center">
+						<FieldGroup className="animate-stagger-children gap-6 items-center">
 							<div className="flex justify-center">
 								<InputOTP
 									maxLength={6}
@@ -426,7 +437,7 @@ function VerifyEmailCard({
 								type="button"
 								disabled={isVerifying || otpCode.length !== 6}
 								onClick={() => onOtpComplete(otpCode)}
-								className="w-full h-10 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
+								className="w-full h-10 rounded-xl bg-[var(--accent)] hover:brightness-110 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/25 transition-all duration-150 active:scale-[0.97] border-0"
 							>
 								{isVerifying ? (
 									<>

@@ -138,7 +138,7 @@ export function LoginForm({
 							</CardDescription>
 						</CardHeader>
 						<CardContent className="px-8 pb-8 pt-5">
-							<FieldGroup className="gap-6 items-center">
+							<FieldGroup className="animate-stagger-children gap-6 items-center">
 								<div className="flex justify-center">
 									<InputOTP
 										maxLength={6}
@@ -161,7 +161,7 @@ export function LoginForm({
 									type="button"
 									disabled={isTotpSubmitting || totpCode.length !== 6}
 									onClick={() => onTotpComplete(totpCode)}
-									className="w-full h-10 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
+									className="w-full h-10 rounded-xl bg-[var(--accent)] hover:brightness-110 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/25 transition-all duration-150 active:scale-[0.97] border-0"
 								>
 									{isTotpSubmitting ? (
 										<>
@@ -226,7 +226,7 @@ export function LoginForm({
 					</CardHeader>
 					<CardContent className="px-8 pb-8 pt-5">
 						<form onSubmit={handleSubmit(onSubmit)}>
-							<FieldGroup className="gap-4">
+							<FieldGroup className="animate-stagger-children gap-4">
 								<Field data-invalid={!!errors.username}>
 									<FieldLabel
 										htmlFor="username"
@@ -272,7 +272,7 @@ export function LoginForm({
 								<Button
 									type="submit"
 									disabled={isSubmitting}
-									className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/20 transition-all border-0"
+									className="w-full h-10 mt-1 rounded-xl bg-[var(--accent)] hover:brightness-110 text-white text-[15px] font-medium shadow-md shadow-[var(--accent)]/25 transition-all duration-150 active:scale-[0.97] border-0"
 								>
 									{isSubmitting ? (
 										<>
