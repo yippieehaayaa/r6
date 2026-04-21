@@ -3,7 +3,6 @@ import type { AuthJwtPayload } from "../../../middleware/auth";
 import { requirePermission } from "../../../middleware/guard";
 import { assertTenantAccess, resolveParam } from "../helpers";
 import { assignPolicyHandler } from "./controller/mutations/assign-policy";
-import { createIdentityHandler } from "./controller/mutations/create";
 import { removeIdentityHandler } from "./controller/mutations/remove";
 import { removePolicyHandler } from "./controller/mutations/remove-policy";
 import { restoreIdentityHandler } from "./controller/mutations/restore";
@@ -53,15 +52,6 @@ router.get("/", requirePermission("iam:identity:read"), listIdentitiesHandler);
 router.get("/:id", requirePermission("iam:identity:read"), getIdentityHandler);
 
 // ── Mutations (POST / PATCH / DELETE) ────────────────────────────────────────
-
-// POST /tenants/:tenantId/identities
-//   Creates a new identity within this tenant (activated immediately).
-//   Requires: iam:identity:create
-router.post(
-  "/",
-  requirePermission("iam:identity:create"),
-  createIdentityHandler,
-);
 
 // PATCH /tenants/:tenantId/identities/:id
 //   Updates an identity's profile fields (name, country, etc.).

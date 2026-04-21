@@ -1,17 +1,15 @@
 import type { IdentitySafe } from "@r6/schemas";
 import type { PaginationState } from "@tanstack/react-table";
-import { PlusIcon, UsersIcon } from "lucide-react";
+import { UsersIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRemoveIdentityMutation } from "@/api/identity-and-access/tenants/identities/mutations/remove";
 import { useRestoreIdentityMutation } from "@/api/identity-and-access/tenants/identities/mutations/restore";
 import { useListIdentitiesQuery } from "@/api/identity-and-access/tenants/identities/queries/list";
 import { useAuth } from "@/auth";
-import { Can } from "@/components/can";
-import { Button } from "@/components/ui/button";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { IdentitiesTable } from "./identities-table";
-import { CreateIdentitySheet, EditIdentitySheet } from "./identity-sheet";
+import { EditIdentitySheet } from "./identity-sheet";
 import { ManagePoliciesSheet } from "./manage-policies-sheet";
 
 export default function IdentitiesPage() {
@@ -25,7 +23,6 @@ export default function IdentitiesPage() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
-	const [createOpen, setCreateOpen] = useState(false);
 	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
 	const [policiesTarget, setPoliciesTarget] = useState<IdentitySafe | null>(
 		null,
@@ -84,15 +81,6 @@ export default function IdentitiesPage() {
 						</p>
 					</div>
 				</div>
-				<Can permission="iam:identity:create">
-					<Button
-						onClick={() => setCreateOpen(true)}
-						className="rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white border-0 shadow-sm"
-					>
-						<PlusIcon className="size-4" />
-						Create Identity
-					</Button>
-				</Can>
 			</div>
 
 			{/* Table */}
@@ -111,11 +99,6 @@ export default function IdentitiesPage() {
 			/>
 
 			{/* Sheets */}
-			<CreateIdentitySheet
-				tenantId={tenantId}
-				open={createOpen}
-				onOpenChange={setCreateOpen}
-			/>
 			<EditIdentitySheet
 				tenantId={tenantId}
 				identity={editTarget}

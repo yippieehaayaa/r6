@@ -165,64 +165,6 @@ export const IdentitySafeSchema = IdentitySchema.omit({
 
 export type IdentitySafe = z.infer<typeof IdentitySafeSchema>;
 
-// ── Create payload ──────────────────────────────────────────
-
-/**
- * plainPassword is accepted on creation and hashed by the
- * service layer before persistence. `hash` and `salt` are
- * never accepted directly from clients.
- */
-export const CreateIdentitySchema = IdentitySchema.omit({
-  id: true,
-  // tenantId is injected from req.params.tenantId — never accepted from the body.
-  tenantId: true,
-  hash: true,
-  salt: true,
-  createdAt: true,
-  updatedAt: true,
-  deletedAt: true,
-  failedLoginAttempts: true,
-  lockedUntil: true,
-  status: true,
-  // kind is overridden below to restrict to USER only.
-  kind: true,
-}).extend({
-  /**
-   * Plain-text password provided by the caller.
-   * Must be at least 8 characters and include at least one
-   * uppercase letter, one lowercase letter, one digit, and
-   * one special character.
-   */
-  plainPassword: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must not exceed 128 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/\d/, "Password must contain at least one digit")
-    .regex(
-      /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?`~]/,
-      "Password must contain at least one special character",
-    ),
-
-  /**
-   * Only USER identities may be created through the tenant-scoped route.
-   * ADMIN and SERVICE identities are provisioned through separate
-   * platform-level flows.
-   */
-  kind: z.enum(["USER"]).default("USER"),
-
-  /**
-   * When true the identity must change its password on next login.
-   * Defaults to false for admin-created accounts.
-   * TODO: enforce this on the login flow once first-login UX is built.
-   */
-  mustChangePassword: z.boolean().default(false),
-});
-
-export type CreateIdentityInput = z.infer<typeof CreateIdentitySchema>;
-export type CreateIdentityFormInput = z.input<typeof CreateIdentitySchema>;
-
 // ── Update payload ──────────────────────────────────────────
 
 export const UpdateIdentitySchema = IdentitySchema.omit({
