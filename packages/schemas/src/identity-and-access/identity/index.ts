@@ -165,6 +165,24 @@ export const IdentitySafeSchema = IdentitySchema.omit({
 
 export type IdentitySafe = z.infer<typeof IdentitySafeSchema>;
 
+// ── List item shape — minimal fields for paginated list responses ───────────
+
+export const IdentityListItemSchema = IdentitySchema.pick({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  tenantId: true,
+  firstName: true,
+  middleName: true,
+  lastName: true,
+  country: true,
+  email: true,
+  status: true,
+});
+
+export type IdentityListItem = z.infer<typeof IdentityListItemSchema>;
+
 // ── Self-service profile update payload ────────────────────
 // Used by PATCH /me — only allows a user to update their own personal fields.
 // Sensitive fields (status, email, credentials, login tracking) are excluded.

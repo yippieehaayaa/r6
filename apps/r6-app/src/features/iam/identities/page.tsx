@@ -1,4 +1,4 @@
-import type { IdentitySafe } from "@r6/schemas";
+import type { IdentityListItem } from "@r6/schemas";
 import type { PaginationState } from "@tanstack/react-table";
 import { UsersIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -22,7 +22,7 @@ export default function IdentitiesPage() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
-	const [policiesTarget, setPoliciesTarget] = useState<IdentitySafe | null>(
+	const [policiesTarget, setPoliciesTarget] = useState<IdentityListItem | null>(
 		null,
 	);
 
@@ -44,7 +44,7 @@ export default function IdentitiesPage() {
 		search: debouncedSearch || undefined,
 	});
 
-	async function handleDelete(identity: IdentitySafe) {
+	async function handleDelete(identity: IdentityListItem) {
 		try {
 			await removeMutation.mutateAsync({ tenantId, id: identity.id });
 			toast.success(`${identity.username} removed`);
@@ -53,7 +53,7 @@ export default function IdentitiesPage() {
 		}
 	}
 
-	async function handleRestore(identity: IdentitySafe) {
+	async function handleRestore(identity: IdentityListItem) {
 		try {
 			await restoreMutation.mutateAsync({ tenantId, id: identity.id });
 			toast.success(`${identity.username} restored`);

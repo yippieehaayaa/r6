@@ -1,6 +1,6 @@
 import {
-	type IdentitySafe,
-	IdentitySafeSchema,
+	type IdentityListItem,
+	IdentityListItemSchema,
 	type ListIdentitiesQuery,
 	type PaginatedResponse,
 	PaginatedResponseSchema,
@@ -11,12 +11,12 @@ import { identityApi } from "@/api/_app";
 export async function listIdentitiesFn(
 	tenantId: string,
 	params: ListIdentitiesQuery,
-): Promise<PaginatedResponse<IdentitySafe>> {
+): Promise<PaginatedResponse<IdentityListItem>> {
 	const { data } = await identityApi.get<unknown>(
 		`/tenants/${tenantId}/identities`,
 		{ params },
 	);
-	return PaginatedResponseSchema(IdentitySafeSchema).parse(data);
+	return PaginatedResponseSchema(IdentityListItemSchema).parse(data);
 }
 
 export function useListIdentitiesQuery(

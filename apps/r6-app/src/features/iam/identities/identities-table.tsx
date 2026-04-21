@@ -1,4 +1,4 @@
-import type { IdentitySafe } from "@r6/schemas";
+import type { IdentityListItem } from "@r6/schemas";
 import type {
 	ColumnDef,
 	OnChangeFn,
@@ -42,16 +42,16 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 interface IdentitiesTableProps {
-	data: IdentitySafe[];
+	data: IdentityListItem[];
 	isLoading: boolean;
 	rowCount?: number;
 	paginationState?: PaginationState;
 	onPaginationChange?: OnChangeFn<PaginationState>;
 	globalFilterValue?: string;
 	onGlobalFilterChange?: (value: string) => void;
-	onDelete: (row: IdentitySafe) => void;
-	onRestore: (row: IdentitySafe) => void;
-	onManagePolicies: (row: IdentitySafe) => void;
+	onDelete: (row: IdentityListItem) => void;
+	onRestore: (row: IdentityListItem) => void;
+	onManagePolicies: (row: IdentityListItem) => void;
 }
 
 export function IdentitiesTable({
@@ -66,17 +66,8 @@ export function IdentitiesTable({
 	onRestore,
 	onManagePolicies,
 }: IdentitiesTableProps) {
-	const columns = useMemo<ColumnDef<IdentitySafe>[]>(
+	const columns = useMemo<ColumnDef<IdentityListItem>[]>(
 		() => [
-			{
-				accessorKey: "username",
-				header: "Username",
-				cell: ({ row }) => (
-					<span className="font-medium text-[var(--text-primary)]">
-						{row.original.username}
-					</span>
-				),
-			},
 			{
 				id: "name",
 				header: "Name",
@@ -105,28 +96,6 @@ export function IdentitiesTable({
 						{STATUS_LABELS[row.original.status] ?? row.original.status}
 					</Badge>
 				),
-			},
-			{
-				accessorKey: "kind",
-				header: "Kind",
-				cell: ({ row }) => (
-					<Badge variant="outline" className="capitalize">
-						{row.original.kind.toLowerCase()}
-					</Badge>
-				),
-			},
-			{
-				accessorKey: "totpEnabled",
-				header: "2FA",
-				cell: ({ row }) =>
-					row.original.totpEnabled ? (
-						<Badge variant="default" className="gap-1">
-							<ShieldIcon className="size-3" />
-							On
-						</Badge>
-					) : (
-						<span className="text-xs text-muted-foreground">Off</span>
-					),
 			},
 			{
 				accessorKey: "createdAt",

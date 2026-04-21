@@ -1,9 +1,8 @@
 import { listIdentities } from "@r6/db-identity-and-access";
-import { ListIdentitiesQuerySchema } from "@r6/schemas";
+import { IdentityListItemSchema, ListIdentitiesQuerySchema } from "@r6/schemas";
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../../../../../lib/errors";
 import { resolveParam } from "../../../helpers";
-import { toSafeIdentity } from "../../../identities/helpers";
 
 // GET /tenants/:tenantId/identities
 // Returns a paginated, safe list of identities belonging to this tenant.
@@ -48,7 +47,7 @@ export const listIdentitiesHandler = async (
     });
 
     res.status(200).json({
-      data: result.data.map(toSafeIdentity),
+      data: result.data.map((i) => IdentityListItemSchema.parse(i)),
       total: result.total,
       page: result.page,
       limit: result.limit,

@@ -1,4 +1,4 @@
-import type { IdentitySafe, Policy } from "@r6/schemas";
+import type { IdentityListItem, Policy } from "@r6/schemas";
 import { CheckIcon, Loader2Icon, ShieldIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ import { getApiErrorMessage } from "@/lib/api-error";
 
 interface ManagePoliciesSheetProps {
 	tenantId: string;
-	identity: IdentitySafe | null;
+	identity: IdentityListItem | null;
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }
@@ -85,7 +85,7 @@ export function ManagePoliciesSheet({
 					<SheetTitle>Manage Policies</SheetTitle>
 					<SheetDescription>
 						Select policies to assign to{" "}
-						<span className="font-medium">{identity?.username}</span>. This
+						<span className="font-medium">{identity?.email}</span>. This
 						replaces all current assignments.
 					</SheetDescription>
 				</SheetHeader>
