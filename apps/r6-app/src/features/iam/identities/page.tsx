@@ -9,7 +9,6 @@ import { useListIdentitiesQuery } from "@/api/identity-and-access/tenants/identi
 import { useAuth } from "@/auth";
 import { getApiErrorMessage } from "@/lib/api-error";
 import { IdentitiesTable } from "./identities-table";
-import { EditIdentitySheet } from "./identity-sheet";
 import { ManagePoliciesSheet } from "./manage-policies-sheet";
 
 export default function IdentitiesPage() {
@@ -23,7 +22,6 @@ export default function IdentitiesPage() {
 	const [search, setSearch] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
-	const [editTarget, setEditTarget] = useState<IdentitySafe | null>(null);
 	const [policiesTarget, setPoliciesTarget] = useState<IdentitySafe | null>(
 		null,
 	);
@@ -92,21 +90,13 @@ export default function IdentitiesPage() {
 				onPaginationChange={setPagination}
 				globalFilterValue={search}
 				onGlobalFilterChange={setSearch}
-				onEdit={(row) => setEditTarget(row)}
+
 				onDelete={handleDelete}
 				onRestore={handleRestore}
 				onManagePolicies={(row) => setPoliciesTarget(row)}
 			/>
 
 			{/* Sheets */}
-			<EditIdentitySheet
-				tenantId={tenantId}
-				identity={editTarget}
-				open={!!editTarget}
-				onOpenChange={(open) => {
-					if (!open) setEditTarget(null);
-				}}
-			/>
 			<ManagePoliciesSheet
 				tenantId={tenantId}
 				identity={policiesTarget}

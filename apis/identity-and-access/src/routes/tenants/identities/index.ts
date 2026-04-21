@@ -7,7 +7,6 @@ import { removeIdentityHandler } from "./controller/mutations/remove";
 import { removePolicyHandler } from "./controller/mutations/remove-policy";
 import { restoreIdentityHandler } from "./controller/mutations/restore";
 import { setPoliciesHandler } from "./controller/mutations/set-policies";
-import { updateIdentityHandler } from "./controller/mutations/update";
 import { getIdentityHandler } from "./controller/queries/get";
 import { listIdentitiesHandler } from "./controller/queries/list";
 
@@ -52,16 +51,6 @@ router.get("/", requirePermission("iam:identity:read"), listIdentitiesHandler);
 router.get("/:id", requirePermission("iam:identity:read"), getIdentityHandler);
 
 // ── Mutations (POST / PATCH / DELETE) ────────────────────────────────────────
-
-// PATCH /tenants/:tenantId/identities/:id
-//   Updates an identity's profile fields (name, country, etc.).
-//   Enforces tier-based write protection.
-//   Requires: iam:identity:update
-router.patch(
-  "/:id",
-  requirePermission("iam:identity:update"),
-  updateIdentityHandler,
-);
 
 // DELETE /tenants/:tenantId/identities/:id
 //   Soft-deletes an identity within this tenant.

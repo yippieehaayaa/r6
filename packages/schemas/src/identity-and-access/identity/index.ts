@@ -165,6 +165,21 @@ export const IdentitySafeSchema = IdentitySchema.omit({
 
 export type IdentitySafe = z.infer<typeof IdentitySafeSchema>;
 
+// ── Self-service profile update payload ────────────────────
+// Used by PATCH /me — only allows a user to update their own personal fields.
+// Sensitive fields (status, email, credentials, login tracking) are excluded.
+
+export const UpdateProfileSchema = IdentitySchema.pick({
+  firstName: true,
+  middleName: true,
+  lastName: true,
+  country: true,
+  username: true,
+}).partial();
+
+export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;
+export type UpdateProfileFormInput = z.input<typeof UpdateProfileSchema>;
+
 // ── Update payload ──────────────────────────────────────────
 
 export const UpdateIdentitySchema = IdentitySchema.omit({

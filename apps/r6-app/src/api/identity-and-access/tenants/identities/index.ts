@@ -3,6 +3,5 @@ export * from "./mutations/remove";
 export * from "./mutations/remove-policy";
 export * from "./mutations/restore";
 export * from "./mutations/set-policies";
-export * from "./mutations/update";
 export * from "./queries/get";
 export * from "./queries/list";

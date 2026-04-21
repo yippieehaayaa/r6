@@ -8,7 +8,6 @@ import { formatDistanceToNow } from "date-fns";
 import {
 	ArchiveRestoreIcon,
 	MoreHorizontalIcon,
-	PencilIcon,
 	ShieldIcon,
 	Trash2Icon,
 } from "lucide-react";
@@ -50,7 +49,6 @@ interface IdentitiesTableProps {
 	onPaginationChange?: OnChangeFn<PaginationState>;
 	globalFilterValue?: string;
 	onGlobalFilterChange?: (value: string) => void;
-	onEdit: (row: IdentitySafe) => void;
 	onDelete: (row: IdentitySafe) => void;
 	onRestore: (row: IdentitySafe) => void;
 	onManagePolicies: (row: IdentitySafe) => void;
@@ -64,7 +62,6 @@ export function IdentitiesTable({
 	onPaginationChange,
 	globalFilterValue,
 	onGlobalFilterChange,
-	onEdit,
 	onDelete,
 	onRestore,
 	onManagePolicies,
@@ -159,12 +156,7 @@ export function IdentitiesTable({
 							<DropdownMenuContent align="end" className="w-44">
 								{!isDeleted && (
 									<>
-										<Can permission="iam:identity:update">
-											<DropdownMenuItem onClick={() => onEdit(row.original)}>
-												<PencilIcon className="mr-2 size-3.5" />
-												Edit
-											</DropdownMenuItem>
-										</Can>
+
 										<Can permission="iam:role:assign">
 											<DropdownMenuItem
 												onClick={() => onManagePolicies(row.original)}
@@ -199,7 +191,7 @@ export function IdentitiesTable({
 				},
 			},
 		],
-		[onEdit, onDelete, onRestore, onManagePolicies],
+		[onDelete, onRestore, onManagePolicies],
 	);
 
 	return (
