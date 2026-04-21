@@ -1,13 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-	type RegisterInput,
 	RegisterSchema,
-	VerifyEmailRequestSchema,
 } from "@r6/schemas";
+import type { z } from "zod";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { GalleryVerticalEnd, Loader2Icon, MailIcon } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import { useRegisterMutation } from "@/api/identity-and-access/registration/mutations/register";
 import { useVerifyEmailMutation } from "@/api/identity-and-access/registration/mutations/verify-email";
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/card";
 import {
 	Field,
-	FieldDescription,
 	FieldError,
 	FieldGroup,
 	FieldLabel,
@@ -36,7 +34,13 @@ import {
 import { parseApiError } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
 
-type RegisterFormInput = RegisterInput & { confirmPassword: string };
+const RegisterFormSchema = RegisterSchema.extend({
+	confirmPassword: RegisterSchema.shape.password,
+}).refine((d) => d.password === d.confirmPassword, {
+	message: "Passwords do not match",
+	path: ["confirmPassword"],
+});
+type RegisterFormInput = z.infer<typeof RegisterFormSchema>;
 
 export default function RegisterPage() {
 	const navigate = useNavigate();
@@ -54,18 +58,7 @@ export default function RegisterPage() {
 		getValues,
 		formState: { errors, isSubmitting },
 	} = useForm<RegisterFormInput>({
-		resolver: zodResolver(
-			RegisterSchema.and(
-				RegisterSchema.pick({ password: true })
-					.extend({
-						confirmPassword: RegisterSchema.shape.password,
-					})
-					.refine((d) => d.password === d.confirmPassword, {
-						message: "Passwords do not match",
-						path: ["confirmPassword"],
-					}),
-			),
-		),
+		resolver: zodResolver(RegisterFormSchema) as Resolver<RegisterFormInput>,
 		mode: "onTouched",
 	});
 
@@ -114,7 +107,7 @@ export default function RegisterPage() {
 					to="/r6/login"
 					className="flex items-center gap-2 self-center font-medium text-[var(--text-primary)]"
 				>
-					<div className="flex size-6 items-center justify-center rounded-md bg-foreground text-background">
+					<div className="flex size-6 items-center justify-center rounded-md bg-[var(--accent)] text-white">
 						<GalleryVerticalEnd className="size-4" />
 					</div>
 					R6 Inc.
@@ -145,7 +138,7 @@ export default function RegisterPage() {
 						Already have an account?{" "}
 						<Link
 							to="/r6/login"
-							className="font-medium underline underline-offset-4 hover:opacity-70 transition-opacity"
+							className="font-medium text-[var(--accent)] underline underline-offset-4 hover:opacity-70 transition-opacity"
 						>
 							Sign in
 						</Link>
@@ -176,7 +169,7 @@ function RegisterCard({
 			<div className="absolute inset-0 translate-y-2 translate-x-2 rounded-2xl bg-foreground/[0.04] dark:bg-foreground/[0.06] ring-1 ring-foreground/8 dark:ring-foreground/10" />
 			<Card className="relative border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
 				<CardHeader className="text-center pb-2 pt-8 px-8">
-					<div className="mx-auto mb-4 size-12 rounded-2xl bg-foreground shadow-lg flex items-center justify-center">
+					<div className="mx-auto mb-4 size-12 rounded-2xl bg-[var(--accent)] shadow-lg flex items-center justify-center">
 						<svg
 							width="24"
 							height="24"
@@ -186,7 +179,7 @@ function RegisterCard({
 						>
 							<path
 								d="M12 11.5C13.933 11.5 15.5 9.933 15.5 8S13.933 4.5 12 4.5 8.5 6.067 8.5 8 10.067 11.5 12 11.5ZM12 13C9.515 13 5 14.253 5 16.75V18.5h14v-1.75C19 14.253 14.485 13 12 13Z"
-								className="fill-background"
+								className="fill-white"
 							/>
 						</svg>
 					</div>
@@ -358,7 +351,7 @@ function RegisterCard({
 							<Button
 								type="submit"
 								disabled={isSubmitting}
-								className="w-full h-10 mt-1 rounded-xl text-[15px] font-medium transition-all duration-150 active:scale-[0.97]"
+							className="w-full h-10 mt-1 rounded-xl text-[15px] font-medium transition-all duration-150 active:scale-[0.97] bg-[var(--accent)] hover:bg-[var(--accent)]/90 text-white"
 							>
 								{isSubmitting ? (
 									<>
@@ -400,8 +393,8 @@ function VerifyEmailCard({
 				<div className="absolute inset-0 translate-y-2 translate-x-2 rounded-2xl bg-foreground/[0.04] dark:bg-foreground/[0.06] ring-1 ring-foreground/8 dark:ring-foreground/10" />
 				<Card className="relative border-0 ring-1 ring-foreground/8 dark:ring-foreground/10">
 					<CardHeader className="text-center pb-2 pt-8 px-8">
-					<div className="mx-auto mb-4 size-12 rounded-2xl bg-foreground shadow-lg flex items-center justify-center">
-						<MailIcon className="size-5 text-background" />
+				<div className="mx-auto mb-4 size-12 rounded-2xl bg-[var(--accent)] shadow-lg flex items-center justify-center">
+					<MailIcon className="size-5 text-white" />
 						</div>
 						<CardTitle className="text-[22px] font-semibold tracking-tight text-[var(--text-primary)]">
 							Verify your email
