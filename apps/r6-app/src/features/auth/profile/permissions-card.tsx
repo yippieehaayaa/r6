@@ -16,9 +16,8 @@ export function PermissionsCard() {
 		>
 			{isLoading ? (
 				<div className="flex flex-wrap gap-1.5">
-					{Array.from({ length: 6 }).map((_, i) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton items
-						<Skeleton key={i} className="h-5 w-28 rounded-md" />
+					{["sk-1", "sk-2", "sk-3", "sk-4", "sk-5", "sk-6"].map((id) => (
+						<Skeleton key={id} className="h-5 w-28 rounded-md" />
 					))}
 				</div>
 			) : permissions.length === 0 ? (
