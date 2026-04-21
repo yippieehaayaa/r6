@@ -40,7 +40,7 @@ export function ChangePasswordCard() {
 
 	return (
 		<SectionCard
-			icon={<LockIcon className="size-4 text-white" />}
+			icon={<LockIcon className="size-4 text-background" />}
 			title="Change Password"
 			description="Update your account password"
 		>
@@ -96,7 +96,7 @@ export function ChangePasswordCard() {
 					<Button
 						type="submit"
 						disabled={isSubmitting}
-						className="rounded-xl bg-accent hover:bg-(--accent)/90 text-white border-0"
+						className="rounded-xl"
 					>
 						{isSubmitting ? (
 							<>

@@ -10,7 +10,7 @@ export function PermissionsCard() {
 
 	return (
 		<SectionCard
-			icon={<KeyRoundIcon className="size-4 text-white" />}
+			icon={<KeyRoundIcon className="size-4 text-background" />}
 			title="My Permissions"
 			description="Effective permissions granted to your account"
 		>

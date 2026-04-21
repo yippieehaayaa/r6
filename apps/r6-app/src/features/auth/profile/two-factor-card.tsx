@@ -63,7 +63,7 @@ function TotpEnableFlow({ onDone }: { onDone: () => void }) {
 			<Button
 				type="button"
 				onClick={() => setSetupEnabled(true)}
-				className="rounded-xl bg-accent hover:bg-(--accent)/90 text-white border-0"
+				className="rounded-xl"
 			>
 				<ShieldCheckIcon className="size-4" />
 				Set Up 2FA
@@ -140,7 +140,7 @@ function TotpEnableFlow({ onDone }: { onDone: () => void }) {
 					<Button
 						type="submit"
 						disabled={isSubmitting}
-						className="rounded-xl bg-accent hover:bg-(--accent)/90 text-white border-0"
+						className="rounded-xl"
 					>
 						{isSubmitting ? (
 							<>
@@ -260,7 +260,7 @@ export function TwoFactorCard() {
 
 	return (
 		<SectionCard
-			icon={<ShieldCheckIcon className="size-4 text-white" />}
+			icon={<ShieldCheckIcon className="size-4 text-background" />}
 			title="Two-Factor Authentication"
 			description="Add an extra layer of security to your account"
 		>

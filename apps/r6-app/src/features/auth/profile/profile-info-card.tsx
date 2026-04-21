@@ -20,7 +20,7 @@ export function ProfileInfoCard() {
 
 	return (
 		<SectionCard
-			icon={<UserIcon className="size-4 text-white" />}
+			icon={<UserIcon className="size-4 text-background" />}
 			title="Account Info"
 			description="Your identity details"
 		>
@@ -36,7 +36,7 @@ export function ProfileInfoCard() {
 			) : profile ? (
 				<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-5">
 					<Avatar className="size-14 rounded-xl">
-						<AvatarFallback className="rounded-xl text-lg font-semibold bg-(--accent)/10 text-(--accent)">
+						<AvatarFallback className="rounded-xl text-lg font-semibold bg-foreground/10 text-foreground">
 							{initials}
 						</AvatarFallback>
 					</Avatar>
