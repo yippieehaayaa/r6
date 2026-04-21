@@ -202,3 +202,16 @@ export const VerifyEmailResponseSchema = z.object({
 });
 
 export type VerifyEmailResponse = z.infer<typeof VerifyEmailResponseSchema>;
+
+// ── Register form (client-side) ───────────────────────────────
+
+// Extends RegisterSchema with a confirmPassword field for front-end form
+// validation. The confirmPassword field is stripped before sending to the API.
+export const RegisterFormSchema = RegisterSchema.extend({
+  confirmPassword: RegisterSchema.shape.password,
+}).refine((d) => d.password === d.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export type RegisterFormInput = z.infer<typeof RegisterFormSchema>;

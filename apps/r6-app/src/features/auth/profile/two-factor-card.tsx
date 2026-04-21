@@ -5,11 +5,7 @@ import {
 	type TotpEnableRequestInput,
 	TotpEnableRequestSchema,
 } from "@r6/schemas";
-import {
-	Loader2Icon,
-	ShieldCheckIcon,
-	ShieldOffIcon,
-} from "lucide-react";
+import { Loader2Icon, ShieldCheckIcon, ShieldOffIcon } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -137,11 +133,7 @@ function TotpEnableFlow({ onDone }: { onDone: () => void }) {
 					>
 						Cancel
 					</Button>
-					<Button
-						type="submit"
-						disabled={isSubmitting}
-						className="rounded-xl"
-					>
+					<Button type="submit" disabled={isSubmitting} className="rounded-xl">
 						{isSubmitting ? (
 							<>
 								<Loader2Icon className="size-4 animate-spin" />

@@ -93,11 +93,7 @@ export function ChangePasswordCard() {
 				</FieldGroup>
 
 				<div className="flex justify-end">
-					<Button
-						type="submit"
-						disabled={isSubmitting}
-						className="rounded-xl"
-					>
+					<Button type="submit" disabled={isSubmitting} className="rounded-xl">
 						{isSubmitting ? (
 							<>
 								<Loader2Icon className="size-4 animate-spin" />
