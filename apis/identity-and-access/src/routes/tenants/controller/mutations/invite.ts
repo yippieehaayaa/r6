@@ -76,6 +76,8 @@ export async function invite(
       policyIds,
     });
 
+    const acceptUrl = `${env.APP_URL}/r6/accept-invitation?token=${rawToken}`;
+
     await sendEmail({
       to: email,
       subject: `You've been invited to join ${tenant.name} — r6`,
@@ -85,12 +87,15 @@ export async function invite(
 					<body style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
 						<h1 style="font-size: 24px; margin-bottom: 8px;">You've been invited</h1>
 						<p>You've been invited to join <strong>${tenant.name}</strong> on r6.</p>
-						<p>Use the token below to accept this invitation. It expires in <strong>7 days</strong>.</p>
-						<div style="font-size: 14px; font-family: monospace; background: #f4f4f5; padding: 16px; border-radius: 8px; word-break: break-all; margin: 24px 0;">
-							${rawToken}
+						<p>Click the button below to accept this invitation. The link expires in <strong>7 days</strong>.</p>
+						<div style="margin: 32px 0;">
+							<a href="${acceptUrl}" style="display: inline-block; background: #18181b; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-size: 15px; font-weight: 500;">Accept Invitation</a>
 						</div>
-						<p style="color: #71717a; font-size: 14px;">
-							Log in to your r6 account and enter this token to join the tenant.
+						<p style="color: #71717a; font-size: 13px; word-break: break-all;">
+							Or copy this link into your browser:<br />
+							<a href="${acceptUrl}" style="color: #71717a;">${acceptUrl}</a>
+						</p>
+						<p style="color: #71717a; font-size: 13px; margin-top: 24px;">
 							If you did not expect this invitation, you can safely ignore this email.
 						</p>
 					</body>

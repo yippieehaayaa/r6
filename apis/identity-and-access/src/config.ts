@@ -30,6 +30,7 @@ const envSchema = z.object({
   AZURE_COMMUNICATION_CONNECTION_STRING: z.string(),
   AZURE_COMMUNICATION_SENDER_ADDRESS: z.string(),
   CORS_ORIGIN: z.string().transform((v) => v.split(",").map((s) => s.trim())),
+  APP_URL: z.url(),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
@@ -53,6 +54,7 @@ const env = envSchema.parse({
   AZURE_COMMUNICATION_SENDER_ADDRESS:
     process.env.AZURE_COMMUNICATION_SENDER_ADDRESS,
   CORS_ORIGIN: process.env.CORS_ORIGIN,
+  APP_URL: process.env.APP_URL,
   NODE_ENV: process.env.NODE_ENV,
   COOKIE_PATH: process.env.COOKIE_PATH,
   DEVICE_FINGERPRINT_SECRET: process.env.DEVICE_FINGERPRINT_SECRET,
