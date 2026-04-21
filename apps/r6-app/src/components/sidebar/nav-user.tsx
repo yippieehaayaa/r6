@@ -10,6 +10,7 @@ import {
 	// Sparkles,
 } from "lucide-react";
 import { LogoutMenuItem } from "#/features/auth/logout";
+import { useGetProfileQuery } from "@/api/identity-and-access/me/queries/get-profile";
 import { useAuth } from "@/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -30,14 +31,19 @@ import {
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
-	const { profile } = useAuth();
+	const { profile: authProfile } = useAuth();
+	const { data: profile } = useGetProfileQuery();
 
-	const name = profile?.username ?? "…";
-	const email = profile?.email ?? "";
-	const initials = name
-		.split(/[\s._-]/)
-		.slice(0, 2)
-		.map((s) => s[0]?.toUpperCase() ?? "")
+	const middleInitial = profile?.middleName
+		? `${profile.middleName[0]?.toUpperCase()}.`
+		: null;
+	const fullName = [profile?.firstName, middleInitial, profile?.lastName]
+		.filter(Boolean)
+		.join(" ") || "…";
+	const email = authProfile?.email ?? "";
+	const initials = [profile?.firstName, profile?.lastName]
+		.filter(Boolean)
+		.map((s) => s?.[0]?.toUpperCase() ?? "")
 		.join("");
 
 	return (
@@ -55,7 +61,7 @@ export function NavUser() {
 								</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-medium">{name}</span>
+							<span className="truncate font-medium">{fullName}</span>
 								<span className="truncate text-xs">{email}</span>
 							</div>
 							<ChevronsUpDown className="ml-auto size-4" />
@@ -75,7 +81,7 @@ export function NavUser() {
 									</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium">{name}</span>
+								<span className="truncate font-medium">{fullName}</span>
 									<span className="truncate text-xs">{email}</span>
 								</div>
 							</div>
