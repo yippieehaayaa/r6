@@ -113,9 +113,18 @@ export default function AcceptInvitationPage() {
 					Already have access?{" "}
 					<Link
 						to="/r6/login"
+						search={{ token }}
 						className="text-[var(--accent)] hover:underline font-medium"
 					>
 						Sign in
+					</Link>
+					{" or "}
+					<Link
+						to="/r6/register"
+						search={{ token }}
+						className="text-[var(--accent)] hover:underline font-medium"
+					>
+						create an account
 					</Link>
 				</p>
 			</div>

@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/input-otp";
 import { parseApiError } from "@/lib/api-error";
 import { cn } from "@/lib/utils";
+import { Route } from "@/routes/r6/login";
 
 export function LoginForm({
 	className,
@@ -36,7 +37,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
 	const navigate = useNavigate();
 	const auth = useAuth();
-
+	const { token } = Route.useSearch();
 	const [totpChallenge, setTotpChallenge] = useState<string | null>(null);
 	const [totpCode, setTotpCode] = useState("");
 	const [isTotpSubmitting, setIsTotpSubmitting] = useState(false);
@@ -58,7 +59,11 @@ export function LoginForm({
 				return;
 			}
 			toast.success("Signed in successfully");
-			navigate({ to: "/r6" });
+			if (token) {
+				navigate({ to: "/r6/accept-invitation", search: { token } });
+			} else {
+				navigate({ to: "/r6" });
+			}
 		} catch (error) {
 			const { code, message, details } = parseApiError(error);
 
@@ -97,7 +102,11 @@ export function LoginForm({
 		try {
 			await auth.totpVerify(totpChallenge, code);
 			toast.success("Signed in successfully");
-			navigate({ to: "/r6" });
+			if (token) {
+				navigate({ to: "/r6/accept-invitation", search: { token } });
+			} else {
+				navigate({ to: "/r6" });
+			}
 		} catch (error) {
 			const { code: errCode } = parseApiError(error);
 			if (errCode === "invalid_totp_code") {

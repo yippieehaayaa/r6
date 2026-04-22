@@ -8,12 +8,14 @@ import { useRegisterMutation } from "@/api/identity-and-access/registration/muta
 import { useVerifyEmailMutation } from "@/api/identity-and-access/registration/mutations/verify-email";
 import { ModeToggle } from "@/components/mode-toggle";
 import { parseApiError } from "@/lib/api-error";
+import { Route } from "@/routes/r6/register";
 import { RegisterCard } from "./register-card";
 import { type RegisterFormInput, RegisterFormSchema } from "./schema";
 import { VerifyEmailCard } from "./verify-email-card";
 
 export default function RegisterPage() {
 	const navigate = useNavigate();
+	const { token } = Route.useSearch();
 	const registerMutation = useRegisterMutation();
 	const verifyEmailMutation = useVerifyEmailMutation();
 
@@ -49,7 +51,11 @@ export default function RegisterPage() {
 		try {
 			await verifyEmailMutation.mutateAsync({ email: pendingEmail, code });
 			toast.success("Email verified! You can now sign in.");
-			navigate({ to: "/r6/login", replace: true });
+			if (token) {
+				navigate({ to: "/r6/accept-invitation", search: { token }, replace: true });
+			} else {
+				navigate({ to: "/r6/login", replace: true });
+			}
 		} catch (err) {
 			const { code: errCode } = parseApiError(err);
 			if (errCode === "invalid_otp" || errCode === "invalid_code") {
